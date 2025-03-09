@@ -113,6 +113,18 @@ export const sampleData = {
       imageUrl: "",
       birthYear: 1542,
       deathYear: 1605,
+    },
+    {
+      id: "king-9",
+      name: "Ibrahim Lodi",
+      dynastyId: null,
+      startYear: 1517,
+      endYear: 1526,
+      description: "The last ruler of the Lodi dynasty in Delhi Sultanate. Defeated by Babur at the First Battle of Panipat.",
+      isOneTime: true,
+      birthYear: null,
+      deathYear: 1526,
+      color: "#8B4513"
     }
   ],
   events: [
@@ -157,7 +169,7 @@ export const sampleData = {
       name: "First Battle of Panipat",
       date: "1526-04-21",
       description: "Babur defeated the Sultan of Delhi, Ibrahim Lodi, establishing the Mughal Empire.",
-      kingIds: ["king-7"],
+      kingIds: ["king-7", "king-9"],
       type: "Battle",
       importance: "high",
     },
@@ -169,6 +181,57 @@ export const sampleData = {
       kingIds: ["king-8"],
       type: "Religious",
       importance: "medium",
+    }
+  ],
+  wars: [
+    {
+      id: "war-1",
+      name: "First Battle of Panipat",
+      startYear: 1526,
+      endYear: 1526,
+      description: "A historic battle fought on 21 April 1526 between the invading forces of Babur and the Lodi Kingdom. Babur's victory laid the foundation for the Mughal Empire.",
+      participants: [
+        {
+          kingId: "king-7",
+          role: "victor",
+          side: "Mughal",
+          notes: "Employed tactics like Tulughma and use of gunpowder weapons"
+        },
+        {
+          kingId: "king-9",
+          role: "defeated",
+          side: "Delhi Sultanate",
+          notes: "Killed in battle"
+        }
+      ],
+      location: "Panipat, India",
+      type: "Conquest",
+      importance: "high"
+    },
+    {
+      id: "war-2",
+      name: "Anglo-Spanish War",
+      startYear: 1585,
+      endYear: 1604,
+      description: "A intermittent conflict between the kingdoms of Spain and England that was never formally declared. Part of the larger European wars of religion.",
+      participants: [
+        {
+          kingId: "king-5",
+          role: "participant",
+          side: "England",
+          notes: "Successfully defended against the Spanish Armada in 1588"
+        },
+        {
+          name: "Philip II",
+          side: "Spain",
+          notes: "Launched the Spanish Armada",
+          dynastyName: "Habsburg",
+          isOneTime: true
+        }
+      ],
+      location: "Atlantic Ocean, English Channel, Netherlands, Spain, Portugal, France, and the Americas",
+      type: "Naval/Religious",
+      importance: "high"
     }
   ]
 };

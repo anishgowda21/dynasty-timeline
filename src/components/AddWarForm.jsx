@@ -22,7 +22,6 @@ const AddWarForm = ({ onClose, preselectedKingId = null }) => {
   const [showAddOneTime, setShowAddOneTime] = useState(false);
   const [participant, setParticipant] = useState({
     role: 'participant',
-    notes: '',
   });
   
   const [oneTimeKing, setOneTimeKing] = useState({
@@ -46,7 +45,6 @@ const AddWarForm = ({ onClose, preselectedKingId = null }) => {
             ? dynasties.find(d => d.id === king.dynastyId)?.name 
             : null,
           role: 'participant', // Default role, but can be changed by user
-          notes: '',
           isPreselected: true
         };
         
@@ -164,8 +162,7 @@ const AddWarForm = ({ onClose, preselectedKingId = null }) => {
       name: oneTimeKing.name,
       dynastyName: oneTimeKing.dynastyName || null,
       isOneTime: true,
-      role: participant.role,
-      notes: participant.notes
+      role: participant.role
     };
     
     // Add to participants
@@ -182,10 +179,6 @@ const AddWarForm = ({ onClose, preselectedKingId = null }) => {
       dynastyName: ''
     });
     setShowAddOneTime(false);
-    setParticipant({
-      role: 'participant',
-      notes: '',
-    });
   };
   
   const addKingFromSearch = (king) => {
@@ -199,8 +192,7 @@ const AddWarForm = ({ onClose, preselectedKingId = null }) => {
       name: king.name,
       dynastyId: king.dynastyId,
       dynastyName,
-      role: participant.role,
-      notes: participant.notes
+      role: participant.role
     };
     
     // Add to participants
@@ -211,12 +203,8 @@ const AddWarForm = ({ onClose, preselectedKingId = null }) => {
       participants: updatedParticipants
     });
     
-    // Reset search and participant form
+    // Reset search
     setSearchQuery('');
-    setParticipant({
-      role: 'participant',
-      notes: '',
-    });
   };
   
   const removeParticipant = (index) => {
@@ -292,7 +280,6 @@ const AddWarForm = ({ onClose, preselectedKingId = null }) => {
     const finalParticipants = selectedParticipants.map(p => ({
       kingId: kingIdsMap.has(p.kingId) ? kingIdsMap.get(p.kingId) : p.kingId,
       role: p.role,
-      notes: p.notes,
       name: p.name,
       dynastyName: p.dynastyName,
       dynastyId: p.dynastyId
@@ -480,8 +467,8 @@ const AddWarForm = ({ onClose, preselectedKingId = null }) => {
                   key={index}
                   className="flex justify-between items-center p-2 bg-gray-50 rounded"
                 >
-                  <div className="flex-grow flex flex-col sm:flex-row sm:items-center">
-                    <div className="flex-grow">
+                  <div className="flex items-center justify-between w-full">
+                    <div>
                       <span className="font-medium">{participant.name}</span>
                       {participant.dynastyName && (
                         <span className="text-gray-600"> ({participant.dynastyName})</span>
@@ -489,18 +476,13 @@ const AddWarForm = ({ onClose, preselectedKingId = null }) => {
                       {participant.isOneTime && (
                         <span className="text-gray-500 ml-1">(One-time)</span>
                       )}
-                      {participant.notes && (
-                        <span className="text-gray-500 italic ml-1 block sm:inline sm:ml-2">
-                          Note: {participant.notes}
-                        </span>
-                      )}
                     </div>
                     
-                    <div className="mt-1 sm:mt-0 sm:ml-4">
+                    <div className="flex items-center">
                       <select
                         value={participant.role}
                         onChange={(e) => updateParticipantRole(index, e.target.value)}
-                        className="p-1 text-sm border border-gray-300 rounded-md bg-white"
+                        className="p-2 border border-gray-300 rounded-md bg-white text-sm"
                       >
                         {participantRoles.map(role => (
                           <option key={role.value} value={role.value}>
@@ -508,19 +490,20 @@ const AddWarForm = ({ onClose, preselectedKingId = null }) => {
                           </option>
                         ))}
                       </select>
+                      
+                      {!participant.isPreselected && (
+                        <button
+                          type="button"
+                          onClick={() => removeParticipant(index)}
+                          className="ml-2 text-red-500 hover:text-red-700"
+                        >
+                          <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                            <path fillRule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clipRule="evenodd" />
+                          </svg>
+                        </button>
+                      )}
                     </div>
                   </div>
-                  
-                  <button
-                    type="button"
-                    onClick={() => removeParticipant(index)}
-                    className={`ml-2 ${participant.isPreselected ? 'hidden' : 'text-red-500 hover:text-red-700'}`}
-                    disabled={participant.isPreselected}
-                  >
-                    <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
-                      <path fillRule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clipRule="evenodd" />
-                    </svg>
-                  </button>
                 </div>
               ))}
             </div>
@@ -534,6 +517,7 @@ const AddWarForm = ({ onClose, preselectedKingId = null }) => {
         
         {/* Add new participant */}
         <div className="mb-4">
+          {/* Search Field and Add One-time button */}
           <div className="flex space-x-2 mb-2">
             <div className="flex-1">
               <input
@@ -553,39 +537,9 @@ const AddWarForm = ({ onClose, preselectedKingId = null }) => {
             </button>
           </div>
           
-          {/* Participant Role and Notes */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-3">
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Role</label>
-              <select
-                name="role"
-                value={participant.role}
-                onChange={handleParticipantChange}
-                className="w-full p-2 border border-gray-300 rounded-md"
-              >
-                {participantRoles.map(role => (
-                  <option key={role.value} value={role.value}>
-                    {role.label}
-                  </option>
-                ))}
-              </select>
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Notes (optional)</label>
-              <input
-                type="text"
-                name="notes"
-                value={participant.notes}
-                onChange={handleParticipantChange}
-                placeholder="Additional information"
-                className="w-full p-2 border border-gray-300 rounded-md"
-              />
-            </div>
-          </div>
-          
           {/* Search Results */}
-          {searchQuery && (
-            <div className="max-h-40 overflow-y-auto border border-gray-300 rounded-md mb-3">
+          {searchQuery && !showAddOneTime && (
+            <div className="border border-gray-300 rounded-md mb-4">
               {filteredKings.length > 0 ? (
                 <ul className="divide-y divide-gray-200">
                   {filteredKings.map(king => {
@@ -622,7 +576,7 @@ const AddWarForm = ({ onClose, preselectedKingId = null }) => {
           
           {/* Add One-time King Form */}
           {showAddOneTime && (
-            <div className="border border-gray-300 rounded-md p-3 mb-3 bg-gray-50">
+            <div className="border border-gray-300 rounded-md p-3 mb-4 bg-gray-50">
               <div className="text-sm font-medium mb-2">Add a one-time ruler</div>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                 <div>

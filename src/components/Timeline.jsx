@@ -237,7 +237,7 @@ const Timeline = ({ items, type = 'dynasty', minYearOverride, maxYearOverride, s
               const isMobile = window.innerWidth < 640; // sm breakpoint
               const offsetY = isMobile 
                 ? index % 3 * 10 // More offset on mobile (0, 10, 20px)
-                : index % 2 === 0 ? 0 : 12; // Regular offset on desktop
+                : index % 3 * 8; // Regular offset on desktop (0, 8, 16px)
               
               return (
                 <Link 
@@ -249,17 +249,20 @@ const Timeline = ({ items, type = 'dynasty', minYearOverride, maxYearOverride, s
                     <div className="w-1/4 sm:w-1/5 text-xs sm:text-sm font-medium truncate pr-2">{item.name}</div>
                     <div className="w-3/4 sm:w-4/5 relative h-8">
                       <div 
-                        className="absolute h-6 rounded-md flex items-center px-2 text-white text-xs font-medium hover:opacity-90 transition-opacity"
+                        className="absolute h-6 rounded-md flex items-center px-2 text-white text-xs font-medium hover:opacity-90 transition-opacity overflow-visible whitespace-nowrap"
                         style={{
                           left: `${startPosition}%`,
-                          width: `${width}%`,
+                          width: `${Math.max(width, 2)}%`, // Minimum width for very short timelines
                           backgroundColor: item.color || '#4F46E5',
                           minWidth: '30px',
                           top: `${offsetY}px`,
                           zIndex: offsetY > 0 ? 2 : 1,
                         }}
                       >
-                        {width > 10 ? `${item.startYear}-${item.endYear}` : ''}
+                        {/* Always try to show the year range, but position it strategically */}
+                        <span className={`${width < 5 ? 'absolute left-0 transform -translate-y-5 text-black' : ''}`}>
+                          {item.startYear}-{item.endYear}
+                        </span>
                       </div>
                     </div>
                   </div>

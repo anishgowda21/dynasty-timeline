@@ -2,8 +2,10 @@ import { useState, useEffect } from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
 import { useDynasty } from '../context/DynastyContext';
 import EventCard from '../components/EventCard';
+import WarCard from '../components/WarCard';
 import Modal from '../components/Modal';
 import AddEventForm from '../components/AddEventForm';
+import AddWarForm from '../components/AddWarForm';
 import { getTimeSpan } from '../utils/dateUtils';
 
 const KingPage = () => {
@@ -12,7 +14,8 @@ const KingPage = () => {
   const { 
     kings, 
     dynasties, 
-    events, 
+    events,
+    wars,
     loading,
     updateKing,
     deleteKing
@@ -21,7 +24,9 @@ const KingPage = () => {
   const [king, setKing] = useState(null);
   const [dynasty, setDynasty] = useState(null);
   const [kingEvents, setKingEvents] = useState([]);
-  const [showAddModal, setShowAddModal] = useState(false);
+  const [kingWars, setKingWars] = useState([]);
+  const [showAddEventModal, setShowAddEventModal] = useState(false);
+  const [showAddWarModal, setShowAddWarModal] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
   const [editForm, setEditForm] = useState({
     name: '',
@@ -55,15 +60,34 @@ const KingPage = () => {
         // Get events related to this king
         const filteredEvents = events.filter(event => event.kingIds.includes(id));
         setKingEvents(filteredEvents);
+        
+        // Get wars related to this king
+        const filteredWars = wars.filter(war => 
+          war.participants.some(participant => participant.kingId === id)
+        );
+        setKingWars(filteredWars);
       } else {
         // King not found, redirect to home
         navigate('/');
       }
     }
-  }, [id, kings, dynasties, events, loading, navigate]);
+  }, [id, kings, dynasties, events, wars, loading, navigate]);
 
   const getRelatedKingsForEvent = (event) => {
     return kings.filter(king => event.kingIds.includes(king.id) && king.id !== id);
+  };
+
+  const getRelatedKingsForWar = (war) => {
+    return war.participants
+      .filter(p => p.kingId !== id)
+      .map(p => {
+        const king = kings.find(k => k.id === p.kingId);
+        return {
+          ...king,
+          role: p.role,
+          side: p.side
+        };
+      });
   };
 
   const handleEditChange = (e) => {
@@ -283,10 +307,11 @@ const KingPage = () => {
         )}
       </div>
 
+      {/* Historical Events Section */}
       <div className="flex justify-between items-center mb-4">
         <h2 className="text-2xl font-bold">Historical Events</h2>
         <button 
-          onClick={() => setShowAddModal(true)}
+          onClick={() => setShowAddEventModal(true)}
           className="btn btn-primary flex items-center"
         >
           <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-1" viewBox="0 0 20 20" fill="currentColor">
@@ -297,17 +322,17 @@ const KingPage = () => {
       </div>
 
       {kingEvents.length === 0 ? (
-        <div className="bg-white rounded-lg shadow-md p-8 text-center">
+        <div className="bg-white rounded-lg shadow-md p-8 text-center mb-8">
           <p className="text-xl text-gray-500 mb-4">No historical events recorded for this ruler yet.</p>
           <button 
-            onClick={() => setShowAddModal(true)}
+            onClick={() => setShowAddEventModal(true)}
             className="btn btn-primary"
           >
             Add First Historical Event
           </button>
         </div>
       ) : (
-        <div className="space-y-4">
+        <div className="space-y-4 mb-8">
           {kingEvents.map(event => (
             <EventCard 
               key={event.id} 
@@ -318,9 +343,56 @@ const KingPage = () => {
         </div>
       )}
 
-      <Modal isOpen={showAddModal} onClose={() => setShowAddModal(false)}>
+      {/* Wars/Conflicts Section */}
+      <div className="flex justify-between items-center mb-4 mt-8">
+        <h2 className="text-2xl font-bold">Wars & Conflicts</h2>
+        <button 
+          onClick={() => setShowAddWarModal(true)}
+          className="btn btn-primary flex items-center"
+        >
+          <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-1" viewBox="0 0 20 20" fill="currentColor">
+            <path fillRule="evenodd" d="M10 5a1 1 0 011 1v3h3a1 1 0 110 2h-3v3a1 1 0 11-2 0v-3H6a1 1 0 110-2h3V6a1 1 0 011-1z" clipRule="evenodd" />
+          </svg>
+          Add War/Conflict
+        </button>
+      </div>
+
+      {kingWars.length === 0 ? (
+        <div className="bg-white rounded-lg shadow-md p-8 text-center">
+          <p className="text-xl text-gray-500 mb-4">No wars or conflicts recorded for this ruler yet.</p>
+          <button 
+            onClick={() => setShowAddWarModal(true)}
+            className="btn btn-primary"
+          >
+            Add First War/Conflict
+          </button>
+        </div>
+      ) : (
+        <div className="space-y-4">
+          {kingWars.map(war => (
+            <WarCard 
+              key={war.id} 
+              war={war} 
+              currentKingId={id}
+              kings={kings}
+              dynasties={dynasties}
+            />
+          ))}
+        </div>
+      )}
+
+      {/* Add Event Modal */}
+      <Modal isOpen={showAddEventModal} onClose={() => setShowAddEventModal(false)}>
         <AddEventForm 
-          onClose={() => setShowAddModal(false)} 
+          onClose={() => setShowAddEventModal(false)} 
+          preselectedKingId={id}
+        />
+      </Modal>
+
+      {/* Add War Modal */}
+      <Modal isOpen={showAddWarModal} onClose={() => setShowAddWarModal(false)}>
+        <AddWarForm 
+          onClose={() => setShowAddWarModal(false)} 
           preselectedKingId={id}
         />
       </Modal>

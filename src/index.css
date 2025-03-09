@@ -1,0 +1,45 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer components {
+  .timeline-container {
+    @apply relative;
+  }
+  
+  .timeline-line {
+    @apply absolute w-1 bg-gray-200 h-full left-1/2 transform -translate-x-1/2;
+  }
+  
+  .dynasty-card {
+    @apply bg-white rounded-lg shadow-md p-4 border-l-4 mb-4 transition-all duration-300 hover:shadow-lg;
+  }
+  
+  .king-card {
+    @apply bg-white rounded-lg shadow-sm p-3 border-l-2 mb-2 transition-all duration-200 hover:shadow-md;
+  }
+  
+  .event-marker {
+    @apply absolute w-4 h-4 rounded-full bg-dynasty-accent left-1/2 transform -translate-x-1/2;
+  }
+  
+  .nav-link {
+    @apply text-gray-700 hover:text-dynasty-primary transition-colors;
+  }
+
+  .nav-link-active {
+    @apply text-dynasty-primary font-medium;
+  }
+  
+  .btn {
+    @apply px-4 py-2 rounded-md text-white transition-colors;
+  }
+  
+  .btn-primary {
+    @apply bg-dynasty-primary hover:bg-indigo-700;
+  }
+  
+  .btn-secondary {
+    @apply bg-dynasty-secondary hover:bg-blue-700;
+  }
+}

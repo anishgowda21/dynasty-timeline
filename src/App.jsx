@@ -3,6 +3,8 @@ import Navbar from './components/Navbar';
 import HomePage from './pages/HomePage';
 import DynastyPage from './pages/DynastyPage';
 import KingPage from './pages/KingPage';
+import EventsPage from './pages/EventsPage';
+import WarsPage from './pages/WarsPage';
 import { DynastyProvider } from './context/DynastyContext';
 
 function App() {
@@ -16,6 +18,8 @@ function App() {
               <Route path="/" element={<HomePage />} />
               <Route path="/dynasties/:id" element={<DynastyPage />} />
               <Route path="/kings/:id" element={<KingPage />} />
+              <Route path="/events" element={<EventsPage />} />
+              <Route path="/wars" element={<WarsPage />} />
             </Routes>
           </main>
           <footer className="bg-gray-800 text-white py-4 mt-12">

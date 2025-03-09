@@ -43,6 +43,20 @@ const Navbar = () => {
             Home
           </Link>
           
+          <Link 
+            to="/events" 
+            className={`nav-link ${location.pathname === '/events' ? 'nav-link-active' : ''}`}
+          >
+            Events
+          </Link>
+          
+          <Link 
+            to="/wars" 
+            className={`nav-link ${location.pathname === '/wars' ? 'nav-link-active' : ''}`}
+          >
+            Wars
+          </Link>
+          
           <div className="relative">
             <button 
               onClick={() => setShowDataMenu(!showDataMenu)}

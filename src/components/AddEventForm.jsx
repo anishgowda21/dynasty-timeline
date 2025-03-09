@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { useDynasty } from '../context/DynastyContext';
 import { generateRandomColor } from '../utils/colorUtils';
 
-const AddEventForm = ({ onClose, preselectedKingId = null, initialIsWar = false }) => {
+const AddEventForm = ({ onClose, preselectedKingId = null }) => {
   const { addEvent, kings, dynasties, addOneTimeKing, uiSettings } = useDynasty();
   
   const initialSelectedKingIds = preselectedKingId ? [preselectedKingId] : [];
@@ -13,12 +13,7 @@ const AddEventForm = ({ onClose, preselectedKingId = null, initialIsWar = false 
     description: '',
     kingIds: initialSelectedKingIds,
     type: '',
-    importance: 'medium',
-    // War-specific fields
-    isWar: initialIsWar,
-    location: '',
-    endDate: '',
-    participants: []
+    importance: 'medium'
   });
   
   const [searchQuery, setSearchQuery] = useState('');
@@ -103,6 +98,17 @@ const AddEventForm = ({ onClose, preselectedKingId = null, initialIsWar = false 
     setSearchQuery(e.target.value);
   };
   
+  const handleShowAddOneTime = () => {
+    // Auto-fill name from search query if available
+    if (searchQuery.trim() !== '') {
+      setOneTimeKing({
+        ...oneTimeKing,
+        name: searchQuery
+      });
+    }
+    setShowAddOneTime(true);
+  };
+  
   const addOneTimeKingToSelection = () => {
     // Validate
     if (!oneTimeKing.name.trim()) {
@@ -172,47 +178,6 @@ const AddEventForm = ({ onClose, preselectedKingId = null, initialIsWar = false 
     });
   };
   
-  const addParticipant = (king, role = 'participant') => {
-    // Check if already a participant
-    const alreadyParticipant = formData.participants.some(
-      p => p.kingId === king.id
-    );
-    
-    if (alreadyParticipant) {
-      return;
-    }
-    
-    const newParticipant = {
-      kingId: king.id,
-      name: king.name,
-      dynastyName: king.dynastyName,
-      role,
-      side: '',
-      notes: ''
-    };
-    
-    setFormData({
-      ...formData,
-      participants: [...formData.participants, newParticipant]
-    });
-  };
-  
-  const updateParticipant = (kingId, field, value) => {
-    setFormData({
-      ...formData,
-      participants: formData.participants.map(p => 
-        p.kingId === kingId ? { ...p, [field]: value } : p
-      )
-    });
-  };
-  
-  const removeParticipant = (kingId) => {
-    setFormData({
-      ...formData,
-      participants: formData.participants.filter(p => p.kingId !== kingId)
-    });
-  };
-  
   const validate = () => {
     const newErrors = {};
     
@@ -226,26 +191,10 @@ const AddEventForm = ({ onClose, preselectedKingId = null, initialIsWar = false 
         newErrors.date = 'Date is required';
       }
     }
-    
-    if (formData.isWar) {
-      // Validate war-specific fields
-      if (formData.participants.length < 2) {
-        newErrors.participants = 'A war needs at least two participants';
-      }
-      
-      if (formData.endDate && formData.date) {
-        const startYear = parseInt(formData.date.split('-')[0]);
-        const endYear = parseInt(formData.endDate.split('-')[0]);
-        
-        if (endYear < startYear) {
-          newErrors.endDate = 'End date must be after start date';
-        }
-      }
-    } else {
-      // Validate regular event
-      if (formData.kingIds.length === 0) {
-        newErrors.kingIds = 'At least one ruler must be selected';
-      }
+
+    // Validate that at least one ruler is selected
+    if (formData.kingIds.length === 0) {
+      newErrors.kingIds = 'At least one ruler must be selected';
     }
     
     setErrors(newErrors);
@@ -279,34 +228,14 @@ const AddEventForm = ({ onClose, preselectedKingId = null, initialIsWar = false 
     );
     
     // Create event data
-    let eventData = {
+    const eventData = {
       name: formData.name,
       date: formData.date,
       description: formData.description,
-      type: formData.isWar ? 'War' : formData.type,
+      type: formData.type,
       importance: formData.importance,
+      kingIds: finalKingIds
     };
-    
-    if (formData.isWar) {
-      // Create war event with participants
-      eventData = {
-        ...eventData,
-        kingIds: finalKingIds,
-        location: formData.location,
-        endDate: formData.endDate,
-        participants: formData.participants.map(p => ({
-          ...p,
-          kingId: kingIdsMap.has(p.kingId) ? kingIdsMap.get(p.kingId) : p.kingId
-        })),
-        isWar: true
-      };
-    } else {
-      // Regular event
-      eventData = {
-        ...eventData,
-        kingIds: finalKingIds
-      };
-    }
     
     addEvent(eventData);
     
@@ -324,42 +253,21 @@ const AddEventForm = ({ onClose, preselectedKingId = null, initialIsWar = false 
     'Other'
   ];
   
-  const warTypes = [
-    'Conquest',
-    'Civil War',
-    'Succession',
-    'Religious',
-    'Trade',
-    'Naval',
-    'Colonial',
-    'Territorial'
-  ];
-  
   const importanceLevels = [
     { value: 'high', label: 'High' },
     { value: 'medium', label: 'Medium' },
     { value: 'low', label: 'Low' }
   ];
   
-  const participantRoles = [
-    { value: 'victor', label: 'Victor' },
-    { value: 'defeated', label: 'Defeated' },
-    { value: 'participant', label: 'Participant' },
-    { value: 'ally', label: 'Ally' },
-    { value: 'neutral', label: 'Neutral Observer' }
-  ];
-  
   return (
     <form onSubmit={handleSubmit} className="space-y-4">
       <div className="text-xl font-bold mb-4">
-        Add New {formData.isWar ? 'War/Conflict' : 'Historical Event'}
+        Add New Historical Event
       </div>
-      
-
       
       <div>
         <label htmlFor="name" className="block text-sm font-medium text-gray-700 mb-1">
-          {formData.isWar ? 'War/Conflict Name' : 'Event Name'}
+          Event Name
         </label>
         <input
           type="text"
@@ -368,28 +276,15 @@ const AddEventForm = ({ onClose, preselectedKingId = null, initialIsWar = false 
           value={formData.name}
           onChange={handleChange}
           className={`w-full p-2 border rounded-md ${errors.name ? 'border-red-500' : 'border-gray-300'}`}
-          placeholder={formData.isWar ? "e.g., Hundred Years' War" : "e.g., Signing of Magna Carta"}
+          placeholder="e.g., Signing of Magna Carta"
         />
         {errors.name && <p className="text-red-500 text-xs mt-1">{errors.name}</p>}
-      </div>
-      
-      <div className="mb-4">
-        <label className="inline-flex items-center cursor-pointer">
-          <input
-            type="checkbox"
-            name="isWar"
-            checked={formData.isWar}
-            onChange={handleChange}
-            className="h-4 w-4 text-dynasty-primary border-gray-300 rounded"
-          />
-          <span className="ml-2">This is a war/conflict</span>
-        </label>
       </div>
       
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         <div>
           <label htmlFor="date" className="block text-sm font-medium text-gray-700 mb-1">
-            {formData.isWar ? 'Start Date' : 'Date'}
+            Date
           </label>
           <input
             type="text"
@@ -402,45 +297,6 @@ const AddEventForm = ({ onClose, preselectedKingId = null, initialIsWar = false 
           />
           {errors.date && <p className="text-red-500 text-xs mt-1">{errors.date}</p>}
           <p className="text-xs text-gray-500 mt-1">You can use YYYY-MM-DD format or just the year (YYYY)</p>
-        </div>
-        
-        {formData.isWar && (
-          <div>
-            <label htmlFor="endDate" className="block text-sm font-medium text-gray-700 mb-1">
-              End Date (Optional)
-            </label>
-            <input
-              type="text"
-              id="endDate"
-              name="endDate"
-              value={formData.endDate}
-              onChange={handleChange}
-              className={`w-full p-2 border rounded-md ${errors.endDate ? 'border-red-500' : 'border-gray-300'}`}
-              placeholder="YYYY-MM-DD or just YYYY"
-            />
-            {errors.endDate && <p className="text-red-500 text-xs mt-1">{errors.endDate}</p>}
-          </div>
-        )}
-      </div>
-      
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        <div>
-          <label htmlFor="type" className="block text-sm font-medium text-gray-700 mb-1">
-            Event Type
-          </label>
-          <select
-            id="type"
-            name="type"
-            value={formData.type}
-            onChange={handleChange}
-            className="w-full p-2 border border-gray-300 rounded-md"
-            disabled={formData.isWar}
-          >
-            <option value="">Select Type</option>
-            {(formData.isWar ? warTypes : eventTypes).map(type => (
-              <option key={type} value={type}>{type}</option>
-            ))}
-          </select>
         </div>
         
         <div>
@@ -461,22 +317,23 @@ const AddEventForm = ({ onClose, preselectedKingId = null, initialIsWar = false 
         </div>
       </div>
       
-      {formData.isWar && (
-        <div>
-          <label htmlFor="location" className="block text-sm font-medium text-gray-700 mb-1">
-            Location (Optional)
-          </label>
-          <input
-            type="text"
-            id="location"
-            name="location"
-            value={formData.location}
-            onChange={handleChange}
-            className="w-full p-2 border border-gray-300 rounded-md"
-            placeholder="e.g., Northern France, Mediterranean Sea"
-          />
-        </div>
-      )}
+      <div>
+        <label htmlFor="type" className="block text-sm font-medium text-gray-700 mb-1">
+          Event Type
+        </label>
+        <select
+          id="type"
+          name="type"
+          value={formData.type}
+          onChange={handleChange}
+          className="w-full p-2 border border-gray-300 rounded-md"
+        >
+          <option value="">Select Type</option>
+          {eventTypes.map(type => (
+            <option key={type} value={type}>{type}</option>
+          ))}
+        </select>
+      </div>
       
       <div>
         <label htmlFor="description" className="block text-sm font-medium text-gray-700 mb-1">
@@ -489,7 +346,7 @@ const AddEventForm = ({ onClose, preselectedKingId = null, initialIsWar = false 
           onChange={handleChange}
           rows="3"
           className="w-full p-2 border border-gray-300 rounded-md"
-          placeholder={formData.isWar ? "Describe the conflict, its causes, and outcomes..." : "Describe the historical event..."}
+          placeholder="Describe the historical event..."
         ></textarea>
       </div>
       
@@ -497,13 +354,8 @@ const AddEventForm = ({ onClose, preselectedKingId = null, initialIsWar = false 
       <div className="border-t border-gray-200 pt-4">
         <div className="flex justify-between items-center mb-3">
           <h3 className="text-lg font-medium">
-            {formData.isWar ? 'Participants' : 'Related Rulers'}
+            Related Rulers
           </h3>
-          {formData.isWar && (
-            <p className="text-sm text-gray-500">
-              Add at least two participants for a war/conflict
-            </p>
-          )}
         </div>
         
         {/* Selected Kings Pills */}
@@ -557,7 +409,7 @@ const AddEventForm = ({ onClose, preselectedKingId = null, initialIsWar = false 
             </div>
             <button
               type="button"
-              onClick={() => setShowAddOneTime(true)}
+              onClick={handleShowAddOneTime}
               className="px-3 py-2 bg-gray-200 text-gray-700 rounded-md hover:bg-gray-300"
             >
               Add One-time
@@ -647,108 +499,6 @@ const AddEventForm = ({ onClose, preselectedKingId = null, initialIsWar = false 
             </div>
           )}
         </div>
-        
-        {/* War Participants Roles (Only shown for wars) */}
-        {formData.isWar && selectedKings.length > 0 && (
-          <div className="mt-4">
-            <h4 className="font-medium text-sm mb-2">Participant Details</h4>
-            
-            {formData.participants.length > 0 ? (
-              <div className="space-y-3">
-                {formData.participants.map(participant => {
-                  const king = selectedKings.find(k => k.id === participant.kingId);
-                  
-                  return (
-                    <div key={participant.kingId} className="border border-gray-200 rounded-md p-3">
-                      <div className="flex justify-between items-start mb-2">
-                        <div>
-                          <span className="font-medium">{king?.name}</span>
-                          {king?.dynastyName && (
-                            <span className="text-gray-500 text-sm ml-1">({king.dynastyName})</span>
-                          )}
-                        </div>
-                        <button
-                          type="button"
-                          onClick={() => removeParticipant(participant.kingId)}
-                          className="text-red-600 hover:text-red-800"
-                        >
-                          <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" viewBox="0 0 20 20" fill="currentColor">
-                            <path fillRule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clipRule="evenodd" />
-                          </svg>
-                        </button>
-                      </div>
-                      
-                      <div className="grid grid-cols-1 md:grid-cols-2 gap-2 mb-2">
-                        <div>
-                          <label className="block text-xs text-gray-500 mb-1">Role</label>
-                          <select
-                            value={participant.role}
-                            onChange={(e) => updateParticipant(participant.kingId, 'role', e.target.value)}
-                            className="w-full p-1 text-sm border border-gray-300 rounded-md"
-                          >
-                            {participantRoles.map(role => (
-                              <option key={role.value} value={role.value}>{role.label}</option>
-                            ))}
-                          </select>
-                        </div>
-                        <div>
-                          <label className="block text-xs text-gray-500 mb-1">Side/Faction (Optional)</label>
-                          <input
-                            type="text"
-                            value={participant.side}
-                            onChange={(e) => updateParticipant(participant.kingId, 'side', e.target.value)}
-                            placeholder="e.g., Allies, Central Powers"
-                            className="w-full p-1 text-sm border border-gray-300 rounded-md"
-                          />
-                        </div>
-                      </div>
-                      
-                      <div>
-                        <label className="block text-xs text-gray-500 mb-1">Notes (Optional)</label>
-                        <input
-                          type="text"
-                          value={participant.notes}
-                          onChange={(e) => updateParticipant(participant.kingId, 'notes', e.target.value)}
-                          placeholder="e.g., Led naval forces, Negotiated peace treaty"
-                          className="w-full p-1 text-sm border border-gray-300 rounded-md"
-                        />
-                      </div>
-                    </div>
-                  );
-                })}
-              </div>
-            ) : (
-              <div className="border border-gray-300 rounded-md p-3 bg-gray-50">
-                <p className="text-sm text-gray-500 mb-2">
-                  No participant details added yet. Please add details for each participant.
-                </p>
-                <div className="space-y-2">
-                  {selectedKings.map(king => (
-                    <div key={king.id} className="flex justify-between items-center bg-white p-2 rounded border border-gray-200">
-                      <div>
-                        <span className="font-medium">{king.name}</span>
-                        {king.dynastyName && (
-                          <span className="text-gray-500 text-sm ml-1">({king.dynastyName})</span>
-                        )}
-                      </div>
-                      <button
-                        type="button"
-                        onClick={() => addParticipant(king)}
-                        className="px-2 py-1 text-xs bg-blue-500 text-white rounded hover:bg-blue-600"
-                      >
-                        Add Details
-                      </button>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            )}
-            
-            {errors.participants && (
-              <p className="text-red-500 text-xs mt-1">{errors.participants}</p>
-            )}
-          </div>
-        )}
       </div>
       
       <div className="flex justify-end space-x-2 pt-4">
@@ -763,7 +513,7 @@ const AddEventForm = ({ onClose, preselectedKingId = null, initialIsWar = false 
           type="submit"
           className="btn btn-primary"
         >
-          Add {formData.isWar ? 'War/Conflict' : 'Event'}
+          Add Event
         </button>
       </div>
     </form>

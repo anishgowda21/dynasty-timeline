@@ -316,4 +316,237 @@ const AddWarForm = ({ onClose, preselectedKingId = null }) => {
             id="startYear"
             name="startYear"
             value={formData.startYear}
-            onChange={handleChange
+            onChange={handleChange}
+            className={`w-full p-2 border rounded-md ${errors.startYear ? 'border-red-500' : 'border-gray-300'}`}
+          />
+          {errors.startYear && <p className="text-red-500 text-xs mt-1">{errors.startYear}</p>}
+        </div>
+        
+        <div>
+          <label htmlFor="endYear" className="block text-sm font-medium text-gray-700 mb-1">
+            End Year
+          </label>
+          <input
+            type="number"
+            id="endYear"
+            name="endYear"
+            value={formData.endYear}
+            onChange={handleChange}
+            className={`w-full p-2 border rounded-md ${errors.endYear ? 'border-red-500' : 'border-gray-300'}`}
+          />
+          {errors.endYear && <p className="text-red-500 text-xs mt-1">{errors.endYear}</p>}
+        </div>
+      </div>
+      
+      <div>
+        <label htmlFor="location" className="block text-sm font-medium text-gray-700 mb-1">
+          Location
+        </label>
+        <input
+          type="text"
+          id="location"
+          name="location"
+          value={formData.location}
+          onChange={handleChange}
+          className="w-full p-2 border border-gray-300 rounded-md"
+          placeholder="e.g., Western Europe, Mediterranean"
+        />
+      </div>
+      
+      <div>
+        <label htmlFor="description" className="block text-sm font-medium text-gray-700 mb-1">
+          Description
+        </label>
+        <textarea
+          id="description"
+          name="description"
+          value={formData.description}
+          onChange={handleChange}
+          rows={3}
+          className="w-full p-2 border border-gray-300 rounded-md"
+          placeholder="Brief description of the war/conflict"
+        />
+      </div>
+      
+      <div className="border-t border-gray-300 pt-4 mt-6">
+        <h3 className="text-lg font-medium mb-2">Participants</h3>
+        
+        {errors.participants && (
+          <p className="text-red-500 text-xs mb-2">{errors.participants}</p>
+        )}
+        
+        <div className="bg-gray-50 p-3 rounded-md mb-3">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+            <div>
+              <div className="flex items-center mb-2">
+                <input
+                  type="checkbox"
+                  id="isOneTime"
+                  name="isOneTime"
+                  checked={participant.isOneTime}
+                  onChange={handleParticipantChange}
+                  className="mr-2"
+                />
+                <label htmlFor="isOneTime" className="text-sm">
+                  Add One-time Ruler (not in database)
+                </label>
+              </div>
+              
+              {participant.isOneTime ? (
+                <>
+                  <div className="mb-2">
+                    <input
+                      type="text"
+                      name="newKingName"
+                      value={participant.newKingName}
+                      onChange={handleParticipantChange}
+                      placeholder="Ruler name"
+                      className={`w-full p-2 border rounded-md ${
+                        errors.participant_newKingName ? 'border-red-500' : 'border-gray-300'
+                      }`}
+                    />
+                    {errors.participant_newKingName && (
+                      <p className="text-red-500 text-xs mt-1">{errors.participant_newKingName}</p>
+                    )}
+                  </div>
+                  <div>
+                    <input
+                      type="text"
+                      name="newKingDynastyName"
+                      value={participant.newKingDynastyName}
+                      onChange={handleParticipantChange}
+                      placeholder="Dynasty (optional)"
+                      className="w-full p-2 border border-gray-300 rounded-md"
+                    />
+                  </div>
+                </>
+              ) : (
+                <div>
+                  <input
+                    type="text"
+                    placeholder="Search rulers..."
+                    value={kingSearchQuery}
+                    onChange={handleSearchChange}
+                    className="w-full p-2 border border-gray-300 rounded-md mb-1"
+                  />
+                  <select
+                    name="kingId"
+                    value={participant.kingId}
+                    onChange={handleParticipantChange}
+                    className={`w-full p-2 border rounded-md ${
+                      errors.participant_kingId ? 'border-red-500' : 'border-gray-300'
+                    }`}
+                  >
+                    <option value="">Select a ruler</option>
+                    {filteredKings.map(king => (
+                      <option key={king.id} value={king.id}>
+                        {king.name} {king.dynastyId ? `(${dynasties.find(d => d.id === king.dynastyId)?.name})` : ''}
+                      </option>
+                    ))}
+                  </select>
+                  {errors.participant_kingId && (
+                    <p className="text-red-500 text-xs mt-1">{errors.participant_kingId}</p>
+                  )}
+                </div>
+              )}
+            </div>
+            
+            <div>
+              <div className="mb-2">
+                <label className="block text-sm mb-1">Role</label>
+                <select
+                  name="role"
+                  value={participant.role}
+                  onChange={handleParticipantChange}
+                  className="w-full p-2 border border-gray-300 rounded-md"
+                >
+                  {participantRoles.map(role => (
+                    <option key={role.value} value={role.value}>
+                      {role.label}
+                    </option>
+                  ))}
+                </select>
+              </div>
+              
+              <div className="mb-2">
+                <label className="block text-sm mb-1">Side (optional)</label>
+                <input
+                  type="text"
+                  name="side"
+                  value={participant.side}
+                  onChange={handleParticipantChange}
+                  placeholder="e.g., Allied Powers, Axis"
+                  className="w-full p-2 border border-gray-300 rounded-md"
+                />
+              </div>
+              
+              <div>
+                <label className="block text-sm mb-1">Notes (optional)</label>
+                <input
+                  type="text"
+                  name="notes"
+                  value={participant.notes}
+                  onChange={handleParticipantChange}
+                  placeholder="Additional information"
+                  className="w-full p-2 border border-gray-300 rounded-md"
+                />
+              </div>
+            </div>
+          </div>
+          
+          <button
+            type="button"
+            onClick={addParticipant}
+            className="mt-3 px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600"
+          >
+            Add Participant
+          </button>
+        </div>
+        
+        {formData.participants.length > 0 && (
+          <div className="mt-3">
+            <h4 className="text-sm font-medium mb-2">Added Participants:</h4>
+            <ul className="space-y-2">
+              {formData.participants.map((p, index) => (
+                <li key={index} className="flex justify-between items-center p-2 bg-gray-50 rounded">
+                  <div>
+                    <span className="font-medium">{p.name}</span>
+                    {p.dynastyName && <span className="text-gray-600"> ({p.dynastyName})</span>}
+                    <span className="text-gray-500 ml-2">• {p.role}</span>
+                    {p.side && <span className="text-gray-500"> • {p.side}</span>}
+                    {p.notes && <span className="text-gray-500 italic ml-1"> - {p.notes}</span>}
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => removeParticipant(index)}
+                    className="text-red-500 hover:text-red-700"
+                  >
+                    Remove
+                  </button>
+                </li>
+              ))}
+            </ul>
+          </div>
+        )}
+      </div>
+      
+      <div className="flex justify-end space-x-3 mt-6">
+        <button
+          type="button"
+          onClick={onClose}
+          className="px-4 py-2 border border-gray-300 rounded-md hover:bg-gray-50"
+        >
+          Cancel
+        </button>
+        <button
+          type="submit"
+          className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700"
+        >
+          Save War/Conflict
+        </button>
+      </div>
+    </form>
+  );
+};
+
+export default AddWarForm;

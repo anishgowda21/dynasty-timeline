@@ -5,7 +5,7 @@ import Modal from '../components/Modal';
 import AddEventForm from '../components/AddEventForm';
 
 const EventsPage = () => {
-  const { events, kings, loading } = useDynasty();
+  const { events, kings, loading, deleteEvent } = useDynasty();
   const [showAddModal, setShowAddModal] = useState(false);
   const [filteredEvents, setFilteredEvents] = useState([]);
   const [filters, setFilters] = useState({
@@ -96,13 +96,13 @@ const EventsPage = () => {
   };
 
   const eventTypes = [
-    'Battle',
     'Religious',
     'Political',
     'Cultural',
     'Economic',
     'Scientific',
     'Diplomatic',
+    'Military',
     'Other'
   ];
 

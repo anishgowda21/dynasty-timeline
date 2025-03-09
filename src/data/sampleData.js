@@ -22,7 +22,31 @@ export const sampleData = {
       startYear: 1526,
       endYear: 1857,
       color: "#4F42B5",
-      description: "The Mughal Empire was an early-modern empire that controlled much of South Asia. It was known for its cultural achievements, religious tolerance, and architectural wonders.",
+      description: "The Mughal Empire was an early-modern empire that controlled much of South Asia. It was known for its cultural achievements, religious tolerance, and architectural wonders like the Taj Mahal and Red Fort.",
+    },
+    {
+      id: "dynasty-4",
+      name: "Maratha",
+      startYear: 1674,
+      endYear: 1818,
+      color: "#FF9900",
+      description: "The Maratha Empire rose to prominence in western India under the leadership of Shivaji. The empire challenged Mughal dominance and controlled large parts of the Indian subcontinent.",
+    },
+    {
+      id: "dynasty-5",
+      name: "Chola",
+      startYear: 848,
+      endYear: 1279,
+      color: "#9C27B0",
+      description: "The Chola dynasty was one of the longest-ruling dynasties in southern India. They were known for their naval power, artistic achievements, and extensive maritime trade networks throughout Southeast Asia.",
+    },
+    {
+      id: "dynasty-6",
+      name: "Gupta",
+      startYear: 320,
+      endYear: 550,
+      color: "#00897B",
+      description: "The Gupta Empire is considered India's Golden Age, with major achievements in science, mathematics, astronomy, art, literature, and philosophy. It was a period of peace, prosperity, and cultural flourishing.",
     }
   ],
   kings: [
@@ -125,6 +149,83 @@ export const sampleData = {
       birthYear: null,
       deathYear: 1526,
       color: "#8B4513"
+    },
+    {
+      id: "king-10",
+      name: "Shah Jahan",
+      dynastyId: "dynasty-3",
+      startYear: 1628,
+      endYear: 1658,
+      description: "The fifth Mughal emperor who built the Taj Mahal as a mausoleum for his beloved wife Mumtaz Mahal. His reign is considered the golden age of Mughal architecture.",
+      imageUrl: "",
+      birthYear: 1592,
+      deathYear: 1666,
+    },
+    {
+      id: "king-11",
+      name: "Aurangzeb",
+      dynastyId: "dynasty-3",
+      startYear: 1658,
+      endYear: 1707,
+      description: "The sixth Mughal emperor whose reign marked the height of the empire's territorial expansion, but also the beginning of its decline due to his religious policies.",
+      imageUrl: "",
+      birthYear: 1618,
+      deathYear: 1707,
+    },
+    {
+      id: "king-12",
+      name: "Shivaji Bhonsale",
+      dynastyId: "dynasty-4",
+      startYear: 1674,
+      endYear: 1680,
+      description: "The founder of the Maratha Empire who challenged the Mughal Empire's dominance in the Deccan region. Known for his military tactics and administrative innovations.",
+      imageUrl: "",
+      birthYear: 1630,
+      deathYear: 1680,
+    },
+    {
+      id: "king-13",
+      name: "Rajaraja Chola I",
+      dynastyId: "dynasty-5",
+      startYear: 985,
+      endYear: 1014,
+      description: "One of the greatest kings of the Chola dynasty who expanded the empire throughout South India and parts of Southeast Asia. Built the magnificent Brihadeeswarar Temple.",
+      imageUrl: "",
+      birthYear: 947,
+      deathYear: 1014,
+    },
+    {
+      id: "king-14",
+      name: "Chandragupta II",
+      dynastyId: "dynasty-6",
+      startYear: 380,
+      endYear: 415,
+      description: "Ruler of the Gupta Empire during its golden age. His court was adorned by the Navaratnas (Nine Jewels), including the legendary Kalidasa.",
+      imageUrl: "",
+      birthYear: 350,
+      deathYear: 415,
+    },
+    {
+      id: "king-15",
+      name: "Rajendra Chola I",
+      dynastyId: "dynasty-5",
+      startYear: 1014,
+      endYear: 1044,
+      description: "Son and successor of Rajaraja Chola I who expanded the Chola Empire's naval power across the Indian Ocean. Known for his successful naval campaigns to Southeast Asia.",
+      imageUrl: "",
+      birthYear: 971,
+      deathYear: 1044,
+    },
+    {
+      id: "king-16",
+      name: "Samudragupta",
+      dynastyId: "dynasty-6",
+      startYear: 335,
+      endYear: 375,
+      description: "One of the greatest rulers of the Gupta dynasty known as the 'Napoleon of India'. He greatly expanded the empire through military conquests and was a patron of arts and literature.",
+      imageUrl: "",
+      birthYear: 315,
+      deathYear: 375,
     }
   ],
   events: [
@@ -134,7 +235,7 @@ export const sampleData = {
       date: "1485-08-22",
       description: "The final battle of the Wars of the Roses, which established the Tudor dynasty.",
       kingIds: ["king-1"],
-      type: "Battle",
+      type: "Military",
       importance: "high",
     },
     {
@@ -152,7 +253,7 @@ export const sampleData = {
       date: "1588-08-08",
       description: "The English fleet defeated the Spanish Armada, preventing an invasion of England.",
       kingIds: ["king-5"],
-      type: "Battle",
+      type: "Military",
       importance: "high",
     },
     {
@@ -170,7 +271,7 @@ export const sampleData = {
       date: "1526-04-21",
       description: "Babur defeated the Sultan of Delhi, Ibrahim Lodi, establishing the Mughal Empire.",
       kingIds: ["king-7", "king-9"],
-      type: "Battle",
+      type: "Military",
       importance: "high",
     },
     {
@@ -180,6 +281,51 @@ export const sampleData = {
       description: "Akbar founded a syncretic religion that sought to merge Islam and Hinduism.",
       kingIds: ["king-8"],
       type: "Religious",
+      importance: "medium",
+    },
+    {
+      id: "event-7",
+      name: "Construction of Taj Mahal Begins",
+      date: "1632-01-01",
+      description: "Shah Jahan begins construction of the magnificent Taj Mahal in memory of his wife Mumtaz Mahal.",
+      kingIds: ["king-10"],
+      type: "Cultural",
+      importance: "high",
+    },
+    {
+      id: "event-8",
+      name: "Coronation of Shivaji",
+      date: "1674-06-06",
+      description: "Shivaji was formally crowned Chhatrapati (paramount sovereign) of the Maratha Kingdom.",
+      kingIds: ["king-12"],
+      type: "Political",
+      importance: "high",
+    },
+    {
+      id: "event-9",
+      name: "Completion of Brihadeeswarar Temple",
+      date: "1010-01-01",
+      description: "Rajaraja Chola I completes the massive Brihadeeswarar Temple dedicated to Lord Shiva in Thanjavur.",
+      kingIds: ["king-13"],
+      type: "Religious",
+      importance: "high",
+    },
+    {
+      id: "event-10",
+      name: "Naval Expedition to Southeast Asia",
+      date: "1025-01-01",
+      description: "Rajendra Chola I's naval expedition to conquer the Srivijaya Empire, extending Chola influence to Southeast Asia.",
+      kingIds: ["king-15"],
+      type: "Military",
+      importance: "high",
+    },
+    {
+      id: "event-11",
+      name: "Allahabad Pillar Inscription",
+      date: "375-01-01",
+      description: "The famous Allahabad Pillar inscription by poet Harisena, detailing Samudragupta's military conquests and capabilities.",
+      kingIds: ["king-16"],
+      type: "Cultural",
       importance: "medium",
     }
   ],
@@ -230,8 +376,57 @@ export const sampleData = {
         }
       ],
       location: "Atlantic Ocean, English Channel, Netherlands, Spain, Portugal, France, and the Americas",
-      type: "Naval/Religious",
+      type: "Naval",
       importance: "high"
+    },
+    {
+      id: "war-3",
+      name: "Mughal-Maratha Wars",
+      startYear: 1681,
+      endYear: 1707,
+      description: "A series of conflicts between the Mughal Empire under Aurangzeb and the Maratha Empire for control over the Deccan region of India.",
+      participants: [
+        {
+          kingId: "king-11",
+          role: "participant",
+          side: "Mughal Empire",
+          notes: "Initially had successes but ultimately failed to suppress the Marathas"
+        },
+        {
+          kingId: "king-12",
+          role: "participant",
+          side: "Maratha Empire",
+          notes: "Founded the resistance against Mughal dominance"
+        }
+      ],
+      location: "Deccan region, India",
+      type: "Territorial",
+      importance: "high"
+    },
+    {
+      id: "war-4",
+      name: "Chola-Pandya Wars",
+      startYear: 1052,
+      endYear: 1060,
+      description: "Conflict between the Chola Empire and the resurgent Pandya kingdom in South India, resulting in Chola dominance in the region.",
+      participants: [
+        {
+          kingId: "king-15",
+          role: "victor",
+          side: "Chola Empire",
+          notes: "Consolidated Chola power in the south"
+        },
+        {
+          name: "Pandya Rulers",
+          side: "Pandya Kingdom",
+          notes: "Attempted to regain independence",
+          dynastyName: "Pandya",
+          isOneTime: true
+        }
+      ],
+      location: "Southern India",
+      type: "Succession",
+      importance: "medium"
     }
   ]
 };

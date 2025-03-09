@@ -2,10 +2,10 @@ import { useState, useEffect } from 'react';
 import { useDynasty } from '../context/DynastyContext';
 import WarCard from '../components/WarCard';
 import Modal from '../components/Modal';
-import AddEventForm from '../components/AddEventForm';
+import AddWarForm from '../components/AddWarForm';
 
 const WarsPage = () => {
-  const { events, kings, dynasties, loading } = useDynasty();
+  const { wars, kings, dynasties, loading, deleteWar } = useDynasty();
   const [showAddModal, setShowAddModal] = useState(false);
   const [filteredWars, setFilteredWars] = useState([]);
   const [filters, setFilters] = useState({
@@ -18,10 +18,7 @@ const WarsPage = () => {
   });
 
   useEffect(() => {
-    // Get all war events
-    const warEvents = events.filter(event => event.type === 'War' || event.isWar);
-    
-    let filtered = [...warEvents];
+    let filtered = [...wars];
     
     // Apply type filter
     if (filters.type) {
@@ -36,19 +33,14 @@ const WarsPage = () => {
     // Apply year range filter
     if (filters.startYear) {
       const startYear = parseInt(filters.startYear);
-      filtered = filtered.filter(war => {
-        const warStartYear = parseInt(war.date.split('-')[0]);
-        return warStartYear >= startYear;
-      });
+      filtered = filtered.filter(war => war.startYear >= startYear);
     }
     
     if (filters.endYear) {
       const endYear = parseInt(filters.endYear);
       filtered = filtered.filter(war => {
-        // Use end date if available, otherwise use start date
-        const warEndYear = war.endDate 
-          ? parseInt(war.endDate.split('-')[0])
-          : parseInt(war.date.split('-')[0]);
+        // Use end year if available, otherwise use start year
+        const warEndYear = war.endYear || war.startYear;
         return warEndYear <= endYear;
       });
     }
@@ -57,14 +49,8 @@ const WarsPage = () => {
     if (filters.participant) {
       const participantLower = filters.participant.toLowerCase();
       filtered = filtered.filter(war => {
-        // Check if any king involved in the war matches the search
-        const matchesKing = war.kingIds && war.kingIds.some(kingId => {
-          const king = kings.find(k => k.id === kingId);
-          return king && king.name.toLowerCase().includes(participantLower);
-        });
-        
-        // Check if any participant matches the search (for wars with participant data)
-        const matchesParticipant = war.participants && war.participants.some(p => {
+        // Check if any participant matches the search
+        return war.participants && war.participants.some(p => {
           if (p.name && p.name.toLowerCase().includes(participantLower)) {
             return true;
           }
@@ -83,8 +69,6 @@ const WarsPage = () => {
           }
           return false;
         });
-        
-        return matchesKing || matchesParticipant;
       });
     }
     
@@ -99,14 +83,10 @@ const WarsPage = () => {
     }
     
     // Sort by date (newest first)
-    filtered.sort((a, b) => {
-      const dateA = new Date(a.date);
-      const dateB = new Date(b.date);
-      return dateB - dateA;
-    });
+    filtered.sort((a, b) => b.startYear - a.startYear);
     
     setFilteredWars(filtered);
-  }, [events, kings, dynasties, filters]);
+  }, [wars, kings, dynasties, filters]);
 
   const handleFilterChange = (e) => {
     const { name, value } = e.target;
@@ -310,10 +290,7 @@ const WarsPage = () => {
       )}
 
       <Modal isOpen={showAddModal} onClose={() => setShowAddModal(false)}>
-        <AddEventForm 
-          onClose={() => setShowAddModal(false)} 
-          initialIsWar={true}
-        />
+        <AddWarForm onClose={() => setShowAddModal(false)} />
       </Modal>
     </div>
   );

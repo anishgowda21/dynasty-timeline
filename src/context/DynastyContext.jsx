@@ -110,8 +110,32 @@ export const DynastyProvider = ({ children }) => {
     
     // Check events against their kings
     events.forEach(event => {
+      // Check for missing date
+      if (!event.date || event.date.trim() === '') {
+        warnings.push({
+          id: `event-missing-date-${event.id}`,
+          type: 'event',
+          level: 'warning',
+          message: `The event "${event.name}" has no date specified.`,
+          relatedIds: [event.id]
+        });
+        return; // Skip further validation for this event
+      }
+      
       // Parse event year from date
       const eventYear = parseInt(event.date.split('-')[0]);
+      
+      // Check if parsing failed
+      if (isNaN(eventYear)) {
+        warnings.push({
+          id: `event-invalid-date-${event.id}`,
+          type: 'event',
+          level: 'warning',
+          message: `The event "${event.name}" has an invalid date format: ${event.date}`,
+          relatedIds: [event.id]
+        });
+        return; // Skip further validation for this event
+      }
       
       event.kingIds.forEach(kingId => {
         const king = kings.find(k => k.id === kingId);

@@ -3,7 +3,7 @@ import { useDynasty } from '../context/DynastyContext';
 import { generateRandomColor } from '../utils/colorUtils';
 
 const AddEventForm = ({ onClose, preselectedKingId = null, initialIsWar = false }) => {
-  const { addEvent, kings, dynasties, addOneTimeKing } = useDynasty();
+  const { addEvent, kings, dynasties, addOneTimeKing, uiSettings } = useDynasty();
   
   const initialSelectedKingIds = preselectedKingId ? [preselectedKingId] : [];
   
@@ -160,6 +160,11 @@ const AddEventForm = ({ onClose, preselectedKingId = null, initialIsWar = false 
   };
   
   const removeKing = (kingId) => {
+    // Don't allow removal of preselected kings (from ruler page)
+    if (preselectedKingId && kingId === preselectedKingId) {
+      return;
+    }
+    
     setSelectedKings(selectedKings.filter(king => king.id !== kingId));
     setFormData({
       ...formData,
@@ -215,8 +220,11 @@ const AddEventForm = ({ onClose, preselectedKingId = null, initialIsWar = false 
       newErrors.name = 'Event name is required';
     }
     
+    // Date is encouraged but not strictly required
     if (!formData.date.trim()) {
-      newErrors.date = 'Date is required';
+      if (uiSettings?.validationLevel === 'strict') {
+        newErrors.date = 'Date is required';
+      }
     }
     
     if (formData.isWar) {
@@ -306,13 +314,13 @@ const AddEventForm = ({ onClose, preselectedKingId = null, initialIsWar = false 
   };
   
   const eventTypes = [
-    'Battle',
     'Religious',
     'Political',
     'Cultural',
     'Economic',
     'Scientific',
     'Diplomatic',
+    'Military',
     'Other'
   ];
   
@@ -347,18 +355,7 @@ const AddEventForm = ({ onClose, preselectedKingId = null, initialIsWar = false 
         Add New {formData.isWar ? 'War/Conflict' : 'Historical Event'}
       </div>
       
-      <div className="mb-4">
-        <label className="inline-flex items-center cursor-pointer">
-          <input
-            type="checkbox"
-            name="isWar"
-            checked={formData.isWar}
-            onChange={handleChange}
-            className="h-4 w-4 text-dynasty-primary border-gray-300 rounded"
-          />
-          <span className="ml-2">This is a war/conflict</span>
-        </label>
-      </div>
+
       
       <div>
         <label htmlFor="name" className="block text-sm font-medium text-gray-700 mb-1">
@@ -374,6 +371,19 @@ const AddEventForm = ({ onClose, preselectedKingId = null, initialIsWar = false 
           placeholder={formData.isWar ? "e.g., Hundred Years' War" : "e.g., Signing of Magna Carta"}
         />
         {errors.name && <p className="text-red-500 text-xs mt-1">{errors.name}</p>}
+      </div>
+      
+      <div className="mb-4">
+        <label className="inline-flex items-center cursor-pointer">
+          <input
+            type="checkbox"
+            name="isWar"
+            checked={formData.isWar}
+            onChange={handleChange}
+            className="h-4 w-4 text-dynasty-primary border-gray-300 rounded"
+          />
+          <span className="ml-2">This is a war/conflict</span>
+        </label>
       </div>
       
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -515,7 +525,8 @@ const AddEventForm = ({ onClose, preselectedKingId = null, initialIsWar = false 
                   <button
                     type="button"
                     onClick={() => removeKing(king.id)}
-                    className="ml-2 text-gray-500 hover:text-gray-700"
+                    className={`ml-2 ${preselectedKingId && king.id === preselectedKingId ? 'hidden' : 'text-gray-500 hover:text-gray-700'}`}
+                    disabled={preselectedKingId && king.id === preselectedKingId}
                   >
                     <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" viewBox="0 0 20 20" fill="currentColor">
                       <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clipRule="evenodd" />

@@ -175,6 +175,10 @@ const AddWarForm = ({ onClose, preselectedKingId = null }) => {
       newErrors.name = 'War name is required';
     }
     
+    if (!formData.type) {
+      newErrors.type = 'Please select a war type';
+    }
+    
     if (!formData.startYear) {
       newErrors.startYear = 'Start year is required';
     } else if (isNaN(parseInt(formData.startYear))) {
@@ -266,6 +270,44 @@ const AddWarForm = ({ onClose, preselectedKingId = null }) => {
       
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         <div>
+          <label htmlFor="type" className="block text-sm font-medium text-gray-700 mb-1">
+            War Type
+          </label>
+          <select
+            id="type"
+            name="type"
+            value={formData.type}
+            onChange={handleChange}
+            className={`w-full p-2 border rounded-md ${errors.type ? 'border-red-500' : 'border-gray-300'}`}
+          >
+            <option value="">Select War Type</option>
+            {warTypes.map(type => (
+              <option key={type} value={type}>{type}</option>
+            ))}
+          </select>
+          {errors.type && <p className="text-red-500 text-xs mt-1">{errors.type}</p>}
+        </div>
+
+        <div>
+          <label htmlFor="importance" className="block text-sm font-medium text-gray-700 mb-1">
+            Importance
+          </label>
+          <select
+            id="importance"
+            name="importance"
+            value={formData.importance}
+            onChange={handleChange}
+            className="w-full p-2 border border-gray-300 rounded-md"
+          >
+            {importanceLevels.map(level => (
+              <option key={level.value} value={level.value}>{level.label}</option>
+            ))}
+          </select>
+        </div>
+      </div>
+
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div>
           <label htmlFor="startYear" className="block text-sm font-medium text-gray-700 mb-1">
             Start Year
           </label>
@@ -274,4 +316,4 @@ const AddWarForm = ({ onClose, preselectedKingId = null }) => {
             id="startYear"
             name="startYear"
             value={formData.startYear}
-            onChange={handle
+            onChange={handleChange

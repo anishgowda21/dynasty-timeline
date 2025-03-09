@@ -16,7 +16,9 @@ const EventCard = ({ event, kings }) => {
 
   const getTypeClass = () => {
     switch (event.type) {
-      case 'Battle':
+      case 'War':
+        return 'bg-red-100 text-red-800';
+      case 'Military':
         return 'bg-red-100 text-red-800';
       case 'Religious':
         return 'bg-purple-100 text-purple-800';
@@ -26,6 +28,10 @@ const EventCard = ({ event, kings }) => {
         return 'bg-green-100 text-green-800';
       case 'Economic':
         return 'bg-yellow-100 text-yellow-800';
+      case 'Scientific':
+        return 'bg-indigo-100 text-indigo-800';
+      case 'Diplomatic':
+        return 'bg-teal-100 text-teal-800';
       default:
         return 'bg-gray-100 text-gray-800';
     }

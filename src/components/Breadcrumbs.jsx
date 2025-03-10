@@ -1,5 +1,5 @@
-import { useState } from "react";
-import { Link, useLocation } from "react-router-dom";
+import { useState, useEffect } from "react";
+import { Link, useLocation, useNavigate } from "react-router-dom";
 import { useDynasty } from "../context/DynastyContext";
 
 // Breadcrumb component with ellipsis for long paths
@@ -22,14 +22,14 @@ const Breadcrumbs = ({ crumbs }) => {
     setShowAllCrumbs(!showAllCrumbs);
   };
 
-  if (crumbs.length === 0) return null;
+  if (crumbs.length <= 1) return null;
 
   return (
-    <div className="breadcrumbs flex items-center text-sm text-gray-600 mb-4">
+    <div className="breadcrumbs flex items-center text-sm text-gray-600 mb-4 dark:text-gray-300">
       {needsEllipsis && !showAllCrumbs && (
         <button
           onClick={toggleAllCrumbs}
-          className="flex items-center hover:text-dynasty-primary"
+          className="flex items-center hover:text-dynasty-primary dark:hover:text-blue-400"
           title="Show full navigation path"
         >
           <span className="mr-2">...</span>
@@ -53,7 +53,7 @@ const Breadcrumbs = ({ crumbs }) => {
       {showAllCrumbs && needsEllipsis && (
         <button
           onClick={toggleAllCrumbs}
-          className="hover:text-dynasty-primary mr-2"
+          className="hover:text-dynasty-primary mr-2 dark:hover:text-blue-400"
           title="Show fewer items"
         >
           <svg
@@ -92,12 +92,20 @@ const Breadcrumbs = ({ crumbs }) => {
             </svg>
           )}
           {index === visibleCrumbs.length - 1 ? (
-            <span className="font-medium text-gray-800">{crumb.name}</span>
+            <span className="font-medium text-gray-800 dark:text-gray-200">
+              {crumb.name}
+            </span>
           ) : (
             <Link
               to={crumb.path}
-              state={{ breadcrumbClick: true }}
-              className="hover:text-dynasty-primary hover:underline"
+              state={{
+                breadcrumbClick: true,
+                breadcrumbs: crumbs.slice(
+                  0,
+                  crumbs.findIndex((c) => c.path === crumb.path) + 1
+                ),
+              }}
+              className="hover:text-dynasty-primary hover:underline dark:hover:text-blue-400"
             >
               {crumb.name}
             </Link>
@@ -108,51 +116,85 @@ const Breadcrumbs = ({ crumbs }) => {
   );
 };
 
+// Create a helper function to get entity details by ID
+const getEntityDetails = (
+  entityType,
+  entityId,
+  { dynasties, kings, events, wars }
+) => {
+  switch (entityType) {
+    case "dynasty":
+      return dynasties.find((d) => d.id === entityId);
+    case "king":
+      return kings.find((k) => k.id === entityId);
+    case "event":
+      return events.find((e) => e.id === entityId);
+    case "war":
+      return wars.find((w) => w.id === entityId);
+    default:
+      return null;
+  }
+};
+
 // Higher-order component to generate breadcrumbs based on location
 export const withBreadcrumbs = (Component) => {
   return (props) => {
     const location = useLocation();
+    const navigate = useNavigate();
     const { dynasties, kings, events, wars } = useDynasty();
+    const [breadcrumbs, setBreadcrumbs] = useState([]);
 
-    // Generate breadcrumbs based on URL pathname
-    const generateBreadcrumbs = () => {
-      const crumbs = [];
+    // Parse incoming breadcrumbs data from location state
+    useEffect(() => {
+      // If we have breadcrumbs data in location state, use it
+      if (location.state?.breadcrumbs) {
+        setBreadcrumbs(location.state.breadcrumbs);
+        return;
+      }
+
+      // Otherwise, generate breadcrumbs from URL
       const pathSegments = location.pathname.split("/").filter(Boolean);
+      const crumbs = [{ name: "Home", path: "/" }];
 
-      // Always add Home
-      crumbs.push({ name: "Home", path: "/" });
+      if (pathSegments.length === 0) {
+        setBreadcrumbs(crumbs);
+        return;
+      }
 
-      if (pathSegments.length === 0) return crumbs;
-
-      // First level: events, wars, settings
+      // Process the URL to create breadcrumbs
       if (pathSegments[0] === "events") {
         crumbs.push({ name: "Events", path: "/events" });
 
-        // Second level: specific event
         if (pathSegments.length > 1) {
           const eventId = pathSegments[1];
           const event = events.find((e) => e.id === eventId);
           if (event) {
-            crumbs.push({ name: event.name, path: `/events/${eventId}` });
+            crumbs.push({
+              name: event.name,
+              path: `/events/${eventId}`,
+              type: "event",
+              id: eventId,
+            });
           }
         }
       } else if (pathSegments[0] === "wars") {
         crumbs.push({ name: "Wars", path: "/wars" });
 
-        // Second level: specific war
         if (pathSegments.length > 1) {
           const warId = pathSegments[1];
           const war = wars.find((w) => w.id === warId);
           if (war) {
-            crumbs.push({ name: war.name, path: `/wars/${warId}` });
+            crumbs.push({
+              name: war.name,
+              path: `/wars/${warId}`,
+              type: "war",
+              id: warId,
+            });
           }
         }
       } else if (pathSegments[0] === "settings") {
         crumbs.push({ name: "Settings", path: "/settings" });
-      }
-      // Dynasty and King pages
-      else if (pathSegments[0] === "dynasties") {
-        // Second level: specific dynasty
+      } else if (pathSegments[0] === "dynasties") {
         if (pathSegments.length > 1) {
           const dynastyId = pathSegments[1];
           const dynasty = dynasties.find((d) => d.id === dynastyId);
@@ -160,11 +202,12 @@ export const withBreadcrumbs = (Component) => {
             crumbs.push({
               name: dynasty.name,
               path: `/dynasties/${dynastyId}`,
+              type: "dynasty",
+              id: dynastyId,
             });
           }
         }
       } else if (pathSegments[0] === "kings") {
-        // Second level: specific king
         if (pathSegments.length > 1) {
           const kingId = pathSegments[1];
           const king = kings.find((k) => k.id === kingId);
@@ -176,21 +219,79 @@ export const withBreadcrumbs = (Component) => {
                 crumbs.push({
                   name: dynasty.name,
                   path: `/dynasties/${dynasty.id}`,
+                  type: "dynasty",
+                  id: dynasty.id,
                 });
               }
             }
-            crumbs.push({ name: king.name, path: `/kings/${kingId}` });
+            crumbs.push({
+              name: king.name,
+              path: `/kings/${kingId}`,
+              type: "king",
+              id: kingId,
+            });
           }
         }
       }
 
-      return crumbs;
-    };
+      // Handle the case where a referrer item exists in state
+      // This is for tracking the actual navigation history
+      if (location.state?.from) {
+        const fromPath = location.state.from;
+        const fromPathSegments = fromPath.split("/").filter(Boolean);
 
-    const breadcrumbs = generateBreadcrumbs();
+        if (fromPathSegments.length > 1) {
+          const entityType = fromPathSegments[0];
+          const entityId = fromPathSegments[1];
+
+          // Map types to proper names
+          const typeMap = {
+            dynasties: "dynasty",
+            kings: "king",
+            events: "event",
+            wars: "war",
+          };
+
+          const type = typeMap[entityType];
+          if (type) {
+            const entity = getEntityDetails(type, entityId, {
+              dynasties,
+              kings,
+              events,
+              wars,
+            });
+            if (entity) {
+              // Check if this entity is different from what's in the current breadcrumb path
+              const isDifferentPath = !crumbs.some(
+                (crumb) => crumb.type === type && crumb.id === entityId
+              );
+
+              if (isDifferentPath) {
+                // Find index to insert - typically right before the last item
+                const insertIndex = Math.max(crumbs.length - 1, 1);
+
+                // Create a new breadcrumb array with the referrer path inserted
+                const newCrumbs = [...crumbs];
+                newCrumbs.splice(insertIndex, 0, {
+                  name: entity.name,
+                  path: `/${entityType}/${entityId}`,
+                  type,
+                  id: entityId,
+                });
+
+                setBreadcrumbs(newCrumbs);
+                return;
+              }
+            }
+          }
+        }
+      }
+
+      setBreadcrumbs(crumbs);
+    }, [location, dynasties, kings, events, wars]);
 
     return (
-      <div>
+      <div className="dark:bg-gray-900 dark:text-white">
         <Breadcrumbs crumbs={breadcrumbs} />
         <Component {...props} />
       </div>

@@ -94,175 +94,98 @@ const DynastyPage = () => {
 
   return (
     <div>
-      <div className="bg-white rounded-lg shadow-md p-6 mb-8">
-        {isEditing ? (
-          <form onSubmit={handleEditSubmit} className="space-y-4">
-            <div className="flex justify-between items-center mb-4">
-              <input
-                type="text"
-                name="name"
-                value={editForm.name}
-                onChange={handleEditChange}
-                className="text-2xl font-bold p-1 border border-gray-300 rounded-md w-full"
-                required
-              />
-            </div>
-
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Start Year
-                </label>
-                <input
-                  type="number"
-                  name="startYear"
-                  value={editForm.startYear}
-                  onChange={handleEditChange}
-                  className="p-2 border border-gray-300 rounded-md w-full"
-                  required
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  End Year
-                </label>
-                <input
-                  type="number"
-                  name="endYear"
-                  value={editForm.endYear}
-                  onChange={handleEditChange}
-                  className="p-2 border border-gray-300 rounded-md w-full"
-                  required
-                />
-              </div>
-            </div>
-
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                Color
-              </label>
-              <div className="flex items-center">
-                <input
-                  type="color"
-                  name="color"
-                  value={editForm.color}
-                  onChange={handleEditChange}
-                  className="h-10 w-10 rounded-md border border-gray-300 cursor-pointer"
-                />
-                <input
-                  type="text"
-                  name="color"
-                  value={editForm.color}
-                  onChange={handleEditChange}
-                  className="ml-2 p-2 border border-gray-300 rounded-md"
-                />
-              </div>
-            </div>
-
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                Description
-              </label>
-              <textarea
-                name="description"
-                value={editForm.description}
-                onChange={handleEditChange}
-                rows="3"
-                className="p-2 border border-gray-300 rounded-md w-full"
-              ></textarea>
-            </div>
-
-            <div className="flex justify-end space-x-2 pt-4">
-              <button
-                type="button"
-                onClick={() => setIsEditing(false)}
-                className="px-4 py-2 border border-gray-300 rounded-md text-gray-700 hover:bg-gray-50"
+      <div className="mb-8">
+        <div className="flex justify-between items-start mb-4">
+          <h1 className="text-3xl font-bold dark:text-white">
+            {dynasty.name} Dynasty
+          </h1>
+          <div className="flex space-x-2">
+            <button
+              onClick={() => setIsEditing(true)}
+              className="btn btn-secondary flex items-center"
+            >
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                className="h-5 w-5 mr-1"
+                viewBox="0 0 20 20"
+                fill="currentColor"
               >
-                Cancel
-              </button>
-              <button type="submit" className="btn btn-primary">
-                Save Changes
-              </button>
-            </div>
-          </form>
-        ) : (
-          <>
-            <div className="flex justify-between items-start mb-4">
-              <div>
-                <h1
-                  className="text-3xl font-bold"
-                  style={{ color: dynasty.color }}
-                >
-                  {dynasty.name}
-                </h1>
-                <p className="text-gray-600">
-                  {getTimeSpan(dynasty.startYear, dynasty.endYear)}
-                </p>
-              </div>
-              <div className="flex space-x-2">
-                <button
-                  onClick={() => setIsEditing(true)}
-                  className="px-3 py-1 border border-gray-300 rounded-md text-gray-700 hover:bg-gray-50 flex items-center"
-                >
-                  <svg
-                    xmlns="http://www.w3.org/2000/svg"
-                    className="h-4 w-4 mr-1"
-                    viewBox="0 0 20 20"
-                    fill="currentColor"
-                  >
-                    <path d="M13.586 3.586a2 2 0 112.828 2.828l-.793.793-2.828-2.828.793-.793zM11.379 5.793L3 14.172V17h2.828l8.38-8.379-2.83-2.828z" />
-                  </svg>
-                  Edit
-                </button>
-                <button
-                  onClick={handleDelete}
-                  className="px-3 py-1 border border-red-300 rounded-md text-red-700 hover:bg-red-50 flex items-center"
-                >
-                  <svg
-                    xmlns="http://www.w3.org/2000/svg"
-                    className="h-4 w-4 mr-1"
-                    viewBox="0 0 20 20"
-                    fill="currentColor"
-                  >
-                    <path
-                      fillRule="evenodd"
-                      d="M9 2a1 1 0 00-.894.553L7.382 4H4a1 1 0 000 2v10a2 2 0 002 2h8a2 2 0 002-2V6a1 1 0 100-2h-3.382l-.724-1.447A1 1 0 0011 2H9zM7 8a1 1 0 012 0v6a1 1 0 11-2 0V8zm5-1a1 1 0 00-1 1v6a1 1 0 102 0V8a1 1 0 00-1-1z"
-                      clipRule="evenodd"
-                    />
-                  </svg>
-                  Delete
-                </button>
-              </div>
-            </div>
-
-            {dynasty.description && (
-              <div className="mb-6">
-                <h2 className="text-lg font-semibold mb-2">
-                  About this Dynasty
-                </h2>
-                <p className="text-gray-700">{dynasty.description}</p>
-              </div>
-            )}
-          </>
-        )}
-      </div>
-
-      <div className="bg-white rounded-lg shadow-md p-6 mb-8">
-        <div className="flex justify-between items-center mb-4">
-          <h2 className="text-xl font-bold">Timeline of Rulers</h2>
+                <path d="M13.586 3.586a2 2 0 112.828 2.828l-.793.793-2.828-2.828.793-.793zM11.379 5.793L3 14.172V17h2.828l8.38-8.379-2.83-2.828z" />
+              </svg>
+              Edit
+            </button>
+            <button
+              onClick={handleDelete}
+              className="btn btn-danger flex items-center"
+            >
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                className="h-5 w-5 mr-1"
+                viewBox="0 0 20 20"
+                fill="currentColor"
+              >
+                <path
+                  fillRule="evenodd"
+                  d="M9 2a1 1 0 00-.894.553L7.382 4H4a1 1 0 000 2v10a2 2 0 002 2h8a2 2 0 002-2V6a1 1 0 100-2h-3.382l-.724-1.447A1 1 0 0011 2H9zM7 8a1 1 0 012 0v6a1 1 0 11-2 0V8zm5-1a1 1 0 00-1 1v6a1 1 0 102 0V8a1 1 0 00-1-1z"
+                  clipRule="evenodd"
+                />
+              </svg>
+              Delete
+            </button>
+          </div>
         </div>
 
-        {dynastyKings.length > 0 ? (
-          <Timeline items={dynastyKings} type="king" />
-        ) : (
-          <p className="text-gray-500 text-center py-4">
-            No rulers added to this dynasty yet.
-          </p>
-        )}
+        <div className="flex flex-col md:flex-row md:items-center gap-4 mb-4">
+          <div className="bg-white dark:bg-gray-800 rounded-lg p-4 shadow-md flex-1">
+            <h2 className="text-lg font-semibold mb-2 dark:text-white">
+              Dynasty Info
+            </h2>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div>
+                <p className="text-gray-600 dark:text-gray-300">
+                  <span className="font-medium text-gray-700 dark:text-gray-200">
+                    Time Period:
+                  </span>{" "}
+                  {getTimeSpan(dynasty.startYear, dynasty.endYear)}
+                </p>
+                <p className="text-gray-600 dark:text-gray-300 mt-1">
+                  <span className="font-medium text-gray-700 dark:text-gray-200">
+                    Kings/Rulers:
+                  </span>{" "}
+                  {dynastyKings.length}
+                </p>
+              </div>
+              <div
+                className="h-8 rounded-md"
+                style={{ backgroundColor: dynasty.color || "#4F46E5" }}
+              ></div>
+            </div>
+          </div>
+
+          <div className="bg-white dark:bg-gray-800 rounded-lg p-4 shadow-md flex-1">
+            <h2 className="text-lg font-semibold mb-2 dark:text-white">
+              Description
+            </h2>
+            <p className="text-gray-700 dark:text-gray-300">
+              {dynasty.description || "No description available."}
+            </p>
+          </div>
+        </div>
+      </div>
+
+      <div className="bg-white dark:bg-gray-800 rounded-lg shadow-md p-6 mb-6">
+        <h3 className="text-lg font-semibold mb-4 dark:text-white">
+          Dynasty Timeline
+        </h3>
+        <Timeline
+          items={dynastyKings}
+          type="king"
+          dynastyColor={dynasty.color}
+        />
       </div>
 
       <div className="flex justify-between items-center mb-4">
-        <h2 className="text-2xl font-bold">Rulers</h2>
+        <h2 className="text-2xl font-bold dark:text-white">Kings & Rulers</h2>
         <button
           onClick={() => setShowAddModal(true)}
           className="btn btn-primary flex items-center"
@@ -279,33 +202,35 @@ const DynastyPage = () => {
               clipRule="evenodd"
             />
           </svg>
-          Add Ruler
+          Add King/Ruler
         </button>
       </div>
 
       {dynastyKings.length === 0 ? (
-        <div className="bg-white rounded-lg shadow-md p-8 text-center">
-          <p className="text-xl text-gray-500 mb-4">
-            No rulers added to this dynasty yet.
+        <div className="bg-white dark:bg-gray-800 rounded-lg shadow-md p-8 text-center">
+          <p className="text-xl text-gray-500 dark:text-gray-400 mb-4">
+            No kings or rulers added for this dynasty yet.
           </p>
           <button
             onClick={() => setShowAddModal(true)}
             className="btn btn-primary"
           >
-            Add Your First Ruler
+            Add First King/Ruler
           </button>
         </div>
       ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-          {dynastyKings.map((king) => (
-            <KingCard
-              key={king.id}
-              king={king}
-              dynastyColor={dynasty.color}
-              eventsCount={getEventsCount(king.id)}
-            />
-          ))}
-        </div>
+        <>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            {dynastyKings.map((king) => (
+              <KingCard
+                key={king.id}
+                king={king}
+                dynastyColor={dynasty.color}
+                eventsCount={getEventsCount(king.id)}
+              />
+            ))}
+          </div>
+        </>
       )}
 
       <Modal isOpen={showAddModal} onClose={() => setShowAddModal(false)}>

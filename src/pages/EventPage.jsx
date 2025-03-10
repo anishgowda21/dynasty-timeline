@@ -125,32 +125,26 @@ const EventPage = () => {
   }
 
   return (
-    <div>
-      {isEditing ? (
-        <Modal isOpen={isEditing} onClose={() => setIsEditing(false)}>
-          <AddEventForm
-            onClose={() => setIsEditing(false)}
-            existingEvent={event}
-            isEditing={true}
-          />
-        </Modal>
-      ) : (
-        <div className="bg-white rounded-lg shadow-md p-6 mb-8">
+    <div className="max-w-4xl mx-auto">
+      {event && (
+        <div className="bg-white dark:bg-gray-800 rounded-lg shadow-md p-6 mb-6">
           <div className="flex justify-between items-start mb-6">
             <div>
-              <h1 className="text-3xl font-bold">{event.name}</h1>
-              {event.date && (
-                <div className="text-gray-600 mt-1">{getDisplayDate()}</div>
-              )}
+              <h1 className="text-3xl font-bold text-gray-900 dark:text-white mb-2">
+                {event.name}
+              </h1>
+              <p className="text-gray-600 dark:text-gray-300">
+                {getDisplayDate()}
+              </p>
             </div>
             <div className="flex space-x-2">
               <button
                 onClick={() => setIsEditing(true)}
-                className="px-3 py-1 border border-gray-300 rounded-md text-gray-700 hover:bg-gray-50 flex items-center"
+                className="btn btn-secondary flex items-center"
               >
                 <svg
                   xmlns="http://www.w3.org/2000/svg"
-                  className="h-4 w-4 mr-1"
+                  className="h-5 w-5 mr-1"
                   viewBox="0 0 20 20"
                   fill="currentColor"
                 >
@@ -160,11 +154,11 @@ const EventPage = () => {
               </button>
               <button
                 onClick={handleDelete}
-                className="px-3 py-1 border border-red-300 rounded-md text-red-700 hover:bg-red-50 flex items-center"
+                className="btn btn-danger flex items-center"
               >
                 <svg
                   xmlns="http://www.w3.org/2000/svg"
-                  className="h-4 w-4 mr-1"
+                  className="h-5 w-5 mr-1"
                   viewBox="0 0 20 20"
                   fill="currentColor"
                 >
@@ -179,68 +173,168 @@ const EventPage = () => {
             </div>
           </div>
 
-          <div className="mb-4">
+          <div className="flex flex-wrap gap-2 mb-6">
             {event.type && (
               <span
-                className={`px-3 py-1 rounded-full text-sm ${getTypeClass()}`}
+                className={`px-3 py-1 rounded-full text-sm font-medium ${getTypeClass()}`}
               >
                 {event.type}
               </span>
             )}
-            {event.importance && (
-              <span
-                className={`ml-2 px-3 py-1 rounded-full text-sm ${getImportanceClass()}`}
-              >
-                {event.importance.charAt(0).toUpperCase() +
-                  event.importance.slice(1)}{" "}
-                Importance
-              </span>
-            )}
+            <span
+              className={`px-3 py-1 rounded-full text-sm font-medium ${getImportanceClass()}`}
+            >
+              {event.importance.charAt(0).toUpperCase() +
+                event.importance.slice(1)}{" "}
+              Importance
+            </span>
           </div>
 
-          {event.description && (
-            <div className="mb-6">
-              <h2 className="text-lg font-semibold mb-2">About this Event</h2>
-              <p className="text-gray-700">{event.description}</p>
-            </div>
-          )}
+          <div className="prose max-w-none dark:prose-invert mb-6">
+            <p className="text-gray-700 dark:text-gray-300">
+              {event.description}
+            </p>
+          </div>
 
-          <div className="mt-8">
-            <h2 className="text-lg font-semibold mb-4">Related Rulers</h2>
-            {relatedKings.length > 0 ? (
-              <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
+          {relatedKings.length > 0 && (
+            <div className="mt-8">
+              <h2 className="text-xl font-bold mb-4 dark:text-white">
+                Related Rulers
+              </h2>
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
                 {relatedKings.map((king) => (
-                  <div key={king.id} className="border rounded-lg p-4">
-                    <Link
-                      to={`/kings/${king.id}`}
-                      state={{ from: location.pathname, eventId: id }}
-                      className="font-semibold hover:underline"
-                    >
-                      {king.name}
-                    </Link>
-                    {king.dynasty && (
-                      <div className="text-sm text-gray-600 mt-1">
-                        <Link
-                          to={`/dynasties/${king.dynasty.id}`}
-                          state={{ from: location.pathname, eventId: id }}
-                          className="hover:underline"
-                        >
-                          {king.dynasty.name}
-                        </Link>
-                      </div>
-                    )}
-                    <div className="text-sm text-gray-600 mt-1">
-                      {formatYear(king.startYear)} - {formatYear(king.endYear)}
+                  <Link
+                    key={king.id}
+                    to={`/kings/${king.id}`}
+                    state={{ from: location.pathname }}
+                    className="bg-gray-50 dark:bg-gray-700 p-4 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-600 transition-colors"
+                  >
+                    <div className="flex items-center">
+                      {king.dynasty && (
+                        <div
+                          className="w-3 h-3 rounded-full mr-2"
+                          style={{ backgroundColor: king.dynasty.color }}
+                        ></div>
+                      )}
+                      <h3 className="font-bold dark:text-white">{king.name}</h3>
                     </div>
-                  </div>
+                    {king.dynasty && (
+                      <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">
+                        {king.dynasty.name} Dynasty
+                      </p>
+                    )}
+                  </Link>
                 ))}
               </div>
-            ) : (
-              <p className="text-gray-500">
-                No rulers associated with this event.
-              </p>
-            )}
-          </div>
+            </div>
+          )}
+        </div>
+      )}
+
+      {isEditing && event && (
+        <div className="bg-white dark:bg-gray-800 rounded-lg shadow-md p-6 mb-6">
+          <h2 className="text-xl font-bold mb-4 dark:text-white">Edit Event</h2>
+          <form onSubmit={handleEditSubmit} className="space-y-4">
+            <div>
+              <label className="form-label">Event Name</label>
+              <input
+                type="text"
+                value={editForm.name}
+                onChange={(e) =>
+                  setEditForm({ ...editForm, name: e.target.value })
+                }
+                className="form-input"
+                required
+              />
+            </div>
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div>
+                <label className="form-label">Date</label>
+                <input
+                  type="text"
+                  value={editForm.date}
+                  onChange={(e) =>
+                    setEditForm({ ...editForm, date: e.target.value })
+                  }
+                  className="form-input"
+                  placeholder="YYYY or YYYY-MM-DD"
+                  required
+                />
+              </div>
+              <div>
+                <label className="form-label">Type</label>
+                <select
+                  value={editForm.type}
+                  onChange={(e) =>
+                    setEditForm({ ...editForm, type: e.target.value })
+                  }
+                  className="form-input"
+                >
+                  <option value="">Select Type</option>
+                  <option value="Political">Political</option>
+                  <option value="Military">Military</option>
+                  <option value="Religious">Religious</option>
+                  <option value="Cultural">Cultural</option>
+                  <option value="Economic">Economic</option>
+                  <option value="Scientific">Scientific</option>
+                  <option value="Diplomatic">Diplomatic</option>
+                  <option value="Other">Other</option>
+                </select>
+              </div>
+            </div>
+
+            <div>
+              <label className="form-label">Importance</label>
+              <div className="flex space-x-4">
+                {["low", "medium", "high"].map((level) => (
+                  <label
+                    key={level}
+                    className="flex items-center space-x-2 cursor-pointer"
+                  >
+                    <input
+                      type="radio"
+                      value={level}
+                      checked={editForm.importance === level}
+                      onChange={(e) =>
+                        setEditForm({ ...editForm, importance: e.target.value })
+                      }
+                      className="h-4 w-4 text-dynasty-primary dark:text-blue-400 border-gray-300 focus:ring-dynasty-primary"
+                    />
+                    <span className="text-gray-700 dark:text-gray-300 capitalize">
+                      {level}
+                    </span>
+                  </label>
+                ))}
+              </div>
+            </div>
+
+            <div>
+              <label className="form-label">Description</label>
+              <textarea
+                value={editForm.description}
+                onChange={(e) =>
+                  setEditForm({ ...editForm, description: e.target.value })
+                }
+                rows="4"
+                className="form-input"
+                required
+              ></textarea>
+            </div>
+
+            <div className="flex justify-end space-x-2">
+              <button
+                type="button"
+                onClick={() => setIsEditing(false)}
+                className="px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-md text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700"
+              >
+                Cancel
+              </button>
+              <button type="submit" className="btn btn-primary">
+                Save Changes
+              </button>
+            </div>
+          </form>
         </div>
       )}
     </div>

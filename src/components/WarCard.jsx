@@ -1,11 +1,12 @@
+import React from "react";
 import { Link } from "react-router-dom";
 import { useDynasty } from "../context/DynastyContext";
 import { getTimeSpan, formatYear } from "../utils/dateUtils";
 import { useState } from "react";
 import ConfirmationDialog from "./ConfirmationDialog";
 
-const WarCard = ({ war }) => {
-  const { kings, dynasties, deleteWar } = useDynasty();
+const WarCard = ({ war, currentKingId, kings, dynasties }) => {
+  const { deleteWar } = useDynasty();
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
 
   // Get the kings involved in the war
@@ -16,6 +17,16 @@ const WarCard = ({ war }) => {
   // Get the dynasty a king belongs to
   const getDynastyInfo = (dynastyId) => {
     return dynasties.find((dynasty) => dynasty.id === dynastyId) || null;
+  };
+
+  // Helper function to get the name of a king's dynasty
+  const getDynastyName = (kingId) => {
+    const king = kings.find((k) => k.id === kingId);
+    if (king && king.dynastyId) {
+      const dynasty = dynasties.find((d) => d.id === king.dynastyId);
+      return dynasty ? dynasty.name : null;
+    }
+    return null;
   };
 
   const getImportanceClass = () => {
@@ -69,54 +80,61 @@ const WarCard = ({ war }) => {
     }
   };
 
-  // Group participants by side/faction
-  const groupedParticipants = war.participants.reduce((acc, participant) => {
-    const side = participant.side || "Unspecified Faction";
-    if (!acc[side]) {
-      acc[side] = [];
-    }
-    acc[side].push(participant);
-    return acc;
-  }, {});
+  // Group participants by side - add null checks
+  const sides =
+    war.participants && Array.isArray(war.participants)
+      ? war.participants.reduce((acc, p) => {
+          const side = p.side || "Unspecified";
+          if (!acc[side]) acc[side] = [];
+
+          // Add null check for kings array
+          if (kings && Array.isArray(kings)) {
+            const king = kings.find((k) => k.id === p.kingId);
+            if (king) {
+              acc[side].push({
+                ...p,
+                king,
+                isCurrent: p.kingId === currentKingId,
+              });
+            }
+          }
+
+          return acc;
+        }, {})
+      : {};
+
+  // Get outcome for current king if available - add null checks
+  const currentKingParticipant =
+    war.participants && Array.isArray(war.participants)
+      ? war.participants.find((p) => p.kingId === currentKingId)
+      : null;
+  const outcome = currentKingParticipant
+    ? currentKingParticipant.outcome
+    : null;
 
   const Card = ({ children }) => {
-    if (war.id) {
-      return (
-        <Link
-          to={`/wars/${war.id}`}
-          className="block p-4 rounded-lg border border-gray-200 hover:border-indigo-500 transition-colors"
-        >
-          {children}
-        </Link>
-      );
-    }
     return (
-      <div className="p-4 rounded-lg border border-gray-200">{children}</div>
+      <div className="bg-white dark:bg-gray-800 rounded-lg shadow-md overflow-hidden hover:shadow-lg transition-shadow">
+        <div className="p-4">{children}</div>
+      </div>
     );
   };
 
   return (
     <Card>
-      <div className="flex justify-between items-start mb-2">
-        <h3 className="text-lg font-semibold">{war.name}</h3>
+      <div className="flex justify-between items-center">
+        <div>
+          <h3 className="text-xl font-bold dark:text-white">{war.name}</h3>
+          <p className="text-gray-500 dark:text-gray-400">
+            {war.startYear} - {war.endYear || "Ongoing"}
+          </p>
+        </div>
         <div className="flex items-center space-x-2">
-          <div className="flex space-x-2">
-            {war.importance && (
-              <span
-                className={`text-xs px-2 py-1 rounded-full ${getImportanceClass()}`}
-              >
-                {war.importance.charAt(0).toUpperCase() +
-                  war.importance.slice(1)}
-              </span>
-            )}
-            {war.type && (
-              <span
-                className={`text-xs px-2 py-1 rounded-full ${getTypeClass()}`}
-              >
-                {war.type}
-              </span>
-            )}
-          </div>
+          <span
+            className={`inline-block px-2 py-1 text-xs font-semibold rounded-full ${getImportanceClass()}`}
+          >
+            {war.importance || "medium"}
+          </span>
           <button
             onClick={() => setShowDeleteConfirm(true)}
             className="text-red-600 hover:text-red-800 p-1"
@@ -138,23 +156,17 @@ const WarCard = ({ war }) => {
         </div>
       </div>
 
-      <p className="text-gray-600 text-sm mb-2">
-        {formatYear(war.startYear)} - {formatYear(war.endYear)}
-        {war.endYear ? ` (${war.endYear - war.startYear} years)` : ""}
-        {war.location && <span className="ml-2">• {war.location}</span>}
-      </p>
-
-      {war.description && (
-        <p className="text-gray-700 mb-4">{war.description}</p>
-      )}
+      <p className="text-gray-700 dark:text-gray-300 my-2">{war.description}</p>
 
       <div className="mt-3">
         <h4 className="font-medium text-sm mb-2">Participants:</h4>
-        {Object.entries(groupedParticipants).map(([side, participants]) => (
-          <div key={side} className="mb-3">
-            <h5 className="text-xs font-medium text-gray-500 mb-1">{side}</h5>
+        {Object.keys(sides).map((sideName) => (
+          <div key={sideName} className="mb-3">
+            <h5 className="text-xs font-medium text-gray-500 dark:text-gray-400 mb-1">
+              {sideName} Side
+            </h5>
             <div className="flex flex-wrap gap-1">
-              {participants.map((participant, idx) => {
+              {sides[sideName].map((participant, idx) => {
                 const king = participant.kingId
                   ? getKingInfo(participant.kingId)
                   : null;
@@ -167,11 +179,11 @@ const WarCard = ({ war }) => {
                     {king ? (
                       <Link
                         to={`/kings/${king.id}`}
-                        className="inline-flex items-center text-xs rounded-full px-2 py-1 border border-gray-200 hover:bg-gray-50"
+                        className="inline-flex items-center px-2 py-1 bg-gray-100 dark:bg-gray-700 text-gray-800 dark:text-gray-200 text-xs rounded-full"
                       >
                         <span>{king.name}</span>
                         {dynasty && (
-                          <span className="ml-1 text-gray-500">
+                          <span className="ml-1 text-gray-500 dark:text-gray-400">
                             ({dynasty.name})
                           </span>
                         )}
@@ -203,6 +215,25 @@ const WarCard = ({ war }) => {
           </div>
         ))}
       </div>
+
+      {outcome && (
+        <div className="mt-4 p-3 border dark:border-gray-700 rounded-md">
+          <h4 className="font-medium text-gray-900 dark:text-white mb-1">
+            Outcome for{" "}
+            {kings.find((k) => k.id === currentKingId)?.name || "Current King"}
+          </h4>
+          <p className="text-gray-700 dark:text-gray-300">{outcome}</p>
+        </div>
+      )}
+
+      {war.results && (
+        <div className="mt-4 p-3 border dark:border-gray-700 rounded-md">
+          <h4 className="font-medium text-gray-900 dark:text-white mb-1">
+            War Results
+          </h4>
+          <p className="text-gray-700 dark:text-gray-300">{war.results}</p>
+        </div>
+      )}
 
       <ConfirmationDialog
         isOpen={showDeleteConfirm}

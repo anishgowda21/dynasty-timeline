@@ -14,11 +14,12 @@ A React application for visualizing royal dynasties, rulers, and historical even
 
 ## Technologies Used
 
-- React
-- React Router for navigation
+- React 19
+- React Router v6 for navigation (HashRouter for GitHub Pages compatibility)
 - Tailwind CSS for styling
 - Context API for state management
 - localStorage for data persistence
+- Vite as the build tool
 
 ## Project Structure
 
@@ -48,6 +49,25 @@ A React application for visualizing royal dynasties, rulers, and historical even
 - **King/Ruler Page**: View details of a specific ruler and associated historical events
 - **Add/Edit Forms**: Create and modify dynasties, rulers, and events
 - **Import/Export**: Use the data management dropdown in the navbar to import/export your data
+
+## Deployment
+
+This project is configured for automatic deployment to GitHub Pages using GitHub Actions. When you push to the main branch, the application will automatically be built and deployed.
+
+### Manual Deployment
+
+If you want to deploy the app manually, you can use the following commands:
+
+1. Build the application:
+   ```
+   npm run build
+   ```
+
+2. The built files will be in the `dist` directory, which you can then deploy to any static hosting service.
+
+## GitHub Pages
+
+The application uses HashRouter instead of BrowserRouter to ensure proper routing when deployed to GitHub Pages. This allows the app to handle client-side routing without requiring server configuration.
 
 ## License
 

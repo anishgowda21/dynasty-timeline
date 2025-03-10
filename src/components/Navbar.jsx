@@ -169,16 +169,6 @@ const Navbar = () => {
               />
             </svg>
           </Link>
-
-          {validationWarnings && validationWarnings.length > 0 && (
-            <Link
-              to="/settings"
-              className="p-1 rounded-full bg-red-500 text-white font-bold"
-              title={`${validationWarnings.length} validation warnings`}
-            >
-              {validationWarnings.length}
-            </Link>
-          )}
         </div>
       </div>
 

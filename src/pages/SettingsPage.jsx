@@ -1,6 +1,46 @@
 import { useState, useRef } from "react";
 import { useDynasty } from "../context/DynastyContext";
 import Modal from "../components/Modal";
+import ConfirmationDialog from "../components/ConfirmationDialog";
+
+// Tooltip component
+const Tooltip = ({ children, content }) => {
+  const [isVisible, setIsVisible] = useState(false);
+
+  return (
+    <div className="relative inline-block">
+      <div
+        onMouseEnter={() => setIsVisible(true)}
+        onMouseLeave={() => setIsVisible(false)}
+        className="flex items-center"
+      >
+        {children}
+        <div className="ml-1 cursor-help text-gray-500">
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            className="h-4 w-4"
+            fill="none"
+            viewBox="0 0 24 24"
+            stroke="currentColor"
+          >
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              strokeWidth={2}
+              d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+            />
+          </svg>
+        </div>
+      </div>
+
+      {isVisible && (
+        <div className="absolute z-10 w-64 p-2 mt-2 bg-gray-800 text-white text-xs rounded shadow-lg whitespace-normal">
+          {content}
+        </div>
+      )}
+    </div>
+  );
+};
 
 const SettingsPage = () => {
   const {
@@ -18,7 +58,13 @@ const SettingsPage = () => {
     message: "",
     isError: false,
   });
+  const [selectedFile, setSelectedFile] = useState(null);
   const fileInputRef = useRef(null);
+
+  // Confirmation dialog states
+  const [showResetDialog, setShowResetDialog] = useState(false);
+  const [showClearDialog, setShowClearDialog] = useState(false);
+  const [showImportDialog, setShowImportDialog] = useState(false);
 
   const handleExport = () => {
     const jsonData = exportData();
@@ -37,26 +83,30 @@ const SettingsPage = () => {
   };
 
   const handleImportClick = () => {
-    setImportStatus({ message: "", isError: false });
-    setShowImportModal(true);
-  };
-
-  const handleFileSelect = () => {
     fileInputRef.current.click();
   };
 
-  const handleImportFile = async (e) => {
+  const handleFileSelect = (e) => {
     const file = e.target.files[0];
     if (!file) return;
 
+    setSelectedFile(file);
+    setShowImportDialog(true);
+
+    // Reset the file input
+    e.target.value = null;
+  };
+
+  const handleImportConfirm = async () => {
+    if (!selectedFile) return;
+
     try {
-      await importData(file);
+      await importData(selectedFile);
       setImportStatus({
         message: "Data imported successfully!",
         isError: false,
       });
       setTimeout(() => {
-        setShowImportModal(false);
         setImportStatus({ message: "", isError: false });
       }, 2000);
     } catch (error) {
@@ -64,32 +114,17 @@ const SettingsPage = () => {
         message: `Import error: ${error.message}`,
         isError: true,
       });
+    } finally {
+      setShowImportDialog(false);
     }
-
-    // Reset the file input
-    e.target.value = null;
   };
 
   const handleReset = () => {
-    if (
-      window.confirm(
-        "Are you sure you want to reset to sample data? This will replace all your current data."
-      )
-    ) {
-      resetToSampleData();
-      alert("Data has been reset to sample data");
-    }
+    setShowResetDialog(true);
   };
 
   const handleClear = () => {
-    if (
-      window.confirm(
-        "Are you sure you want to clear all data? This cannot be undone."
-      )
-    ) {
-      clearAllData();
-      alert("All data has been cleared");
-    }
+    setShowClearDialog(true);
   };
 
   return (
@@ -124,9 +159,12 @@ const SettingsPage = () => {
         </div>
 
         <div className="mb-4">
-          <label className="block text-sm font-medium text-gray-700 mb-1">
-            Validation Level
-          </label>
+          <Tooltip content="Controls how strictly the app validates timeline data. 'Off' disables validation, 'Warning Only' shows warnings but allows saving, 'Strict' prevents saving invalid data.">
+            <label className="block text-sm font-medium text-gray-700 mb-1">
+              Validation Level
+            </label>
+          </Tooltip>
+
           <select
             value={uiSettings.validationLevel}
             onChange={(e) => setValidationLevel(e.target.value)}
@@ -136,6 +174,23 @@ const SettingsPage = () => {
             <option value="warn">Warning Only</option>
             <option value="strict">Strict</option>
           </select>
+
+          <div className="mt-2 text-sm text-gray-500">
+            <ul className="list-disc pl-5 space-y-1">
+              <li>
+                <strong>Off</strong>: No validation warnings, allows all data
+                regardless of historical consistency.
+              </li>
+              <li>
+                <strong>Warning Only</strong>: Shows warnings but allows saving
+                inconsistent data.
+              </li>
+              <li>
+                <strong>Strict</strong>: Prevents saving data that fails
+                validation checks.
+              </li>
+            </ul>
+          </div>
         </div>
       </div>
 
@@ -204,6 +259,13 @@ const SettingsPage = () => {
                 </svg>
                 Import Data
               </button>
+              <input
+                ref={fileInputRef}
+                type="file"
+                accept=".json"
+                className="hidden"
+                onChange={handleFileSelect}
+              />
             </div>
           </div>
 
@@ -251,47 +313,57 @@ const SettingsPage = () => {
         </div>
       </div>
 
-      <Modal isOpen={showImportModal} onClose={() => setShowImportModal(false)}>
-        <div className="text-center p-6">
-          <h3 className="text-xl font-bold mb-4">Import Data</h3>
-          {importStatus.message ? (
-            <div
-              className={`p-4 mb-4 rounded-md ${
-                importStatus.isError
-                  ? "bg-red-100 text-red-700"
-                  : "bg-green-100 text-green-700"
-              }`}
-            >
-              {importStatus.message}
-            </div>
-          ) : (
-            <>
-              <p className="mb-6">
-                Select a JSON file to import. This will replace your current
-                data.
-              </p>
-              <div className="flex flex-col items-center">
-                <button
-                  onClick={handleFileSelect}
-                  className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 mb-4"
-                >
-                  Select File
-                </button>
-                <input
-                  ref={fileInputRef}
-                  type="file"
-                  accept=".json"
-                  className="hidden"
-                  onChange={handleImportFile}
-                />
-                <p className="text-sm text-gray-500">
-                  Only .json files are supported
-                </p>
-              </div>
-            </>
-          )}
+      {/* Confirmation Dialogs */}
+      <ConfirmationDialog
+        isOpen={showResetDialog}
+        title="Reset to Sample Data"
+        message="Are you sure you want to reset to sample data? This will overwrite all your current data with the default dataset."
+        confirmText="Reset Data"
+        confirmButtonClass="bg-yellow-600 hover:bg-yellow-700"
+        onConfirm={() => {
+          resetToSampleData();
+          setShowResetDialog(false);
+        }}
+        onCancel={() => setShowResetDialog(false)}
+      />
+
+      <ConfirmationDialog
+        isOpen={showClearDialog}
+        title="Clear All Data"
+        message="Are you sure you want to clear all data? This action cannot be undone and will remove all dynasties, rulers, events, and wars."
+        confirmText="Clear All Data"
+        confirmButtonClass="bg-red-600 hover:bg-red-700"
+        onConfirm={() => {
+          clearAllData();
+          setShowClearDialog(false);
+        }}
+        onCancel={() => setShowClearDialog(false)}
+      />
+
+      <ConfirmationDialog
+        isOpen={showImportDialog}
+        title="Import Data"
+        message={`Are you sure you want to import data from "${selectedFile?.name}"? This will overwrite your current data.`}
+        confirmText="Import"
+        confirmButtonClass="bg-green-600 hover:bg-green-700"
+        onConfirm={handleImportConfirm}
+        onCancel={() => {
+          setShowImportDialog(false);
+          setSelectedFile(null);
+        }}
+      />
+
+      {importStatus.message && (
+        <div
+          className={`fixed bottom-4 right-4 p-4 rounded-md shadow-lg ${
+            importStatus.isError
+              ? "bg-red-100 text-red-700"
+              : "bg-green-100 text-green-700"
+          }`}
+        >
+          {importStatus.message}
         </div>
-      </Modal>
+      )}
     </div>
   );
 };

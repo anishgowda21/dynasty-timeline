@@ -9,6 +9,17 @@ import WarsPage from "./pages/WarsPage";
 import WarPage from "./pages/WarPage";
 import SettingsPage from "./pages/SettingsPage";
 import { DynastyProvider } from "./context/DynastyContext";
+import { withBreadcrumbs } from "./components/Breadcrumbs";
+
+// Wrap page components with breadcrumbs
+const HomePageWithBreadcrumbs = withBreadcrumbs(HomePage);
+const DynastyPageWithBreadcrumbs = withBreadcrumbs(DynastyPage);
+const KingPageWithBreadcrumbs = withBreadcrumbs(KingPage);
+const EventsPageWithBreadcrumbs = withBreadcrumbs(EventsPage);
+const EventPageWithBreadcrumbs = withBreadcrumbs(EventPage);
+const WarsPageWithBreadcrumbs = withBreadcrumbs(WarsPage);
+const WarPageWithBreadcrumbs = withBreadcrumbs(WarPage);
+const SettingsPageWithBreadcrumbs = withBreadcrumbs(SettingsPage);
 
 function App() {
   return (
@@ -18,14 +29,23 @@ function App() {
           <Navbar />
           <main className="container mx-auto px-4 py-8">
             <Routes>
-              <Route path="/" element={<HomePage />} />
-              <Route path="/dynasties/:id" element={<DynastyPage />} />
-              <Route path="/kings/:id" element={<KingPage />} />
-              <Route path="/events" element={<EventsPage />} />
-              <Route path="/events/:id" element={<EventPage />} />
-              <Route path="/wars" element={<WarsPage />} />
-              <Route path="/wars/:id" element={<WarPage />} />
-              <Route path="/settings" element={<SettingsPage />} />
+              <Route path="/" element={<HomePageWithBreadcrumbs />} />
+              <Route
+                path="/dynasties/:id"
+                element={<DynastyPageWithBreadcrumbs />}
+              />
+              <Route path="/kings/:id" element={<KingPageWithBreadcrumbs />} />
+              <Route path="/events" element={<EventsPageWithBreadcrumbs />} />
+              <Route
+                path="/events/:id"
+                element={<EventPageWithBreadcrumbs />}
+              />
+              <Route path="/wars" element={<WarsPageWithBreadcrumbs />} />
+              <Route path="/wars/:id" element={<WarPageWithBreadcrumbs />} />
+              <Route
+                path="/settings"
+                element={<SettingsPageWithBreadcrumbs />}
+              />
             </Routes>
           </main>
           <footer className="bg-gray-800 text-white py-4 mt-12">

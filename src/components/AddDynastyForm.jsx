@@ -1,8 +1,14 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useDynasty } from "../context/DynastyContext";
 import { parseYear, formatYear } from "../utils/dateUtils";
 
-const AddDynastyForm = ({ onClose }) => {
+const AddDynastyForm = ({
+  onClose,
+  initialData,
+  initialBCE,
+  isEditing,
+  onSave,
+}) => {
   const { addDynasty } = useDynasty();
   const [formData, setFormData] = useState({
     name: "",
@@ -10,10 +16,27 @@ const AddDynastyForm = ({ onClose }) => {
     endYear: "",
     color: "#4F46E5",
     description: "",
+    ...(initialData || {}), // Use initialData if provided
   });
-  const [startYearBce, setStartYearBce] = useState(false);
-  const [endYearBce, setEndYearBce] = useState(false);
+
+  const [startYearBce, setStartYearBce] = useState(
+    initialBCE?.startYearBce || false
+  );
+  const [endYearBce, setEndYearBce] = useState(initialBCE?.endYearBce || false);
   const [errors, setErrors] = useState({});
+
+  useEffect(() => {
+    if (initialData) {
+      setFormData(initialData);
+    }
+  }, [initialData]);
+
+  useEffect(() => {
+    if (initialBCE) {
+      setStartYearBce(initialBCE.startYearBce);
+      setEndYearBce(initialBCE.endYearBce);
+    }
+  }, [initialBCE]);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -44,31 +67,33 @@ const AddDynastyForm = ({ onClose }) => {
       newErrors.startYear = "Start year must be a number";
     }
 
-    if (!formData.endYear) {
-      newErrors.endYear = "End year is required";
-    } else if (isNaN(parseInt(formData.endYear))) {
+    // End year can be empty for dynasties that are still ongoing
+    if (formData.endYear && isNaN(parseInt(formData.endYear))) {
       newErrors.endYear = "End year must be a number";
     }
 
-    // Convert years to internal representation for comparison
-    let startYearValue = parseInt(formData.startYear);
-    let endYearValue = parseInt(formData.endYear);
-
-    // Apply BCE conversion if needed
-    if (startYearBce && !isNaN(startYearValue)) {
-      startYearValue = -startYearValue + 1;
-    }
-
-    if (endYearBce && !isNaN(endYearValue)) {
-      endYearValue = -endYearValue + 1;
-    }
-
+    // Only compare years if both are provided and valid
     if (
-      !isNaN(startYearValue) &&
-      !isNaN(endYearValue) &&
-      startYearValue > endYearValue
+      formData.endYear &&
+      !isNaN(parseInt(formData.startYear)) &&
+      !isNaN(parseInt(formData.endYear))
     ) {
-      newErrors.endYear = "End year must be after start year";
+      // Convert years to internal representation for comparison
+      let startYearValue = parseInt(formData.startYear);
+      let endYearValue = parseInt(formData.endYear);
+
+      // Apply BCE conversion if needed
+      if (startYearBce && !isNaN(startYearValue)) {
+        startYearValue = -startYearValue + 1;
+      }
+
+      if (endYearBce && !isNaN(endYearValue)) {
+        endYearValue = -endYearValue + 1;
+      }
+
+      if (startYearValue > endYearValue) {
+        newErrors.endYear = "End year must be after start year";
+      }
     }
 
     setErrors(newErrors);
@@ -82,7 +107,7 @@ const AddDynastyForm = ({ onClose }) => {
 
     // Convert years to internal representation
     let startYearValue = parseInt(formData.startYear);
-    let endYearValue = parseInt(formData.endYear);
+    let endYearValue = formData.endYear ? parseInt(formData.endYear) : null;
 
     // Apply BCE conversion if needed
     if (startYearBce && !isNaN(startYearValue)) {
@@ -93,23 +118,31 @@ const AddDynastyForm = ({ onClose }) => {
       endYearValue = -endYearValue + 1;
     }
 
-    addDynasty({
+    const finalData = {
       ...formData,
       startYear: startYearValue,
       endYear: endYearValue,
-    });
+    };
+
+    if (isEditing && onSave) {
+      onSave(finalData);
+    } else {
+      addDynasty(finalData);
+    }
 
     if (onClose) onClose();
   };
 
   return (
     <form onSubmit={handleSubmit} className="space-y-4">
-      <div className="text-xl font-bold mb-4">Add New Dynasty</div>
+      {!isEditing && (
+        <div className="text-xl font-bold mb-4">Add New Dynasty</div>
+      )}
 
       <div>
         <label
           htmlFor="name"
-          className="block text-sm font-medium text-gray-700 mb-1"
+          className="block text-sm font-medium text-gray-700 dark:text-gray-100 mb-1"
         >
           Dynasty Name
         </label>
@@ -121,7 +154,11 @@ const AddDynastyForm = ({ onClose }) => {
           onChange={handleChange}
           className={`w-full p-2 border rounded-md ${
             errors.name ? "border-red-500" : "border-gray-300"
-          }`}
+          }
+            bg-white dark:bg-gray-800 
+            text-gray-900 dark:text-gray-100
+            focus:ring-blue-500 dark:focus:ring-blue-400 focus:border-blue-500 dark:focus:border-blue-400
+            `}
           placeholder="e.g., Tudor, Ming, Habsburg"
         />
         {errors.name && (
@@ -133,7 +170,7 @@ const AddDynastyForm = ({ onClose }) => {
         <div>
           <label
             htmlFor="startYear"
-            className="block text-sm font-medium text-gray-700 mb-1"
+            className="block text-sm font-medium text-gray-700  dark:text-gray-100 mb-1"
           >
             Start Year
           </label>
@@ -146,7 +183,11 @@ const AddDynastyForm = ({ onClose }) => {
               onChange={handleChange}
               className={`w-full p-2 border rounded-md ${
                 errors.startYear ? "border-red-500" : "border-gray-300"
-              }`}
+              }
+              bg-white dark:bg-gray-800 
+            text-gray-900 dark:text-gray-100
+            focus:ring-blue-500 dark:focus:ring-blue-400 focus:border-blue-500 dark:focus:border-blue-400  
+              `}
               placeholder="e.g., 1485"
             />
             <div className="ml-2 flex items-center">
@@ -170,9 +211,9 @@ const AddDynastyForm = ({ onClose }) => {
         <div>
           <label
             htmlFor="endYear"
-            className="block text-sm font-medium text-gray-700 mb-1"
+            className="block text-sm font-medium text-gray-700  dark:text-gray-100 mb-1"
           >
-            End Year
+            End Year {!isEditing && "(leave blank if ongoing)"}
           </label>
           <div className="flex items-center">
             <input
@@ -183,7 +224,11 @@ const AddDynastyForm = ({ onClose }) => {
               onChange={handleChange}
               className={`w-full p-2 border rounded-md ${
                 errors.endYear ? "border-red-500" : "border-gray-300"
-              }`}
+              }
+              bg-white dark:bg-gray-800 
+            text-gray-900 dark:text-gray-100
+            focus:ring-blue-500 dark:focus:ring-blue-400 focus:border-blue-500 dark:focus:border-blue-400  
+              `}
               placeholder="e.g., 1603"
             />
             <div className="ml-2 flex items-center">
@@ -208,7 +253,7 @@ const AddDynastyForm = ({ onClose }) => {
       <div>
         <label
           htmlFor="color"
-          className="block text-sm font-medium text-gray-700 mb-1"
+          className="block text-sm font-medium text-gray-700  dark:text-gray-100 mb-1"
         >
           Color
         </label>
@@ -219,14 +264,16 @@ const AddDynastyForm = ({ onClose }) => {
             name="color"
             value={formData.color}
             onChange={handleChange}
-            className="h-10 w-10 rounded-md border border-gray-300 cursor-pointer"
+            className="h-10 w-10 rounded-md cursor-pointer"
           />
           <input
             type="text"
             value={formData.color}
             onChange={handleChange}
             name="color"
-            className="ml-2 p-2 border border-gray-300 rounded-md"
+            className="ml-2 p-2 border border-gray-300 rounded-md bg-white dark:bg-gray-800 
+            text-gray-900 dark:text-gray-100
+            focus:ring-blue-500 dark:focus:ring-blue-400 focus:border-blue-500 dark:focus:border-blue-400"
           />
         </div>
       </div>
@@ -234,7 +281,7 @@ const AddDynastyForm = ({ onClose }) => {
       <div>
         <label
           htmlFor="description"
-          className="block text-sm font-medium text-gray-700 mb-1"
+          className="block text-sm font-medium text-gray-700  dark:text-gray-100 mb-1"
         >
           Description
         </label>
@@ -244,7 +291,9 @@ const AddDynastyForm = ({ onClose }) => {
           value={formData.description}
           onChange={handleChange}
           rows="3"
-          className="w-full p-2 border border-gray-300 rounded-md"
+          className="w-full p-2 border border-gray-300 rounded-md bg-white dark:bg-gray-800 
+            text-gray-900 dark:text-gray-100
+            focus:ring-blue-500 dark:focus:ring-blue-400 focus:border-blue-500 dark:focus:border-blue-400"
           placeholder="Brief description of the dynasty..."
         ></textarea>
       </div>
@@ -253,12 +302,12 @@ const AddDynastyForm = ({ onClose }) => {
         <button
           type="button"
           onClick={onClose}
-          className="px-4 py-2 border border-gray-300 rounded-md text-gray-700 hover:bg-gray-50"
+          className="px-4 py-2 border border-gray-300 rounded-md text-gray-700 dark:text-gray-100 hover:bg-gray-50 dark:hover:bg-gray-600"
         >
           Cancel
         </button>
         <button type="submit" className="btn btn-primary">
-          Add Dynasty
+          {isEditing ? "Save Changes" : "Add Dynasty"}
         </button>
       </div>
     </form>

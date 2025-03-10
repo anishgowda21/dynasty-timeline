@@ -1,8 +1,15 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useDynasty } from "../context/DynastyContext";
-import { parseYear, formatYear } from "../utils/dateUtils";
+import { formatYear } from "../utils/dateUtils";
 
-const AddKingForm = ({ onClose, preselectedDynastyId = null }) => {
+const AddKingForm = ({
+  onClose,
+  preselectedDynastyId = null,
+  initialData,
+  initialBCE,
+  isEditing,
+  onSave,
+}) => {
   const { addKing, dynasties } = useDynasty();
   const [formData, setFormData] = useState({
     name: "",
@@ -13,12 +20,37 @@ const AddKingForm = ({ onClose, preselectedDynastyId = null }) => {
     deathYear: "",
     description: "",
     imageUrl: "",
+    ...(initialData || {}), // Use initialData if provided
   });
-  const [startYearBce, setStartYearBce] = useState(false);
-  const [endYearBce, setEndYearBce] = useState(false);
-  const [birthYearBce, setBirthYearBce] = useState(false);
-  const [deathYearBce, setDeathYearBce] = useState(false);
+
+  const [startYearBce, setStartYearBce] = useState(
+    initialBCE?.startYearBce || false
+  );
+  const [endYearBce, setEndYearBce] = useState(initialBCE?.endYearBce || false);
+  const [birthYearBce, setBirthYearBce] = useState(
+    initialBCE?.birthYearBce || false
+  );
+  const [deathYearBce, setDeathYearBce] = useState(
+    initialBCE?.deathYearBce || false
+  );
   const [errors, setErrors] = useState({});
+
+  // Update form data when initialData changes
+  useEffect(() => {
+    if (initialData) {
+      setFormData(initialData);
+    }
+  }, [initialData]);
+
+  // Update BCE states when initialBCE changes
+  useEffect(() => {
+    if (initialBCE) {
+      setStartYearBce(initialBCE.startYearBce || false);
+      setEndYearBce(initialBCE.endYearBce || false);
+      setBirthYearBce(initialBCE.birthYearBce || false);
+      setDeathYearBce(initialBCE.deathYearBce || false);
+    }
+  }, [initialBCE]);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -163,19 +195,25 @@ const AddKingForm = ({ onClose, preselectedDynastyId = null }) => {
       kingData.deathYear = deathYearValue;
     }
 
-    addKing(kingData);
+    if (isEditing && onSave) {
+      onSave(kingData);
+    } else {
+      addKing(kingData);
+    }
 
     if (onClose) onClose();
   };
 
   return (
     <form onSubmit={handleSubmit} className="space-y-4">
-      <div className="text-xl font-bold mb-4">Add New Ruler</div>
+      <div className="text-xl font-bold mb-4 dark:text-white">
+        {isEditing ? `Edit ${formData.name}` : "Add New Ruler"}
+      </div>
 
       <div>
         <label
           htmlFor="name"
-          className="block text-sm font-medium text-gray-700 mb-1"
+          className="block text-sm font-medium text-gray-700 dark:text-gray-100 mb-1"
         >
           Ruler Name
         </label>
@@ -186,8 +224,10 @@ const AddKingForm = ({ onClose, preselectedDynastyId = null }) => {
           value={formData.name}
           onChange={handleChange}
           className={`w-full p-2 border rounded-md ${
-            errors.name ? "border-red-500" : "border-gray-300"
-          }`}
+            errors.name
+              ? "border-red-500 dark:border-red-400"
+              : "border-gray-300 dark:border-gray-600"
+          } bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100`}
           placeholder="e.g., Elizabeth I, Louis XIV"
         />
         {errors.name && (
@@ -198,7 +238,7 @@ const AddKingForm = ({ onClose, preselectedDynastyId = null }) => {
       <div>
         <label
           htmlFor="dynastyId"
-          className="block text-sm font-medium text-gray-700 mb-1"
+          className="block text-sm font-medium text-gray-700 dark:text-gray-100 mb-1"
         >
           Dynasty
         </label>
@@ -208,8 +248,11 @@ const AddKingForm = ({ onClose, preselectedDynastyId = null }) => {
           value={formData.dynastyId}
           onChange={handleChange}
           className={`w-full p-2 border rounded-md ${
-            errors.dynastyId ? "border-red-500" : "border-gray-300"
-          }`}
+            errors.dynastyId
+              ? "border-red-500 dark:border-red-400"
+              : "border-gray-300 dark:border-gray-600"
+          } bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100`}
+          disabled={isEditing && preselectedDynastyId}
         >
           <option value="">Select a dynasty</option>
           {dynasties.map((dynasty) => (
@@ -228,7 +271,7 @@ const AddKingForm = ({ onClose, preselectedDynastyId = null }) => {
         <div>
           <label
             htmlFor="startYear"
-            className="block text-sm font-medium text-gray-700 mb-1"
+            className="block text-sm font-medium text-gray-700 dark:text-gray-100 mb-1"
           >
             Start Year of Reign
           </label>
@@ -240,8 +283,10 @@ const AddKingForm = ({ onClose, preselectedDynastyId = null }) => {
               value={formData.startYear}
               onChange={handleChange}
               className={`w-full p-2 border rounded-md ${
-                errors.startYear ? "border-red-500" : "border-gray-300"
-              }`}
+                errors.startYear
+                  ? "border-red-500 dark:border-red-400"
+                  : "border-gray-300 dark:border-gray-600"
+              } bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100`}
               placeholder="e.g., 1558"
             />
             <div className="ml-2 flex items-center">
@@ -250,9 +295,12 @@ const AddKingForm = ({ onClose, preselectedDynastyId = null }) => {
                 id="startYearBce"
                 checked={startYearBce}
                 onChange={() => setStartYearBce(!startYearBce)}
-                className="mr-1"
+                className="mr-1 dark:bg-gray-700 dark:border-gray-600"
               />
-              <label htmlFor="startYearBce" className="text-sm">
+              <label
+                htmlFor="startYearBce"
+                className="text-sm dark:text-gray-200"
+              >
                 BCE
               </label>
             </div>
@@ -265,7 +313,7 @@ const AddKingForm = ({ onClose, preselectedDynastyId = null }) => {
         <div>
           <label
             htmlFor="endYear"
-            className="block text-sm font-medium text-gray-700 mb-1"
+            className="block text-sm font-medium text-gray-700 dark:text-gray-100 mb-1"
           >
             End Year of Reign
           </label>
@@ -277,8 +325,10 @@ const AddKingForm = ({ onClose, preselectedDynastyId = null }) => {
               value={formData.endYear}
               onChange={handleChange}
               className={`w-full p-2 border rounded-md ${
-                errors.endYear ? "border-red-500" : "border-gray-300"
-              }`}
+                errors.endYear
+                  ? "border-red-500 dark:border-red-400"
+                  : "border-gray-300 dark:border-gray-600"
+              } bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100`}
               placeholder="e.g., 1603"
             />
             <div className="ml-2 flex items-center">
@@ -287,9 +337,12 @@ const AddKingForm = ({ onClose, preselectedDynastyId = null }) => {
                 id="endYearBce"
                 checked={endYearBce}
                 onChange={() => setEndYearBce(!endYearBce)}
-                className="mr-1"
+                className="mr-1 dark:bg-gray-700 dark:border-gray-600"
               />
-              <label htmlFor="endYearBce" className="text-sm">
+              <label
+                htmlFor="endYearBce"
+                className="text-sm dark:text-gray-200"
+              >
                 BCE
               </label>
             </div>
@@ -304,7 +357,7 @@ const AddKingForm = ({ onClose, preselectedDynastyId = null }) => {
         <div>
           <label
             htmlFor="birthYear"
-            className="block text-sm font-medium text-gray-700 mb-1"
+            className="block text-sm font-medium text-gray-700 dark:text-gray-100 mb-1"
           >
             Birth Year (optional)
           </label>
@@ -316,8 +369,10 @@ const AddKingForm = ({ onClose, preselectedDynastyId = null }) => {
               value={formData.birthYear}
               onChange={handleChange}
               className={`w-full p-2 border rounded-md ${
-                errors.birthYear ? "border-red-500" : "border-gray-300"
-              }`}
+                errors.birthYear
+                  ? "border-red-500 dark:border-red-400"
+                  : "border-gray-300 dark:border-gray-600"
+              } bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100`}
               placeholder="e.g., 1533"
             />
             <div className="ml-2 flex items-center">
@@ -326,9 +381,12 @@ const AddKingForm = ({ onClose, preselectedDynastyId = null }) => {
                 id="birthYearBce"
                 checked={birthYearBce}
                 onChange={() => setBirthYearBce(!birthYearBce)}
-                className="mr-1"
+                className="mr-1 dark:bg-gray-700 dark:border-gray-600"
               />
-              <label htmlFor="birthYearBce" className="text-sm">
+              <label
+                htmlFor="birthYearBce"
+                className="text-sm dark:text-gray-200"
+              >
                 BCE
               </label>
             </div>
@@ -341,7 +399,7 @@ const AddKingForm = ({ onClose, preselectedDynastyId = null }) => {
         <div>
           <label
             htmlFor="deathYear"
-            className="block text-sm font-medium text-gray-700 mb-1"
+            className="block text-sm font-medium text-gray-700 dark:text-gray-100 mb-1"
           >
             Death Year (optional)
           </label>
@@ -353,8 +411,10 @@ const AddKingForm = ({ onClose, preselectedDynastyId = null }) => {
               value={formData.deathYear}
               onChange={handleChange}
               className={`w-full p-2 border rounded-md ${
-                errors.deathYear ? "border-red-500" : "border-gray-300"
-              }`}
+                errors.deathYear
+                  ? "border-red-500 dark:border-red-400"
+                  : "border-gray-300 dark:border-gray-600"
+              } bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100`}
               placeholder="e.g., 1603"
             />
             <div className="ml-2 flex items-center">
@@ -363,9 +423,12 @@ const AddKingForm = ({ onClose, preselectedDynastyId = null }) => {
                 id="deathYearBce"
                 checked={deathYearBce}
                 onChange={() => setDeathYearBce(!deathYearBce)}
-                className="mr-1"
+                className="mr-1 dark:bg-gray-700 dark:border-gray-600"
               />
-              <label htmlFor="deathYearBce" className="text-sm">
+              <label
+                htmlFor="deathYearBce"
+                className="text-sm dark:text-gray-200"
+              >
                 BCE
               </label>
             </div>
@@ -379,7 +442,7 @@ const AddKingForm = ({ onClose, preselectedDynastyId = null }) => {
       <div>
         <label
           htmlFor="description"
-          className="block text-sm font-medium text-gray-700 mb-1"
+          className="block text-sm font-medium text-gray-700 dark:text-gray-100 mb-1"
         >
           Description
         </label>
@@ -389,7 +452,7 @@ const AddKingForm = ({ onClose, preselectedDynastyId = null }) => {
           value={formData.description}
           onChange={handleChange}
           rows="3"
-          className="w-full p-2 border border-gray-300 rounded-md"
+          className="w-full p-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100"
           placeholder="Brief description of the ruler..."
         ></textarea>
       </div>
@@ -397,7 +460,7 @@ const AddKingForm = ({ onClose, preselectedDynastyId = null }) => {
       <div>
         <label
           htmlFor="imageUrl"
-          className="block text-sm font-medium text-gray-700 mb-1"
+          className="block text-sm font-medium text-gray-700 dark:text-gray-100 mb-1"
         >
           Image URL (optional)
         </label>
@@ -407,7 +470,7 @@ const AddKingForm = ({ onClose, preselectedDynastyId = null }) => {
           name="imageUrl"
           value={formData.imageUrl}
           onChange={handleChange}
-          className="w-full p-2 border border-gray-300 rounded-md"
+          className="w-full p-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100"
           placeholder="https://example.com/image.jpg"
         />
       </div>
@@ -416,12 +479,12 @@ const AddKingForm = ({ onClose, preselectedDynastyId = null }) => {
         <button
           type="button"
           onClick={onClose}
-          className="px-4 py-2 border border-gray-300 rounded-md text-gray-700 hover:bg-gray-50"
+          className="px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-md text-gray-700 dark:text-gray-100 hover:bg-gray-50 dark:hover:bg-gray-600"
         >
           Cancel
         </button>
         <button type="submit" className="btn btn-primary">
-          Add Ruler
+          {isEditing ? "Save Changes" : "Add Ruler"}
         </button>
       </div>
     </form>

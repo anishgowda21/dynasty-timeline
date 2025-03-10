@@ -6,6 +6,7 @@ import {
   formatYear,
 } from "../utils/dateUtils";
 import { useDynasty } from "../context/DynastyContext";
+import { ChevronDown, ChevronUp, Expand, Minus, Plus } from "lucide-react";
 
 const Timeline = ({
   items,
@@ -249,103 +250,40 @@ const Timeline = ({
         <div className="flex space-x-2">
           <button
             onClick={handleZoomOut}
-            className="p-1 bg-gray-200 rounded hover:bg-gray-300"
+            className="p-1 bg-gray-200 dark:bg-gray-700 rounded hover:bg-gray-300 dark:hover:bg-gray-600 dark:text-white"
             title="Zoom out"
           >
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              className="h-5 w-5"
-              fill="none"
-              viewBox="0 0 24 24"
-              stroke="currentColor"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={2}
-                d="M15 12H9"
-              />
-            </svg>
+            <Minus />
           </button>
           <button
             onClick={handleZoomReset}
-            className="p-1 bg-gray-200 rounded hover:bg-gray-300"
+            className="p-1 bg-gray-200 dark:bg-gray-700 rounded hover:bg-gray-300 dark:hover:bg-gray-600 dark:text-white"
             title="Reset zoom"
           >
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              className="h-5 w-5"
-              fill="none"
-              viewBox="0 0 24 24"
-              stroke="currentColor"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={2}
-                d="M4 8V4m0 0h4M4 4l5 5m11-1V4m0 0h-4m4 0l-5 5M4 16v4m0 0h4m-4 0l5-5m11 5v-4m0 4h-4m4 0l-5-5"
-              />
-            </svg>
+            <Expand />
           </button>
           <button
             onClick={handleZoomIn}
-            className="p-1 bg-gray-200 rounded hover:bg-gray-300"
+            className="p-1 bg-gray-200 dark:bg-gray-700 rounded hover:bg-gray-300 dark:hover:bg-gray-600 dark:text-white"
             title="Zoom in"
           >
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              className="h-5 w-5"
-              fill="none"
-              viewBox="0 0 24 24"
-              stroke="currentColor"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={2}
-                d="M12 6v6m0 0v6m0-6h6m-6 0H6"
-              />
-            </svg>
+            <Plus />
           </button>
         </div>
 
         {/* Expand/collapse button */}
         <button
           onClick={toggleExpand}
-          className="p-1 bg-gray-200 rounded hover:bg-gray-300"
+          className="p-1 bg-gray-200 dark:bg-gray-700 rounded hover:bg-gray-300 dark:hover:bg-gray-600 dark:text-white"
           title={isExpanded ? "Collapse" : "Expand"}
         >
-          {isExpanded ? (
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              className="h-5 w-5"
-              fill="none"
-              viewBox="0 0 24 24"
-              stroke="currentColor"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={2}
-                d="M5 15l7-7 7 7"
-              />
-            </svg>
-          ) : (
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              className="h-5 w-5"
-              fill="none"
-              viewBox="0 0 24 24"
-              stroke="currentColor"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={2}
-                d="M19 9l-7 7-7-7"
-              />
-            </svg>
-          )}
+          <div
+            className={`transform transition-transform duration-500 ${
+              isExpanded ? "rotate-180" : ""
+            }`}
+          >
+            <ChevronDown />
+          </div>
         </button>
       </div>
 

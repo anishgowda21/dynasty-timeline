@@ -5,7 +5,10 @@ import Timeline from "../components/Timeline";
 import KingCard from "../components/KingCard";
 import Modal from "../components/Modal";
 import AddKingForm from "../components/AddKingForm";
+import AddDynastyForm from "../components/AddDynastyForm";
+import ConfirmationDialog from "../components/ConfirmationDialog";
 import { getTimeSpan, getYearRange } from "../utils/dateUtils";
+import { Pencil, Trash } from "lucide-react";
 
 const DynastyPage = () => {
   const { id } = useParams();
@@ -17,26 +20,13 @@ const DynastyPage = () => {
   const [dynastyKings, setDynastyKings] = useState([]);
   const [showAddModal, setShowAddModal] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
-  const [editForm, setEditForm] = useState({
-    name: "",
-    startYear: "",
-    endYear: "",
-    color: "",
-    description: "",
-  });
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
 
   useEffect(() => {
     if (!loading) {
       const foundDynasty = dynasties.find((d) => d.id === id);
       if (foundDynasty) {
         setDynasty(foundDynasty);
-        setEditForm({
-          name: foundDynasty.name,
-          startYear: foundDynasty.startYear,
-          endYear: foundDynasty.endYear,
-          color: foundDynasty.color,
-          description: foundDynasty.description || "",
-        });
 
         // Get kings belonging to this dynasty
         const filteredKings = kings.filter((king) => king.dynastyId === id);
@@ -52,36 +42,24 @@ const DynastyPage = () => {
     return events.filter((event) => event.kingIds.includes(kingId)).length;
   };
 
-  const handleEditChange = (e) => {
-    const { name, value } = e.target;
-    setEditForm({
-      ...editForm,
-      [name]: value,
-    });
-  };
-
-  const handleEditSubmit = (e) => {
-    e.preventDefault();
-
-    const updatedDynasty = {
-      ...editForm,
-      startYear: parseInt(editForm.startYear),
-      endYear: parseInt(editForm.endYear),
-    };
-
-    updateDynasty(id, updatedDynasty);
+  const handleEditDynasty = (editedDynasty) => {
+    // We need to preserve the id of the dynasty
+    updateDynasty(id, { ...editedDynasty, id });
     setIsEditing(false);
   };
 
-  const handleDelete = () => {
-    if (
-      window.confirm(
-        `Are you sure you want to delete the ${dynasty.name} dynasty? This will also delete all rulers and associated events.`
-      )
-    ) {
-      deleteDynasty(id);
-      navigate("/");
-    }
+  const handleDeleteClick = () => {
+    setShowDeleteConfirm(true);
+  };
+
+  const handleConfirmDelete = () => {
+    deleteDynasty(id);
+    setShowDeleteConfirm(false);
+    navigate("/");
+  };
+
+  const handleCancelDelete = () => {
+    setShowDeleteConfirm(false);
   };
 
   if (loading || !dynasty) {
@@ -90,6 +68,19 @@ const DynastyPage = () => {
         <div className="text-xl text-gray-500">Loading...</div>
       </div>
     );
+  }
+
+  // Handle BCE years for editing
+  const displayDynasty = { ...dynasty };
+  const startYearBce = dynasty.startYear < 0;
+  const endYearBce = dynasty.endYear < 0;
+
+  if (startYearBce) {
+    displayDynasty.startYear = Math.abs(dynasty.startYear - 1);
+  }
+
+  if (endYearBce && dynasty.endYear) {
+    displayDynasty.endYear = Math.abs(dynasty.endYear - 1);
   }
 
   return (
@@ -104,32 +95,14 @@ const DynastyPage = () => {
               onClick={() => setIsEditing(true)}
               className="btn btn-secondary flex items-center"
             >
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                className="h-5 w-5 mr-1"
-                viewBox="0 0 20 20"
-                fill="currentColor"
-              >
-                <path d="M13.586 3.586a2 2 0 112.828 2.828l-.793.793-2.828-2.828.793-.793zM11.379 5.793L3 14.172V17h2.828l8.38-8.379-2.83-2.828z" />
-              </svg>
+              <Pencil className="mr-2" />
               Edit
             </button>
             <button
-              onClick={handleDelete}
+              onClick={handleDeleteClick}
               className="btn btn-danger flex items-center"
             >
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                className="h-5 w-5 mr-1"
-                viewBox="0 0 20 20"
-                fill="currentColor"
-              >
-                <path
-                  fillRule="evenodd"
-                  d="M9 2a1 1 0 00-.894.553L7.382 4H4a1 1 0 000 2v10a2 2 0 002 2h8a2 2 0 002-2V6a1 1 0 100-2h-3.382l-.724-1.447A1 1 0 0011 2H9zM7 8a1 1 0 012 0v6a1 1 0 11-2 0V8zm5-1a1 1 0 00-1 1v6a1 1 0 102 0V8a1 1 0 00-1-1z"
-                  clipRule="evenodd"
-                />
-              </svg>
+              <Trash className="mr-2" />
               Delete
             </button>
           </div>
@@ -233,12 +206,54 @@ const DynastyPage = () => {
         </>
       )}
 
+      {/* Add King Modal */}
       <Modal isOpen={showAddModal} onClose={() => setShowAddModal(false)}>
         <AddKingForm
           onClose={() => setShowAddModal(false)}
           preselectedDynastyId={id}
         />
       </Modal>
+
+      {/* Edit Dynasty Modal - Using the existing AddDynastyForm component */}
+      <Modal isOpen={isEditing} onClose={() => setIsEditing(false)}>
+        <div className="p-1">
+          <div className="text-xl font-bold mb-4 dark:text-white">
+            Edit {dynasty.name} Dynasty
+          </div>
+          <AddDynastyForm
+            onClose={() => setIsEditing(false)}
+            initialData={{
+              name: dynasty.name,
+              startYear: startYearBce
+                ? Math.abs(dynasty.startYear - 1)
+                : dynasty.startYear,
+              endYear: dynasty.endYear
+                ? endYearBce
+                  ? Math.abs(dynasty.endYear - 1)
+                  : dynasty.endYear
+                : "",
+              color: dynasty.color,
+              description: dynasty.description || "",
+            }}
+            initialBCE={{
+              startYearBce: startYearBce,
+              endYearBce: endYearBce,
+            }}
+            isEditing={true}
+            onSave={handleEditDynasty}
+          />
+        </div>
+      </Modal>
+      <ConfirmationDialog
+        isOpen={showDeleteConfirm}
+        title="Delete Dynasty"
+        message={`Are you sure you want to delete the ${dynasty?.name} dynasty? This will also delete all rulers and associated events.`}
+        confirmText="Delete"
+        cancelText="Cancel"
+        confirmButtonClass="bg-red-600 hover:bg-red-700"
+        onConfirm={handleConfirmDelete}
+        onCancel={handleCancelDelete}
+      />
     </div>
   );
 };

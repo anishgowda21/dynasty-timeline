@@ -39,6 +39,36 @@ const Timeline = ({
     }
   };
 
+  // Calculate automatic zoom level based on time span and number of items
+  const calculateAutomaticZoomLevel = (min, max, itemCount) => {
+    const timeSpan = max - min;
+
+    // Base zoom level on time span
+    let automaticZoom = 1;
+
+    // If we have a very long time span (more than 1000 years), increase zoom
+    if (timeSpan > 1000) {
+      automaticZoom = 1.5;
+    }
+
+    // If we have a very long time span (more than 1500 years), increase zoom further
+    if (timeSpan > 1500) {
+      automaticZoom = 2;
+    }
+
+    // If we have many items (more than 5), also increase zoom
+    if (itemCount > 5) {
+      automaticZoom += 0.25;
+    }
+
+    // If we have many items (more than 10), increase zoom further
+    if (itemCount > 10) {
+      automaticZoom += 0.25;
+    }
+
+    return Math.min(Math.max(automaticZoom, 0.5), 3); // Keep within 0.5 to 3 range
+  };
+
   const toggleExpand = () => {
     setIsExpanded(!isExpanded);
   };
@@ -116,6 +146,14 @@ const Timeline = ({
 
       setMinYear(min);
       setMaxYear(max);
+
+      // Automatically set zoom level based on time span and number of items
+      const autoZoom = calculateAutomaticZoomLevel(
+        min,
+        max,
+        completeItems.length
+      );
+      setZoomLevel(autoZoom);
 
       // Generate decade markers
       const startDecade = Math.floor(min / 10) * 10;
@@ -339,8 +377,9 @@ const Timeline = ({
                           top: `${offsetY}px`,
                           zIndex: offsetY > 0 ? 2 : 1,
                         }}
+                        title={`${item.name}: ${item.startYear}-${item.endYear}`}
                       >
-                        {width > 10 ? `${item.startYear}-${item.endYear}` : ""}
+                        {width > 8 ? `${item.startYear}-${item.endYear}` : ""}
                       </div>
                     </div>
                   </div>

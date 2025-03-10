@@ -1,81 +1,116 @@
-import { useState } from 'react';
-import { useDynasty } from '../context/DynastyContext';
+import { useState } from "react";
+import { useDynasty } from "../context/DynastyContext";
+import { parseYear, formatYear } from "../utils/dateUtils";
 
 const AddDynastyForm = ({ onClose }) => {
   const { addDynasty } = useDynasty();
   const [formData, setFormData] = useState({
-    name: '',
-    startYear: '',
-    endYear: '',
-    color: '#4F46E5',
-    description: ''
+    name: "",
+    startYear: "",
+    endYear: "",
+    color: "#4F46E5",
+    description: "",
   });
+  const [startYearBce, setStartYearBce] = useState(false);
+  const [endYearBce, setEndYearBce] = useState(false);
   const [errors, setErrors] = useState({});
 
   const handleChange = (e) => {
     const { name, value } = e.target;
     setFormData({
       ...formData,
-      [name]: value
+      [name]: value,
     });
-    
+
     // Clear error when field is modified
     if (errors[name]) {
       setErrors({
         ...errors,
-        [name]: null
+        [name]: null,
       });
     }
   };
 
   const validate = () => {
     const newErrors = {};
-    
+
     if (!formData.name.trim()) {
-      newErrors.name = 'Dynasty name is required';
+      newErrors.name = "Dynasty name is required";
     }
-    
+
     if (!formData.startYear) {
-      newErrors.startYear = 'Start year is required';
+      newErrors.startYear = "Start year is required";
     } else if (isNaN(parseInt(formData.startYear))) {
-      newErrors.startYear = 'Start year must be a number';
+      newErrors.startYear = "Start year must be a number";
     }
-    
+
     if (!formData.endYear) {
-      newErrors.endYear = 'End year is required';
+      newErrors.endYear = "End year is required";
     } else if (isNaN(parseInt(formData.endYear))) {
-      newErrors.endYear = 'End year must be a number';
+      newErrors.endYear = "End year must be a number";
     }
-    
-    if (formData.startYear && formData.endYear && 
-        parseInt(formData.startYear) > parseInt(formData.endYear)) {
-      newErrors.endYear = 'End year must be after start year';
+
+    // Convert years to internal representation for comparison
+    let startYearValue = parseInt(formData.startYear);
+    let endYearValue = parseInt(formData.endYear);
+
+    // Apply BCE conversion if needed
+    if (startYearBce && !isNaN(startYearValue)) {
+      startYearValue = -startYearValue + 1;
     }
-    
+
+    if (endYearBce && !isNaN(endYearValue)) {
+      endYearValue = -endYearValue + 1;
+    }
+
+    if (
+      !isNaN(startYearValue) &&
+      !isNaN(endYearValue) &&
+      startYearValue > endYearValue
+    ) {
+      newErrors.endYear = "End year must be after start year";
+    }
+
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    
+
     if (!validate()) return;
-    
+
+    // Convert years to internal representation
+    let startYearValue = parseInt(formData.startYear);
+    let endYearValue = parseInt(formData.endYear);
+
+    // Apply BCE conversion if needed
+    if (startYearBce && !isNaN(startYearValue)) {
+      startYearValue = -startYearValue + 1;
+    }
+
+    if (endYearBce && !isNaN(endYearValue)) {
+      endYearValue = -endYearValue + 1;
+    }
+
     addDynasty({
       ...formData,
-      startYear: parseInt(formData.startYear),
-      endYear: parseInt(formData.endYear)
+      startYear: startYearValue,
+      endYear: endYearValue,
     });
-    
+
     if (onClose) onClose();
   };
 
   return (
     <form onSubmit={handleSubmit} className="space-y-4">
       <div className="text-xl font-bold mb-4">Add New Dynasty</div>
-      
+
       <div>
-        <label htmlFor="name" className="block text-sm font-medium text-gray-700 mb-1">
+        <label
+          htmlFor="name"
+          className="block text-sm font-medium text-gray-700 mb-1"
+        >
           Dynasty Name
         </label>
         <input
@@ -84,48 +119,97 @@ const AddDynastyForm = ({ onClose }) => {
           name="name"
           value={formData.name}
           onChange={handleChange}
-          className={`w-full p-2 border rounded-md ${errors.name ? 'border-red-500' : 'border-gray-300'}`}
+          className={`w-full p-2 border rounded-md ${
+            errors.name ? "border-red-500" : "border-gray-300"
+          }`}
           placeholder="e.g., Tudor, Ming, Habsburg"
         />
-        {errors.name && <p className="text-red-500 text-xs mt-1">{errors.name}</p>}
+        {errors.name && (
+          <p className="text-red-500 text-xs mt-1">{errors.name}</p>
+        )}
       </div>
-      
+
       <div className="grid grid-cols-2 gap-4">
         <div>
-          <label htmlFor="startYear" className="block text-sm font-medium text-gray-700 mb-1">
+          <label
+            htmlFor="startYear"
+            className="block text-sm font-medium text-gray-700 mb-1"
+          >
             Start Year
           </label>
-          <input
-            type="number"
-            id="startYear"
-            name="startYear"
-            value={formData.startYear}
-            onChange={handleChange}
-            className={`w-full p-2 border rounded-md ${errors.startYear ? 'border-red-500' : 'border-gray-300'}`}
-            placeholder="e.g., 1485"
-          />
-          {errors.startYear && <p className="text-red-500 text-xs mt-1">{errors.startYear}</p>}
+          <div className="flex items-center">
+            <input
+              type="number"
+              id="startYear"
+              name="startYear"
+              value={formData.startYear}
+              onChange={handleChange}
+              className={`w-full p-2 border rounded-md ${
+                errors.startYear ? "border-red-500" : "border-gray-300"
+              }`}
+              placeholder="e.g., 1485"
+            />
+            <div className="ml-2 flex items-center">
+              <input
+                type="checkbox"
+                id="startYearBce"
+                checked={startYearBce}
+                onChange={() => setStartYearBce(!startYearBce)}
+                className="mr-1"
+              />
+              <label htmlFor="startYearBce" className="text-sm">
+                BCE
+              </label>
+            </div>
+          </div>
+          {errors.startYear && (
+            <p className="text-red-500 text-xs mt-1">{errors.startYear}</p>
+          )}
         </div>
-        
+
         <div>
-          <label htmlFor="endYear" className="block text-sm font-medium text-gray-700 mb-1">
+          <label
+            htmlFor="endYear"
+            className="block text-sm font-medium text-gray-700 mb-1"
+          >
             End Year
           </label>
-          <input
-            type="number"
-            id="endYear"
-            name="endYear"
-            value={formData.endYear}
-            onChange={handleChange}
-            className={`w-full p-2 border rounded-md ${errors.endYear ? 'border-red-500' : 'border-gray-300'}`}
-            placeholder="e.g., 1603"
-          />
-          {errors.endYear && <p className="text-red-500 text-xs mt-1">{errors.endYear}</p>}
+          <div className="flex items-center">
+            <input
+              type="number"
+              id="endYear"
+              name="endYear"
+              value={formData.endYear}
+              onChange={handleChange}
+              className={`w-full p-2 border rounded-md ${
+                errors.endYear ? "border-red-500" : "border-gray-300"
+              }`}
+              placeholder="e.g., 1603"
+            />
+            <div className="ml-2 flex items-center">
+              <input
+                type="checkbox"
+                id="endYearBce"
+                checked={endYearBce}
+                onChange={() => setEndYearBce(!endYearBce)}
+                className="mr-1"
+              />
+              <label htmlFor="endYearBce" className="text-sm">
+                BCE
+              </label>
+            </div>
+          </div>
+          {errors.endYear && (
+            <p className="text-red-500 text-xs mt-1">{errors.endYear}</p>
+          )}
         </div>
       </div>
-      
+
       <div>
-        <label htmlFor="color" className="block text-sm font-medium text-gray-700 mb-1">
+        <label
+          htmlFor="color"
+          className="block text-sm font-medium text-gray-700 mb-1"
+        >
           Color
         </label>
         <div className="flex items-center">
@@ -137,7 +221,7 @@ const AddDynastyForm = ({ onClose }) => {
             onChange={handleChange}
             className="h-10 w-10 rounded-md border border-gray-300 cursor-pointer"
           />
-          <input 
+          <input
             type="text"
             value={formData.color}
             onChange={handleChange}
@@ -146,9 +230,12 @@ const AddDynastyForm = ({ onClose }) => {
           />
         </div>
       </div>
-      
+
       <div>
-        <label htmlFor="description" className="block text-sm font-medium text-gray-700 mb-1">
+        <label
+          htmlFor="description"
+          className="block text-sm font-medium text-gray-700 mb-1"
+        >
           Description
         </label>
         <textarea
@@ -161,7 +248,7 @@ const AddDynastyForm = ({ onClose }) => {
           placeholder="Brief description of the dynasty..."
         ></textarea>
       </div>
-      
+
       <div className="flex justify-end space-x-2 pt-4">
         <button
           type="button"
@@ -170,10 +257,7 @@ const AddDynastyForm = ({ onClose }) => {
         >
           Cancel
         </button>
-        <button
-          type="submit"
-          className="btn btn-primary"
-        >
+        <button type="submit" className="btn btn-primary">
           Add Dynasty
         </button>
       </div>

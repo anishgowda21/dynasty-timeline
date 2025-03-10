@@ -5,8 +5,13 @@ import ConfirmationDialog from "./ConfirmationDialog";
 
 const Navbar = () => {
   const location = useLocation();
-  const { exportData, importData, resetToSampleData, clearAllData } =
-    useDynasty();
+  const {
+    exportData,
+    importData,
+    resetToSampleData,
+    clearAllData,
+    validationWarnings,
+  } = useDynasty();
   const [importError, setImportError] = useState("");
   const [showDataMenu, setShowDataMenu] = useState(false);
 
@@ -46,12 +51,67 @@ const Navbar = () => {
     }
   };
 
+  // Check if we're in a detail view
+  const isDetailView = () => {
+    const path = location.pathname;
+    return (
+      path.includes("/kings/") ||
+      path.includes("/dynasties/") ||
+      path.includes("/events/") ||
+      path.includes("/wars/")
+    );
+  };
+
+  // Get the parent route for "Back to" navigation
+  const getParentRoute = () => {
+    const path = location.pathname;
+    if (path.includes("/kings/")) return "/";
+    if (path.includes("/dynasties/")) return "/";
+    if (path.includes("/events/")) return "/events";
+    if (path.includes("/wars/")) return "/wars";
+    return "/";
+  };
+
+  // Get the parent route name for display
+  const getParentName = () => {
+    const path = location.pathname;
+    if (path.includes("/kings/")) return "Dynasties";
+    if (path.includes("/dynasties/")) return "Dynasties";
+    if (path.includes("/events/")) return "Events";
+    if (path.includes("/wars/")) return "Wars";
+    return "Home";
+  };
+
   return (
     <nav className="bg-white shadow-md py-4">
       <div className="container mx-auto px-4 flex justify-between items-center">
-        <Link to="/" className="text-2xl font-bold text-dynasty-primary">
-          Dynasty Timeline
-        </Link>
+        <div className="flex items-center">
+          {isDetailView() ? (
+            <Link
+              to={getParentRoute()}
+              state={{ from: location.pathname }}
+              className="text-dynasty-primary hover:underline flex items-center mr-4"
+            >
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                className="h-5 w-5 mr-1"
+                viewBox="0 0 20 20"
+                fill="currentColor"
+              >
+                <path
+                  fillRule="evenodd"
+                  d="M9.707 16.707a1 1 0 01-1.414 0l-6-6a1 1 0 010-1.414l6-6a1 1 0 011.414 1.414L5.414 9H17a1 1 0 110 2H5.414l4.293 4.293a1 1 0 010 1.414z"
+                  clipRule="evenodd"
+                />
+              </svg>
+              Back to {getParentName()}
+            </Link>
+          ) : (
+            <Link to="/" className="text-2xl font-bold text-dynasty-primary">
+              Dynasty Timeline
+            </Link>
+          )}
+        </div>
 
         <div className="flex space-x-4 items-center">
           <Link
@@ -66,7 +126,7 @@ const Navbar = () => {
           <Link
             to="/events"
             className={`nav-link ${
-              location.pathname === "/events" ? "nav-link-active" : ""
+              location.pathname.startsWith("/events") ? "nav-link-active" : ""
             }`}
           >
             Events
@@ -75,78 +135,50 @@ const Navbar = () => {
           <Link
             to="/wars"
             className={`nav-link ${
-              location.pathname === "/wars" ? "nav-link-active" : ""
+              location.pathname.startsWith("/wars") ? "nav-link-active" : ""
             }`}
           >
             Wars
           </Link>
 
-          <div className="relative">
-            <button
-              onClick={() => setShowDataMenu(!showDataMenu)}
-              className="btn btn-secondary flex items-center"
+          <Link
+            to="/settings"
+            className={`p-2 rounded-full hover:bg-gray-100 ${
+              location.pathname.startsWith("/settings") ? "bg-gray-200" : ""
+            }`}
+            title="Settings"
+          >
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              className="h-6 w-6"
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke="currentColor"
             >
-              Data Management
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                className="h-5 w-5 ml-1"
-                viewBox="0 0 20 20"
-                fill="currentColor"
-              >
-                <path
-                  fillRule="evenodd"
-                  d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z"
-                  clipRule="evenodd"
-                />
-              </svg>
-            </button>
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"
+              />
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"
+              />
+            </svg>
+          </Link>
 
-            {showDataMenu && (
-              <div className="absolute right-0 mt-2 w-56 bg-white rounded-md shadow-lg z-10">
-                <div className="py-1">
-                  <button
-                    onClick={() => {
-                      exportData();
-                      setShowDataMenu(false);
-                    }}
-                    className="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
-                  >
-                    Export Data
-                  </button>
-
-                  <button
-                    onClick={() => {
-                      handleImportClick();
-                      setShowDataMenu(false);
-                    }}
-                    className="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
-                  >
-                    Import Data
-                  </button>
-
-                  <button
-                    onClick={() => {
-                      setShowResetDialog(true);
-                      setShowDataMenu(false);
-                    }}
-                    className="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
-                  >
-                    Reset to Sample Data
-                  </button>
-
-                  <button
-                    onClick={() => {
-                      setShowClearDialog(true);
-                      setShowDataMenu(false);
-                    }}
-                    className="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 "
-                  >
-                    Clear All Data
-                  </button>
-                </div>
-              </div>
-            )}
-          </div>
+          {validationWarnings && validationWarnings.length > 0 && (
+            <Link
+              to="/settings"
+              className="p-1 rounded-full bg-red-500 text-white font-bold"
+              title={`${validationWarnings.length} validation warnings`}
+            >
+              {validationWarnings.length}
+            </Link>
+          )}
         </div>
       </div>
 

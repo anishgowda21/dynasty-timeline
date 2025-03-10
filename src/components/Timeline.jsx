@@ -1,6 +1,10 @@
 import { useState, useEffect, useRef } from "react";
 import { Link } from "react-router-dom";
-import { calculateTimelinePosition, getYearRange } from "../utils/dateUtils";
+import {
+  calculateTimelinePosition,
+  getYearRange,
+  formatYear,
+} from "../utils/dateUtils";
 import { useDynasty } from "../context/DynastyContext";
 
 const Timeline = ({
@@ -46,27 +50,29 @@ const Timeline = ({
     // Base zoom level on time span
     let automaticZoom = 1;
 
-    // If we have a very long time span (more than 1000 years), increase zoom
-    if (timeSpan > 1000) {
-      automaticZoom = 1.5;
+    // Progressive zoom based on time span
+    if (timeSpan > 500) automaticZoom = 1.2;
+    if (timeSpan > 1000) automaticZoom = 1.5;
+    if (timeSpan > 1500) automaticZoom = 1.8;
+    if (timeSpan > 2000) automaticZoom = 2.0;
+    if (timeSpan > 3000) automaticZoom = 2.5;
+    if (timeSpan > 4000) automaticZoom = 3.0;
+
+    // Additional zoom factor if there's a BCE/CE transition (which needs more space)
+    if (min < 0 && max > 0) {
+      automaticZoom += 0.5;
     }
 
-    // If we have a very long time span (more than 1500 years), increase zoom further
-    if (timeSpan > 1500) {
-      automaticZoom = 2;
-    }
-
-    // If we have many items (more than 5), also increase zoom
+    // Adjust for number of items to display
     if (itemCount > 5) {
       automaticZoom += 0.25;
     }
 
-    // If we have many items (more than 10), increase zoom further
     if (itemCount > 10) {
       automaticZoom += 0.25;
     }
 
-    return Math.min(Math.max(automaticZoom, 0.5), 3); // Keep within 0.5 to 3 range
+    return Math.min(Math.max(automaticZoom, 0.5), 3.5); // Keep within 0.5 to 3.5 range
   };
 
   const toggleExpand = () => {
@@ -175,6 +181,57 @@ const Timeline = ({
       setDecades(decadeArray);
     }
   }, [items, minYearOverride, maxYearOverride, selectedItems]);
+
+  // Generate decade markers for the timeline
+  const generateDecadeMarkers = (min, max) => {
+    const decadeMarkers = [];
+    const span = max - min;
+
+    // Determine step size based on the span
+    let step = 10; // default decade
+    if (span > 500) step = 50; // half century
+    if (span > 1000) step = 100; // century
+    if (span > 2000) step = 200; // double century
+    if (span > 5000) step = 500; // half millennium
+    if (span > 10000) step = 1000; // millennium
+
+    // Round min down and max up to nearest step
+    const startDecade = Math.floor(min / step) * step;
+    const endDecade = Math.ceil(max / step) * step;
+
+    // Calculate how many markers we would have
+    const expectedMarkers = Math.ceil((endDecade - startDecade) / step) + 1;
+
+    // If too many markers, increase step size
+    if (expectedMarkers > 15) {
+      return generateDecadeMarkers(min, max); // Recalculate with larger step
+    }
+
+    // Special handling for BCE/CE transition
+    const hasBceTransition = min < 0 && max > 0;
+
+    // Always include year 0 (1 BCE) if we cross the BCE/CE boundary
+    if (hasBceTransition) {
+      decadeMarkers.push({
+        year: 0,
+        position: calculateTimelinePosition(0, min, max),
+        isTransitionYear: true,
+      });
+    }
+
+    for (let year = startDecade; year <= endDecade; year += step) {
+      if (year >= min && year <= max && year !== 0) {
+        // Skip 0 as we already added it if needed
+        decadeMarkers.push({
+          year,
+          position: calculateTimelinePosition(year, min, max),
+          isTransitionYear: false,
+        });
+      }
+    }
+
+    return decadeMarkers;
+  };
 
   if (!items || items.length === 0 || minYear === 0 || maxYear === 0) {
     return (
@@ -322,7 +379,17 @@ const Timeline = ({
                 style={{ left: `${decade.position}%` }}
               >
                 <div className="h-3 border-l border-gray-400"></div>
-                <div className="text-xs text-gray-600">{decade.year}</div>
+                <div
+                  className={`text-xs ${
+                    decade.isTransitionYear
+                      ? "font-bold text-blue-600"
+                      : "text-gray-600"
+                  }`}
+                >
+                  {decade.isTransitionYear
+                    ? "BCE/CE"
+                    : formatYear(decade.year, true, "compact")}
+                </div>
               </div>
             ))}
             <div className="absolute top-0 left-0 right-0 h-px bg-gray-300"></div>
@@ -377,9 +444,15 @@ const Timeline = ({
                           top: `${offsetY}px`,
                           zIndex: offsetY > 0 ? 2 : 1,
                         }}
-                        title={`${item.name}: ${item.startYear}-${item.endYear}`}
+                        title={`${item.name}: ${formatYear(
+                          item.startYear
+                        )} - ${formatYear(item.endYear)}`}
                       >
-                        {width > 8 ? `${item.startYear}-${item.endYear}` : ""}
+                        {width > 8
+                          ? `${formatYear(item.startYear)} - ${formatYear(
+                              item.endYear
+                            )}`
+                          : ""}
                       </div>
                     </div>
                   </div>
@@ -428,7 +501,8 @@ const Timeline = ({
                         width: "100px",
                       }}
                     >
-                      {item.startYear || "?"} - {item.endYear || "?"}
+                      {formatYear(item.startYear) || "?"} -{" "}
+                      {formatYear(item.endYear) || "?"}
                     </div>
                     <span className="ml-2 text-gray-500 text-xs">
                       Incomplete data

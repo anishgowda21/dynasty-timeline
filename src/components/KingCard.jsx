@@ -1,42 +1,30 @@
-import { Link } from 'react-router-dom';
-import { getTimeSpan } from '../utils/dateUtils';
+import { Link } from "react-router-dom";
+import { formatYear } from "../utils/dateUtils";
 
-const KingCard = ({ king, dynastyColor, eventsCount }) => {
+const KingCard = ({ king, dynastyName, dynastyColor }) => {
   return (
-    <Link 
-      to={`/kings/${king.id}`} 
-      className="king-card hover:translate-y-[-2px]"
-      style={{ borderLeftColor: dynastyColor || '#4F46E5' }}
+    <Link
+      to={`/kings/${king.id}`}
+      className="block p-4 rounded-lg border border-gray-200 hover:border-indigo-500 transition-colors"
     >
-      <div className="flex justify-between items-start">
-        <div>
-          <h3 className="text-lg font-bold mb-1">{king.name}</h3>
-          <p className="text-gray-600 text-sm mb-1">
-            {getTimeSpan(king.startYear, king.endYear)}
-          </p>
-          {king.birthYear && king.deathYear && (
-            <p className="text-gray-500 text-xs">
-              Lived: {king.birthYear} - {king.deathYear} ({king.deathYear - king.birthYear} years)
-            </p>
-          )}
-        </div>
-        {eventsCount > 0 && (
-          <div 
-            className="w-6 h-6 rounded-full flex items-center justify-center text-white text-xs font-bold"
-            style={{ backgroundColor: dynastyColor || '#4F46E5' }}
-          >
-            {eventsCount}
-          </div>
+      <div className="flex items-center mb-2">
+        {dynastyColor && (
+          <div
+            className="w-3 h-3 rounded-full mr-2"
+            style={{ backgroundColor: dynastyColor }}
+          ></div>
         )}
+        <h3 className="text-lg font-semibold">{king.name}</h3>
       </div>
-      
-      <p className="text-gray-700 text-sm mt-2 line-clamp-2">
-        {king.description || 'No description available.'}
+      <p className="text-sm text-gray-600 mb-1">
+        {formatYear(king.startYear)} - {formatYear(king.endYear)}
       </p>
-      
-      <div className="mt-2 text-dynasty-primary text-xs font-medium">
-        View Details &rarr;
-      </div>
+      {dynastyName && (
+        <p className="text-sm text-gray-500 mb-2">{dynastyName}</p>
+      )}
+      {king.description && (
+        <p className="text-sm text-gray-700 line-clamp-2">{king.description}</p>
+      )}
     </Link>
   );
 };

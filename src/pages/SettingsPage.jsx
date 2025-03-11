@@ -3,6 +3,7 @@ import { useDynasty } from "../context/DynastyContext";
 import { useDarkMode } from "../context/DarkModeContext";
 import ConfirmationDialog from "../components/ConfirmationDialog";
 import { Download, Info, RefreshCcw, Trash, Upload } from "lucide-react";
+import toast from "react-hot-toast";
 
 // Tooltip component
 const Tooltip = ({ children, content }) => {
@@ -34,7 +35,6 @@ const SettingsPage = () => {
   const {
     uiSettings,
     setValidationLevel,
-    toggleDarkMode,
     exportData,
     importData,
     resetToSampleData,
@@ -68,10 +68,16 @@ const SettingsPage = () => {
       importData(importedData);
       setShowImportDialog(false);
       setSelectedFile(null);
-      alert("Data imported successfully!");
+      toast("Data imported successfully!", {
+        position: "top-right",
+        icon: "✅",
+      });
     } catch (error) {
       console.error("Error importing data:", error);
-      alert(`Error importing data: ${error.message}`);
+      toast("Error importing data!", {
+        position: "top-right",
+        icon: "❌",
+      });
     }
   };
 
@@ -81,16 +87,6 @@ const SettingsPage = () => {
 
   const handleClear = () => {
     setShowClearDialog(true);
-  };
-
-  // Function to handle form submission
-  const handleSubmit = (e) => {
-    e.preventDefault();
-    // Apply dark mode from context to the dynasty context
-    toggleDarkMode(darkMode);
-
-    // Show a success message or notification
-    alert("Settings saved successfully!");
   };
 
   return (
@@ -250,6 +246,10 @@ const SettingsPage = () => {
         onConfirm={() => {
           resetToSampleData();
           setShowResetDialog(false);
+          toast("Date reset successfull!", {
+            position: "top-right",
+            icon: "✅",
+          });
         }}
         onCancel={() => setShowResetDialog(false)}
       />
@@ -263,6 +263,10 @@ const SettingsPage = () => {
         onConfirm={() => {
           clearAllData();
           setShowClearDialog(false);
+          toast("Date cleared successfully!", {
+            position: "top-right",
+            icon: "✅",
+          });
         }}
         onCancel={() => setShowClearDialog(false)}
       />

@@ -475,7 +475,9 @@ export const DynastyProvider = ({ children }) => {
     if (
       !importedData.dynasties ||
       !importedData.kings ||
-      !importedData.events
+      !importedData.events ||
+      !importedData.wars ||
+      !importedData.uiSettings
     ) {
       throw new Error("Invalid data format");
     }
@@ -483,13 +485,9 @@ export const DynastyProvider = ({ children }) => {
     setDynasties(importedData.dynasties);
     setKings(importedData.kings);
     setEvents(importedData.events);
+    setWars(importedData.wars);
 
-    if (importedData.wars) {
-      setWars(importedData.wars);
-    }
-    if (importedData.uiSettings) {
-      setUiSettings(importedData.uiSettings);
-    }
+    setUiSettings(importedData.uiSettings);
   };
 
   // Reset to sample data

@@ -1,4 +1,4 @@
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { formatDate, formatYear } from "../utils/dateUtils";
 import { useState } from "react";
 import { useDynasty } from "../context/DynastyContext";
@@ -8,6 +8,7 @@ import { Trash } from "lucide-react";
 const EventCard = ({ event, kings = [], showLink = true }) => {
   const { deleteEvent } = useDynasty();
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+  const navigate = useNavigate();
 
   // Format the date
   const formattedDate = event.date ? formatDate(event.date) : "";
@@ -51,6 +52,20 @@ const EventCard = ({ event, kings = [], showLink = true }) => {
         return "bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200";
       default:
         return "bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-300";
+    }
+  };
+
+  const handleKingClick = (e, king) => {
+    if (!king.isOneTime) {
+      e.preventDefault();
+      e.stopPropagation();
+
+      if (king.id) {
+        navigate(`/kings/${king.id}`);
+        console.log("Navigation function called");
+      } else {
+        console.error("No valid ID found for king:", king);
+      }
     }
   };
 
@@ -125,25 +140,24 @@ const EventCard = ({ event, kings = [], showLink = true }) => {
             Related Rulers:
           </div>
           <div className="flex flex-wrap gap-1">
-            {kings.map((king) =>
-              king.isOneTime ? (
+            {kings.map((king) => (
+              <div
+                key={king.id || `king-${king.name}`}
+                className="flex items-center"
+              >
                 <span
-                  key={king.id}
-                  className="text-xs bg-gray-100 dark:bg-gray-700 px-2 py-1 rounded text-gray-800 dark:text-gray-200"
+                  onClick={(e) => handleKingClick(e, king)}
+                  className={`text-xs bg-gray-100 dark:bg-gray-700 px-2 py-1 rounded text-gray-800 dark:text-gray-200 
+                  ${
+                    !king.isOneTime
+                      ? "hover:bg-gray-200 dark:hover:bg-gray-600 cursor-pointer"
+                      : ""
+                  }`}
                 >
                   {king.name} {king.dynastyName ? `(${king.dynastyName})` : ""}
                 </span>
-              ) : (
-                <Link
-                  key={king.id}
-                  to={`/kings/${king.id}`}
-                  className="text-xs bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 px-2 py-1 rounded text-gray-800 dark:text-gray-200"
-                  onClick={(e) => e.stopPropagation()} // Prevent event card navigation
-                >
-                  {king.name}
-                </Link>
-              )
-            )}
+              </div>
+            ))}
           </div>
         </div>
       )}

@@ -13,6 +13,7 @@ import Navbar from "./components/Navbar";
 import Footer from "./components/Footer";
 import ScrollToTop from "./utils/ScrollToTop";
 import { withBreadcrumbs } from "./components/Breadcrumbs";
+import { Toaster } from "react-hot-toast";
 
 // Apply breadcrumbs to all pages
 const HomePageWithBreadcrumbs = withBreadcrumbs(HomePage);
@@ -29,6 +30,7 @@ function App() {
     <DarkModeProvider>
       <DynastyProvider>
         <Router>
+          <Toaster />
           <ScrollToTop />
           <div className="flex flex-col min-h-screen dark:bg-gray-900 dark:text-white">
             <Navbar />

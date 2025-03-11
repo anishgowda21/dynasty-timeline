@@ -247,13 +247,7 @@ const KingPage = () => {
       ) : (
         <div className="space-y-4">
           {kingWars.map((war) => (
-            <WarCard
-              key={war.id}
-              war={war}
-              currentKingId={id}
-              kings={kings}
-              dynasties={dynasties}
-            />
+            <WarCard key={war.id} war={war} currentKingId={id} kings={kings} />
           ))}
         </div>
       )}

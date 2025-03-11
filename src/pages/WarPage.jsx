@@ -4,6 +4,8 @@ import { useDynasty } from "../context/DynastyContext";
 import { formatYear } from "../utils/dateUtils";
 import Modal from "../components/Modal";
 import AddWarForm from "../components/AddWarForm";
+import ConfirmationDialog from "../components/ConfirmationDialog";
+import { Pencil, Trash } from "lucide-react";
 
 const WarPage = () => {
   const { id } = useParams();
@@ -16,6 +18,7 @@ const WarPage = () => {
   const [participants, setParticipants] = useState([]);
   const [isEditing, setIsEditing] = useState(false);
   const [navContext, setNavContext] = useState("wars");
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
 
   // Determine navigation context (where the user came from)
   useEffect(() => {
@@ -55,6 +58,7 @@ const WarPage = () => {
             ...participant,
             king: kingInfo,
             dynasty: dynastyInfo,
+            isOneTime: !!participant.isOneTime,
           };
         });
 
@@ -66,32 +70,130 @@ const WarPage = () => {
     }
   }, [id, wars, kings, dynasties, loading, navigate]);
 
-  const handleDelete = () => {
-    if (window.confirm(`Are you sure you want to delete "${war.name}"?`)) {
-      deleteWar(id);
-      navigate("/wars");
+  const handleDeleteClick = () => {
+    setShowDeleteConfirm(true);
+  };
+
+  const handleConfirmDelete = () => {
+    deleteWar(id);
+    setShowDeleteConfirm(false);
+    navigate("/wars");
+  };
+
+  const handleCancelDelete = () => {
+    setShowDeleteConfirm(false);
+  };
+
+  const handleUpdateWar = (updatedWarData) => {
+    // Preserve the ID and apply updates
+    updateWar(id, { ...updatedWarData, id });
+
+    // Update local state to reflect changes immediately
+    setWar({ ...war, ...updatedWarData });
+    setIsEditing(false);
+  };
+
+  // Format years, properly handling BCE dates
+  const formatWarYear = (year) => {
+    if (!year && year !== 0) return "";
+
+    const yearNum = parseInt(year);
+    if (isNaN(yearNum)) return year;
+
+    // Handle BCE years (negative numbers)
+    if (yearNum < 0) {
+      return `${Math.abs(yearNum)} BCE`;
+    }
+
+    // Handle CE years
+    return yearNum.toString();
+  };
+
+  // Format the war timespan
+  const getWarTimespan = () => {
+    if (!war) return "";
+
+    const formattedStartYear = formatWarYear(war.startYear);
+    const formattedEndYear = war.endYear
+      ? formatWarYear(war.endYear)
+      : "Ongoing";
+
+    return `${formattedStartYear} - ${formattedEndYear}`;
+  };
+
+  const getTypeClass = () => {
+    switch (war?.type) {
+      case "Conquest":
+        return "bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200";
+      case "Civil War":
+        return "bg-orange-100 text-orange-800 dark:bg-orange-900 dark:text-orange-200";
+      case "Succession":
+        return "bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200";
+      case "Religious":
+        return "bg-purple-100 text-purple-800 dark:bg-purple-900 dark:text-purple-200";
+      case "Trade":
+        return "bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200";
+      case "Naval":
+        return "bg-indigo-100 text-indigo-800 dark:bg-indigo-900 dark:text-indigo-200";
+      case "Colonial":
+        return "bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200";
+      case "Territorial":
+        return "bg-teal-100 text-teal-800 dark:bg-teal-900 dark:text-teal-200";
+      default:
+        return "bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-300";
+    }
+  };
+
+  const getImportanceClass = () => {
+    switch (war?.importance) {
+      case "high":
+        return "bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200";
+      case "medium":
+        return "bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200";
+      case "low":
+        return "bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200";
+      default:
+        return "bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-300";
     }
   };
 
   const getRoleClass = (role) => {
     switch (role) {
       case "victor":
-        return "bg-green-100 text-green-800";
+        return "bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200";
       case "defeated":
-        return "bg-red-100 text-red-800";
+        return "bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200";
       case "participant":
-        return "bg-blue-100 text-blue-800";
+        return "bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200";
+      case "ally":
+        return "bg-indigo-100 text-indigo-800 dark:bg-indigo-900 dark:text-indigo-200";
+      case "neutral":
+        return "bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-300";
       default:
-        return "bg-gray-100 text-gray-800";
+        return "bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-300";
     }
   };
 
   if (loading || !war) {
     return (
       <div className="flex justify-center items-center h-64">
-        <div className="text-xl text-gray-500">Loading...</div>
+        <div className="text-xl text-gray-500 dark:text-gray-400">
+          Loading...
+        </div>
       </div>
     );
+  }
+
+  // Group participants by side
+  const sides = {};
+  if (war.participants && Array.isArray(war.participants)) {
+    war.participants.forEach((participant) => {
+      const side = participant.side || "Unspecified";
+      if (!sides[side]) {
+        sides[side] = [];
+      }
+      sides[side].push(participant);
+    });
   }
 
   return (
@@ -105,7 +207,7 @@ const WarPage = () => {
                   {war.name}
                 </h1>
                 <div className="text-gray-600 dark:text-gray-300">
-                  {war.startYear} - {war.endYear || "Ongoing"}
+                  {getWarTimespan()}
                   {war.location && <span className="ml-3">{war.location}</span>}
                 </div>
               </div>
@@ -114,32 +216,14 @@ const WarPage = () => {
                   onClick={() => setIsEditing(true)}
                   className="btn btn-secondary flex items-center"
                 >
-                  <svg
-                    xmlns="http://www.w3.org/2000/svg"
-                    className="h-5 w-5 mr-1"
-                    viewBox="0 0 20 20"
-                    fill="currentColor"
-                  >
-                    <path d="M13.586 3.586a2 2 0 112.828 2.828l-.793.793-2.828-2.828.793-.793zM11.379 5.793L3 14.172V17h2.828l8.38-8.379-2.83-2.828z" />
-                  </svg>
+                  <Pencil className="h-5 w-5 mr-1" />
                   Edit
                 </button>
                 <button
-                  onClick={handleDelete}
+                  onClick={handleDeleteClick}
                   className="btn btn-danger flex items-center"
                 >
-                  <svg
-                    xmlns="http://www.w3.org/2000/svg"
-                    className="h-5 w-5 mr-1"
-                    viewBox="0 0 20 20"
-                    fill="currentColor"
-                  >
-                    <path
-                      fillRule="evenodd"
-                      d="M9 2a1 1 0 00-.894.553L7.382 4H4a1 1 0 000 2v10a2 2 0 002 2h8a2 2 0 002-2V6a1 1 0 100-2h-3.382l-.724-1.447A1 1 0 0011 2H9zM7 8a1 1 0 012 0v6a1 1 0 11-2 0V8zm5-1a1 1 0 00-1 1v6a1 1 0 102 0V8a1 1 0 00-1-1z"
-                      clipRule="evenodd"
-                    />
-                  </svg>
+                  <Trash className="h-5 w-5 mr-1" />
                   Delete
                 </button>
               </div>
@@ -182,103 +266,99 @@ const WarPage = () => {
             <h2 className="text-xl font-bold mb-4 dark:text-white">
               Participants
             </h2>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="flex flex-wrap gap-3 mb-4">
               {war.participants &&
-                groupParticipants(war.participants, kings, dynasties).map(
-                  (group) => (
-                    <div
-                      key={group.side}
-                      className="bg-gray-50 dark:bg-gray-700 p-4 rounded-lg"
-                    >
-                      <h3 className="font-bold text-lg mb-3 dark:text-white">
-                        {group.side}
-                      </h3>
-                      <div className="space-y-3">
-                        {group.kings.map((participant) => (
-                          <Link
-                            key={participant.kingId}
-                            to={`/kings/${participant.kingId}`}
-                            state={{ from: location.pathname }}
-                            className="flex items-center justify-between p-2 bg-white dark:bg-gray-800 rounded border border-gray-200 dark:border-gray-600 hover:border-dynasty-primary dark:hover:border-blue-500"
-                          >
-                            <div className="flex items-center">
-                              {participant.dynasty && (
-                                <div
-                                  className="w-3 h-3 rounded-full mr-2"
-                                  style={{
-                                    backgroundColor: participant.dynasty.color,
-                                  }}
-                                ></div>
-                              )}
-                              <div>
-                                <div className="font-medium dark:text-white">
-                                  {participant.name}
-                                </div>
-                                {participant.dynasty && (
-                                  <div className="text-xs text-gray-500 dark:text-gray-400">
-                                    {participant.dynasty.name}
-                                  </div>
-                                )}
-                              </div>
-                            </div>
-                            <div className="text-sm bg-gray-100 dark:bg-gray-700 px-2 py-1 rounded text-gray-700 dark:text-gray-300">
-                              {participant.role || "Participant"}
-                            </div>
-                          </Link>
-                        ))}
+                war.participants.map((participant) => {
+                  // Find the full king and dynasty info
+                  const king = kings.find((k) => k.id === participant.kingId);
+                  const dynasty = king?.dynastyId
+                    ? dynasties.find((d) => d.id === king.dynastyId)
+                    : null;
+                  const isOneTime = !!participant.isOneTime;
+
+                  const participantContent = (
+                    <div className="flex items-center gap-2">
+                      {dynasty && (
+                        <div
+                          className="w-3 h-3 rounded-full"
+                          style={{
+                            backgroundColor: dynasty.color || "#808080",
+                          }}
+                        ></div>
+                      )}
+                      <div>
+                        <div className="font-medium dark:text-white">
+                          {participant.name || king?.name}
+                        </div>
+                        {(dynasty || participant.dynastyName) && (
+                          <div className="text-xs text-gray-500 dark:text-gray-400">
+                            {dynasty?.name || participant.dynastyName}
+                          </div>
+                        )}
+                      </div>
+                      <div
+                        className={`text-xs px-2 py-1 rounded-full ${getRoleClass(
+                          participant.role
+                        )} ml-2`}
+                      >
+                        {participant.role || "Participant"}
                       </div>
                     </div>
-                  )
-                )}
+                  );
+
+                  // Render as link if not one-time, otherwise as div
+                  return isOneTime ? (
+                    <div
+                      key={`${participant.kingId || participant.name}-${
+                        participant.role
+                      }`}
+                      className="p-2 bg-white dark:bg-gray-800 rounded border border-gray-200 dark:border-gray-600 min-w-36"
+                    >
+                      {participantContent}
+                    </div>
+                  ) : (
+                    <Link
+                      key={`${participant.kingId || participant.name}-${
+                        participant.role
+                      }`}
+                      to={`/kings/${participant.kingId}`}
+                      state={{ from: location.pathname }}
+                      className="p-2 bg-white dark:bg-gray-800 rounded border border-gray-200 dark:border-gray-600 hover:border-indigo-500 dark:hover:border-indigo-400 transition-colors min-w-36"
+                    >
+                      {participantContent}
+                    </Link>
+                  );
+                })}
             </div>
           </div>
         </div>
       )}
+
+      {/* Edit Modal */}
+      <Modal isOpen={isEditing} onClose={() => setIsEditing(false)}>
+        <div className="p-1">
+          <div className="text-xl font-bold mb-4 dark:text-white">Edit War</div>
+          <AddWarForm
+            onClose={() => setIsEditing(false)}
+            initialData={war}
+            isEditing={true}
+            onSave={handleUpdateWar}
+          />
+        </div>
+      </Modal>
+
+      {/* Delete Confirmation Dialog */}
+      <ConfirmationDialog
+        isOpen={showDeleteConfirm}
+        title="Delete War"
+        message={`Are you sure you want to delete "${war?.name}"? This action cannot be undone.`}
+        confirmText="Delete"
+        confirmButtonClass="bg-red-600 hover:bg-red-700"
+        onConfirm={handleConfirmDelete}
+        onCancel={handleCancelDelete}
+      />
     </div>
   );
 };
-
-// Helper function to safely group participants
-function groupParticipants(participants, kings, dynasties) {
-  if (!participants || !Array.isArray(participants) || !kings || !dynasties) {
-    return [];
-  }
-
-  // Group by side
-  const sideGroups = participants.reduce((acc, participant) => {
-    const side = participant.side || "Unspecified";
-    if (!acc[side]) {
-      acc[side] = [];
-    }
-    acc[side].push(participant);
-    return acc;
-  }, {});
-
-  // Map to array of groups with processed kings info
-  return Object.entries(sideGroups).map(([side, parts]) => {
-    const processedKings = parts
-      .map((part) => {
-        const king = kings.find((k) => k.id === part.kingId);
-        if (!king) return null;
-
-        const dynasty = king.dynastyId
-          ? dynasties.find((d) => d.id === king.dynastyId)
-          : null;
-
-        return {
-          kingId: king.id,
-          name: king.name,
-          role: part.role,
-          dynasty: dynasty,
-        };
-      })
-      .filter(Boolean); // Remove any nulls
-
-    return {
-      side,
-      kings: processedKings,
-    };
-  });
-}
 
 export default WarPage;

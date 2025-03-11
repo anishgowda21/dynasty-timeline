@@ -313,7 +313,7 @@ const KingPage = () => {
       <ConfirmationDialog
         isOpen={showDeleteConfirm}
         title="Delete Ruler"
-        message={`Are you sure you want to delete ${king?.name}? This will also delete all associated events.`}
+        message={`Are you sure you want to delete ${king?.name}? This will also delete all associated events and wars/conflicts where ${king?.name} is a participant.`}
         confirmText="Delete"
         cancelText="Cancel"
         confirmButtonClass="bg-red-600 hover:bg-red-700"

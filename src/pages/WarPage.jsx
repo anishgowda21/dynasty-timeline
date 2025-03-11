@@ -44,21 +44,10 @@ const WarPage = () => {
 
         // Get detailed information about participants
         const participantDetails = foundWar.participants.map((participant) => {
-          let kingInfo = null;
-          let dynastyInfo = null;
-
-          if (participant.kingId) {
-            kingInfo = kings.find((k) => k.id === participant.kingId);
-            if (kingInfo && kingInfo.dynastyId) {
-              dynastyInfo = dynasties.find((d) => d.id === kingInfo.dynastyId);
-            }
-          }
-
+          // Just preserve the minimal data structure
           return {
-            ...participant,
-            king: kingInfo,
-            dynasty: dynastyInfo,
-            isOneTime: !!participant.isOneTime,
+            kingId: participant.kingId,
+            role: participant.role,
           };
         });
 
@@ -274,7 +263,7 @@ const WarPage = () => {
                   const dynasty = king?.dynastyId
                     ? dynasties.find((d) => d.id === king.dynastyId)
                     : null;
-                  const isOneTime = !!participant.isOneTime;
+                  const isOneTime = king ? king.isOneTime : false;
 
                   const participantContent = (
                     <div className="flex items-center gap-2">
@@ -288,13 +277,13 @@ const WarPage = () => {
                       )}
                       <div>
                         <div className="font-medium dark:text-white">
-                          {participant.name || king?.name}
+                          {king ? king.name : "Unknown Ruler"}
                         </div>
-                        {(dynasty || participant.dynastyName) && (
+                        {dynasty || (king && king.dynastyName) ? (
                           <div className="text-xs text-gray-500 dark:text-gray-400">
-                            {dynasty?.name || participant.dynastyName}
+                            {dynasty?.name || king.dynastyName}
                           </div>
-                        )}
+                        ) : null}
                       </div>
                       <div
                         className={`text-xs px-2 py-1 rounded-full ${getRoleClass(
@@ -306,27 +295,28 @@ const WarPage = () => {
                     </div>
                   );
 
-                  // Render as link if not one-time, otherwise as div
-                  return isOneTime ? (
-                    <div
-                      key={`${participant.kingId || participant.name}-${
-                        participant.role
-                      }`}
-                      className="p-2 bg-white dark:bg-gray-800 rounded border border-gray-200 dark:border-gray-600 min-w-36"
-                    >
-                      {participantContent}
-                    </div>
-                  ) : (
+                  // Get a stable key
+                  const participantKey = `${participant.kingId || "unknown"}-${
+                    participant.role || "participant"
+                  }`;
+
+                  // Render as link if king exists and is not one-time, otherwise as div
+                  return king && !isOneTime ? (
                     <Link
-                      key={`${participant.kingId || participant.name}-${
-                        participant.role
-                      }`}
+                      key={participantKey}
                       to={`/kings/${participant.kingId}`}
                       state={{ from: location.pathname }}
                       className="p-2 bg-white dark:bg-gray-800 rounded border border-gray-200 dark:border-gray-600 hover:border-indigo-500 dark:hover:border-indigo-400 transition-colors min-w-36"
                     >
                       {participantContent}
                     </Link>
+                  ) : (
+                    <div
+                      key={participantKey}
+                      className="p-2 bg-white dark:bg-gray-800 rounded border border-gray-200 dark:border-gray-600 min-w-36"
+                    >
+                      {participantContent}
+                    </div>
                   );
                 })}
             </div>

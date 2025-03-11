@@ -5,8 +5,8 @@ import { formatYear } from "../utils/dateUtils";
 import ConfirmationDialog from "./ConfirmationDialog";
 import { Trash } from "lucide-react";
 
-const WarCard = ({ war, currentKingId, kings, showLink = true }) => {
-  const { deleteWar } = useDynasty();
+const WarCard = ({ war, currentKingId, kings = [], showLink = true }) => {
+  const { deleteWar, dynasties = [] } = useDynasty();
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const navigate = useNavigate();
 
@@ -16,7 +16,21 @@ const WarCard = ({ war, currentKingId, kings, showLink = true }) => {
   const timespan = `${startYear} - ${endYear}`;
 
   // Get the kings involved in the war with proper details
-  const participantKings = war.participants || [];
+  const participantKings = (war.participants || []).map(participant => {
+    const king = kings.find(k => k.id === participant.kingId);
+    
+    // Return a complete participant object with all necessary display info
+    return {
+      kingId: participant.kingId,
+      role: participant.role,
+      name: king ? king.name : "Unknown Ruler",
+      dynastyId: king ? king.dynastyId : null,
+      dynastyName: king ? 
+        (king.dynastyName || (king.dynastyId ? dynasties.find(d => d.id === king.dynastyId)?.name : null)) 
+        : null,
+      isOneTime: king ? king.isOneTime : false
+    };
+  });
 
   const getImportanceClass = () => {
     switch (war.importance) {

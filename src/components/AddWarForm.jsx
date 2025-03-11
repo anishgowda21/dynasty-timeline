@@ -103,16 +103,20 @@ const AddWarForm = ({
         ) {
           // Avoid duplicates
           const king = kings.find((k) => k.id === p.kingId);
+
+          // For display purposes, create a full object
           const participant = {
             kingId: p.kingId,
-            name: p.name || (king ? king.name : "Unknown"),
-            dynastyId: p.dynastyId || (king ? king.dynastyId : null),
-            dynastyName:
-              p.dynastyName ||
-              (king && king.dynastyId
-                ? dynasties.find((d) => d.id === king.dynastyId)?.name
-                : null),
             role: p.role || "participant",
+            // Additional data just for UI display
+            name: king ? king.name : "Unknown",
+            dynastyId: king ? king.dynastyId : null,
+            dynastyName:
+              king && king.dynastyId
+                ? dynasties.find((d) => d.id === king.dynastyId)?.name
+                : king && king.dynastyName
+                ? king.dynastyName
+                : null,
           };
           initParticipants.push(participant);
         }
@@ -176,16 +180,25 @@ const AddWarForm = ({
 
   // Update role for a specific participant
   const updateParticipantRole = (index, newRole) => {
+    // Update the displayed participants
     const updatedParticipants = [...selectedParticipants];
     updatedParticipants[index] = {
       ...updatedParticipants[index],
       role: newRole,
     };
-
     setSelectedParticipants(updatedParticipants);
+
+    // Also update in the minimal participants data
+    const minimalParticipants = formData.participants.map((p, i) => {
+      if (i === index) {
+        return { ...p, role: newRole };
+      }
+      return p;
+    });
+
     setFormData({
       ...formData,
-      participants: updatedParticipants,
+      participants: minimalParticipants,
     });
   };
 
@@ -233,21 +246,32 @@ const AddWarForm = ({
     // Create a temporary ID for the one-time king (will be replaced when saved)
     const tempId = `temp_${Date.now()}`;
 
-    // Create new participant
+    // Create minimal participant data
     const newParticipant = {
       kingId: tempId,
-      name: oneTimeKing.name,
-      dynastyName: oneTimeKing.dynastyName || null,
-      isOneTime: true,
       role: participant.role,
     };
 
-    // Add to participants
-    const updatedParticipants = [...selectedParticipants, newParticipant];
+    // Full display data for UI purposes
+    const participantForDisplay = {
+      ...newParticipant,
+      name: oneTimeKing.name,
+      dynastyName: oneTimeKing.dynastyName || null,
+      isOneTime: true,
+    };
+
+    // Add to participants for display
+    const updatedParticipants = [
+      ...selectedParticipants,
+      participantForDisplay,
+    ];
     setSelectedParticipants(updatedParticipants);
+
+    // Only store minimal data in formData
+    const minimalParticipants = formData.participants.concat(newParticipant);
     setFormData({
       ...formData,
-      participants: updatedParticipants,
+      participants: minimalParticipants,
     });
 
     // Reset forms
@@ -259,25 +283,36 @@ const AddWarForm = ({
   };
 
   const addKingFromSearch = (king) => {
-    const dynastyName = king.dynastyId
-      ? dynasties.find((d) => d.id === king.dynastyId)?.name
-      : null;
-
-    // Create new participant
+    // Create new participant with only the essential data
     const newParticipant = {
       kingId: king.id,
-      name: king.name,
-      dynastyId: king.dynastyId,
-      dynastyName,
       role: participant.role,
     };
 
+    // For UI display purposes only, keep the full information in selectedParticipants
+    const participantForDisplay = {
+      ...newParticipant,
+      name: king.name,
+      dynastyId: king.dynastyId,
+      dynastyName:
+        king.dynastyName ||
+        (king.dynastyId
+          ? dynasties.find((d) => d.id === king.dynastyId)?.name
+          : null),
+    };
+
     // Add to participants
-    const updatedParticipants = [...selectedParticipants, newParticipant];
+    const updatedParticipants = [
+      ...selectedParticipants,
+      participantForDisplay,
+    ];
     setSelectedParticipants(updatedParticipants);
+
+    // But store only the minimal data in the form
+    const minimalParticipants = formData.participants.concat(newParticipant);
     setFormData({
       ...formData,
-      participants: updatedParticipants,
+      participants: minimalParticipants,
     });
 
     // Reset search
@@ -290,12 +325,18 @@ const AddWarForm = ({
       return;
     }
 
+    // Remove from display participants
     const updatedParticipants = [...selectedParticipants];
     updatedParticipants.splice(index, 1);
     setSelectedParticipants(updatedParticipants);
+
+    // Also remove from minimal data structure
+    const minimalParticipants = [...formData.participants];
+    minimalParticipants.splice(index, 1);
+
     setFormData({
       ...formData,
-      participants: updatedParticipants,
+      participants: minimalParticipants,
     });
   };
 
@@ -372,14 +413,10 @@ const AddWarForm = ({
       }
     }
 
-    // Replace temporary IDs with real ones and prepare final participants list
+    // Replace temporary IDs with real ones and prepare final participants list with only essential data
     const finalParticipants = selectedParticipants.map((p) => ({
       kingId: kingIdsMap.has(p.kingId) ? kingIdsMap.get(p.kingId) : p.kingId,
       role: p.role,
-      name: p.name,
-      dynastyName: p.dynastyName,
-      dynastyId: p.dynastyId,
-      isOneTime: p.isOneTime || false,
     }));
 
     // Convert years to internal representation
@@ -753,9 +790,11 @@ const AddWarForm = ({
               {filteredKings.length > 0 ? (
                 <ul className="divide-y divide-gray-200 dark:divide-gray-700">
                   {filteredKings.map((king) => {
-                    const dynastyName = king.dynastyId
-                      ? dynasties.find((d) => d.id === king.dynastyId)?.name
-                      : "No dynasty";
+                    const dynastyName =
+                      king.dynastyName ||
+                      (king.dynastyId
+                        ? dynasties.find((d) => d.id === king.dynastyId)?.name
+                        : "No dynasty");
 
                     return (
                       <li

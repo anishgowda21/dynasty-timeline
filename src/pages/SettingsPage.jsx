@@ -64,13 +64,14 @@ const SettingsPage = () => {
 
     try {
       const text = await selectedFile.text();
-      const data = JSON.parse(text);
-      importData(data);
+      const importedData = JSON.parse(text);
+      importData(importedData);
       setShowImportDialog(false);
       setSelectedFile(null);
+      alert("Data imported successfully!");
     } catch (error) {
       console.error("Error importing data:", error);
-      alert("Error importing data. Please check the file format.");
+      alert(`Error importing data: ${error.message}`);
     }
   };
 

@@ -471,55 +471,24 @@ export const DynastyProvider = ({ children }) => {
   };
 
   // Import data from JSON file
-  const importData = async (file) => {
-    try {
-      return new Promise((resolve, reject) => {
-        const reader = new FileReader();
+  const importData = (importedData) => {
+    if (
+      !importedData.dynasties ||
+      !importedData.kings ||
+      !importedData.events
+    ) {
+      throw new Error("Invalid data format");
+    }
 
-        reader.onload = (e) => {
-          try {
-            const importedData = JSON.parse(e.target.result);
+    setDynasties(importedData.dynasties);
+    setKings(importedData.kings);
+    setEvents(importedData.events);
 
-            if (
-              !importedData.dynasties ||
-              !importedData.kings ||
-              !importedData.events
-            ) {
-              reject(new Error("Invalid data format"));
-              return;
-            }
-
-            setDynasties(importedData.dynasties);
-            setKings(importedData.kings);
-            setEvents(importedData.events);
-
-            // Handle optional data
-            if (importedData.wars) {
-              setWars(importedData.wars);
-            }
-
-            if (importedData.uiSettings) {
-              setUiSettings(importedData.uiSettings);
-            }
-
-            resolve({
-              success: true,
-              message: "Data imported successfully",
-              data: importedData,
-            });
-          } catch (error) {
-            reject(new Error("Failed to parse JSON file"));
-          }
-        };
-
-        reader.onerror = () => {
-          reject(new Error("Failed to read file"));
-        };
-
-        reader.readAsText(file);
-      });
-    } catch (error) {
-      throw new Error(`Import failed: ${error.message}`);
+    if (importedData.wars) {
+      setWars(importedData.wars);
+    }
+    if (importedData.uiSettings) {
+      setUiSettings(importedData.uiSettings);
     }
   };
 

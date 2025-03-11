@@ -56,16 +56,12 @@ const EventCard = ({ event, kings = [], showLink = true }) => {
   };
 
   const handleKingClick = (e, king) => {
-    if (!king.isOneTime) {
-      e.preventDefault();
-      e.stopPropagation();
+    e.preventDefault();
+    e.stopPropagation();
 
-      if (king.id) {
-        navigate(`/kings/${king.id}`);
-        console.log("Navigation function called");
-      } else {
-        console.error("No valid ID found for king:", king);
-      }
+    if (king.id && !king.isOneTime) {
+      navigate(`/kings/${king.id}`);
+      console.log("Navigation function called");
     }
   };
 
@@ -147,12 +143,9 @@ const EventCard = ({ event, kings = [], showLink = true }) => {
               >
                 <span
                   onClick={(e) => handleKingClick(e, king)}
-                  className={`text-xs bg-gray-100 dark:bg-gray-700 px-2 py-1 rounded text-gray-800 dark:text-gray-200 
-                  ${
-                    !king.isOneTime
-                      ? "hover:bg-gray-200 dark:hover:bg-gray-600 cursor-pointer"
-                      : ""
-                  }`}
+                  className={
+                    "text-xs bg-gray-100 dark:bg-gray-700 px-2 py-1 rounded text-gray-800 dark:text-gray-200 hover:bg-gray-200 dark:hover:bg-gray-600 cursor-pointer"
+                  }
                 >
                   {king.name} {king.dynastyName ? `(${king.dynastyName})` : ""}
                 </span>

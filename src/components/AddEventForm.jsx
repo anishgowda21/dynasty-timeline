@@ -87,9 +87,11 @@ const AddEventForm = ({
               id: king.id,
               name: king.name,
               dynastyId: king.dynastyId,
-              dynastyName: king.dynastyId
-                ? dynasties.find((d) => d.id === king.dynastyId)?.name
-                : null,
+              dynastyName:
+                king.dynastyName ||
+                (king.dynastyId
+                  ? dynasties.find((d) => d.id === king.dynastyId)?.name
+                  : null),
             });
           }
         }
@@ -190,7 +192,7 @@ const AddEventForm = ({
       dynastyName: oneTimeKing.dynastyName || null,
       isOneTime: true,
     };
-    
+
     setSelectedKings([...selectedKings, newKing]);
     setFormData({
       ...formData,
@@ -568,9 +570,11 @@ const AddEventForm = ({
               {filteredKings.length > 0 ? (
                 <ul className="divide-y divide-gray-200 dark:divide-gray-700">
                   {filteredKings.map((king) => {
-                    const dynastyName = king.dynastyId
-                      ? dynasties.find((d) => d.id === king.dynastyId)?.name
-                      : "No dynasty";
+                    const dynastyName =
+                      king.dynastyName ||
+                      (king.dynastyId
+                        ? dynasties.find((d) => d.id === king.dynastyId)?.name
+                        : "No dynasty");
 
                     return (
                       <li

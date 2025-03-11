@@ -19,7 +19,6 @@ export const DynastyProvider = ({ children }) => {
   const [uiSettings, setUiSettings] = useState({
     selectedDynasties: [], // for filtering timeline view
     showIncompleteTimelines: true, // show entities with incomplete dates
-    darkMode: false,
     validationLevel: "warn", // 'none', 'warn', 'strict'
   });
   const [validationWarnings, setValidationWarnings] = useState([]);
@@ -436,12 +435,7 @@ export const DynastyProvider = ({ children }) => {
     });
   };
 
-  const toggleDarkMode = () => {
-    setUiSettings({
-      ...uiSettings,
-      darkMode: !uiSettings.darkMode,
-    });
-  };
+
 
   // Export data as JSON
   const exportData = () => {
@@ -501,7 +495,6 @@ export const DynastyProvider = ({ children }) => {
     setUiSettings({
       selectedDynasties: sampleData.dynasties.map((d) => d.id),
       showIncompleteTimelines: true,
-      darkMode: false,
       validationLevel: "warn",
     });
   };
@@ -600,7 +593,6 @@ export const DynastyProvider = ({ children }) => {
     setSelectedDynasties,
     toggleShowIncompleteTimelines,
     setValidationLevel,
-    toggleDarkMode,
   };
 
   return (

@@ -3,6 +3,7 @@ import { formatDate, formatYear } from "../utils/dateUtils";
 import { useState } from "react";
 import { useDynasty } from "../context/DynastyContext";
 import ConfirmationDialog from "./ConfirmationDialog";
+import { Trash } from "lucide-react";
 
 const EventCard = ({ event, kings = [], showLink = true }) => {
   const { deleteEvent } = useDynasty();
@@ -53,30 +54,40 @@ const EventCard = ({ event, kings = [], showLink = true }) => {
     }
   };
 
-  const Card = ({ children }) => {
-    if (showLink && event.id) {
-      return (
-        <Link
-          to={`/events/${event.id}`}
-          className="block p-4 rounded-lg border border-gray-200 hover:border-indigo-500 transition-colors"
-        >
-          {children}
-        </Link>
-      );
-    }
-    return (
-      <div className="p-4 rounded-lg border border-gray-200">{children}</div>
-    );
+  const handleDeleteClick = (e) => {
+    e.preventDefault(); // Prevent link navigation when clicking delete
+    e.stopPropagation();
+    setShowDeleteConfirm(true);
   };
 
-  return (
-    <Card>
+  const handleCancelDelete = (e) => {
+    if (e) {
+      e.preventDefault();
+      e.stopPropagation();
+    }
+    setShowDeleteConfirm(false);
+  };
+
+  const handleConfirmDelete = (e) => {
+    if (e) {
+      e.preventDefault();
+      e.stopPropagation();
+    }
+    deleteEvent(event.id);
+    setShowDeleteConfirm(false);
+  };
+
+  // Card content - shared between both versions
+  const cardContent = (
+    <>
       <div className="flex justify-between items-start mb-2">
-        <h3 className="text-lg font-semibold">{event.name}</h3>
+        <h3 className="text-lg font-semibold dark:text-white">{event.name}</h3>
         <div className="flex items-center space-x-2">
           <div className="flex space-x-2">
             {displayDate && (
-              <span className="text-sm text-gray-600">{displayDate}</span>
+              <span className="text-sm text-gray-600 dark:text-gray-300">
+                {displayDate}
+              </span>
             )}
             {event.type && (
               <span
@@ -87,22 +98,11 @@ const EventCard = ({ event, kings = [], showLink = true }) => {
             )}
           </div>
           <button
-            onClick={() => setShowDeleteConfirm(true)}
-            className="text-red-600 hover:text-red-800 p-1"
+            onClick={handleDeleteClick}
+            className="text-red-600 hover:text-red-800 dark:text-red-400 dark:hover:text-red-300 p-1"
             title="Delete Event"
           >
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              className="h-5 w-5"
-              viewBox="0 0 20 20"
-              fill="currentColor"
-            >
-              <path
-                fillRule="evenodd"
-                d="M9 2a1 1 0 00-.894.553L7.382 4H4a1 1 0 000 2v10a2 2 0 002 2h8a2 2 0 002-2V6a1 1 0 100-2h-3.382l-.724-1.447A1 1 0 0011 2H9zM7 8a1 1 0 012 0v6a1 1 0 11-2 0V8zm5-1a1 1 0 00-1 1v6a1 1 0 102 0V8a1 1 0 00-1-1z"
-                clipRule="evenodd"
-              />
-            </svg>
+            <Trash className="h-5 w-5" />
           </button>
         </div>
       </div>
@@ -121,23 +121,56 @@ const EventCard = ({ event, kings = [], showLink = true }) => {
 
       {kings && kings.length > 0 && (
         <div className="mb-3">
-          <div className="text-xs text-gray-500 mb-1">Related Rulers:</div>
+          <div className="text-xs text-gray-500 dark:text-gray-400 mb-1">
+            Related Rulers:
+          </div>
           <div className="flex flex-wrap gap-1">
-            {kings.map((king) => (
-              <Link
-                key={king.id}
-                to={`/kings/${king.id}`}
-                className="text-xs bg-gray-100 hover:bg-gray-200 px-2 py-1 rounded"
-              >
-                {king.name}
-              </Link>
-            ))}
+            {kings.map((king) =>
+              king.isOneTime ? (
+                <span
+                  key={king.id}
+                  className="text-xs bg-gray-100 dark:bg-gray-700 px-2 py-1 rounded text-gray-800 dark:text-gray-200"
+                >
+                  {king.name} {king.dynastyName ? `(${king.dynastyName})` : ""}
+                </span>
+              ) : (
+                <Link
+                  key={king.id}
+                  to={`/kings/${king.id}`}
+                  className="text-xs bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 px-2 py-1 rounded text-gray-800 dark:text-gray-200"
+                  onClick={(e) => e.stopPropagation()} // Prevent event card navigation
+                >
+                  {king.name}
+                </Link>
+              )
+            )}
           </div>
         </div>
       )}
 
       {event.description && (
-        <p className="text-sm text-gray-700">{event.description}</p>
+        <p className="text-sm text-gray-700 dark:text-gray-300">
+          {event.description}
+        </p>
+      )}
+    </>
+  );
+
+  // The shared card style
+  const cardStyle =
+    "p-4 rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800";
+
+  return (
+    <>
+      {showLink && event.id ? (
+        <Link
+          to={`/events/${event.id}`}
+          className={`block ${cardStyle} hover:border-indigo-500 dark:hover:border-indigo-400 transition-colors`}
+        >
+          {cardContent}
+        </Link>
+      ) : (
+        <div className={cardStyle}>{cardContent}</div>
       )}
 
       <ConfirmationDialog
@@ -145,13 +178,11 @@ const EventCard = ({ event, kings = [], showLink = true }) => {
         title="Delete Event"
         message={`Are you sure you want to delete the event "${event.name}"? This action cannot be undone.`}
         confirmText="Delete"
-        onConfirm={() => {
-          deleteEvent(event.id);
-          setShowDeleteConfirm(false);
-        }}
-        onCancel={() => setShowDeleteConfirm(false)}
+        confirmButtonClass="bg-red-600 hover:bg-red-700"
+        onConfirm={handleConfirmDelete}
+        onCancel={handleCancelDelete}
       />
-    </Card>
+    </>
   );
 };
 

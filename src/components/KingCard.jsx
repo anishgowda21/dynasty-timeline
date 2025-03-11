@@ -8,9 +8,11 @@ const KingCard = ({
   dynastyName,
 }) => {
   // Format reign years
-  const reignYears = king.reignEnd
-    ? `${formatYear(king.reignStart)} - ${formatYear(king.reignEnd)}`
-    : `${formatYear(king.reignStart)} - Present`;
+  const reignYears = king.startYear
+    ? `${formatYear(king.startYear)}${
+        king.endYear ? ` - ${formatYear(king.endYear)}` : " - Present"
+      }`
+    : "- Present"; // Special case when startYear is missing
 
   // Format lifetime years
   const lifeYears = king.birthYear
@@ -21,8 +23,8 @@ const KingCard = ({
 
   // Calculate duration
   const reignDuration =
-    king.reignEnd && king.reignStart
-      ? `(${king.reignEnd - king.reignStart} years)`
+    king.endYear && king.startYear
+      ? `(${Math.abs(king.endYear - king.startYear)} years)`
       : "";
 
   return (

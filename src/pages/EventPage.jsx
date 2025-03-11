@@ -4,6 +4,8 @@ import { useDynasty } from "../context/DynastyContext";
 import { formatDate, formatYear } from "../utils/dateUtils";
 import Modal from "../components/Modal";
 import AddEventForm from "../components/AddEventForm";
+import ConfirmationDialog from "../components/ConfirmationDialog";
+import { Pencil, Trash } from "lucide-react";
 
 const EventPage = () => {
   const { id } = useParams();
@@ -16,6 +18,7 @@ const EventPage = () => {
   const [relatedKings, setRelatedKings] = useState([]);
   const [isEditing, setIsEditing] = useState(false);
   const [navContext, setNavContext] = useState("events");
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
 
   // Determine navigation context (where the user came from)
   useEffect(() => {
@@ -62,44 +65,60 @@ const EventPage = () => {
     }
   }, [id, events, kings, dynasties, loading, navigate]);
 
-  const handleDelete = () => {
-    if (window.confirm(`Are you sure you want to delete "${event.name}"?`)) {
-      deleteEvent(id);
-      navigate("/events");
-    }
+  const handleDeleteClick = () => {
+    setShowDeleteConfirm(true);
+  };
+
+  const handleConfirmDelete = () => {
+    deleteEvent(id);
+    setShowDeleteConfirm(false);
+    navigate("/events");
+  };
+
+  const handleCancelDelete = () => {
+    setShowDeleteConfirm(false);
+  };
+
+  const handleUpdateEvent = (updatedEventData) => {
+    // Preserve the ID and apply updates
+    updateEvent(id, { ...updatedEventData, id });
+
+    // Update local state to reflect changes immediately
+    setEvent({ ...event, ...updatedEventData });
+    setIsEditing(false);
   };
 
   const getImportanceClass = () => {
     switch (event?.importance) {
       case "high":
-        return "bg-red-100 text-red-800";
+        return "bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200";
       case "medium":
-        return "bg-yellow-100 text-yellow-800";
+        return "bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200";
       case "low":
-        return "bg-blue-100 text-blue-800";
+        return "bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200";
       default:
-        return "bg-gray-100 text-gray-800";
+        return "bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-300";
     }
   };
 
   const getTypeClass = () => {
     switch (event?.type) {
       case "Religious":
-        return "bg-purple-100 text-purple-800";
+        return "bg-purple-100 text-purple-800 dark:bg-purple-900 dark:text-purple-200";
       case "Political":
-        return "bg-blue-100 text-blue-800";
+        return "bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200";
       case "Cultural":
-        return "bg-green-100 text-green-800";
+        return "bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200";
       case "Economic":
-        return "bg-yellow-100 text-yellow-800";
+        return "bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200";
       case "Scientific":
-        return "bg-indigo-100 text-indigo-800";
+        return "bg-indigo-100 text-indigo-800 dark:bg-indigo-900 dark:text-indigo-200";
       case "Diplomatic":
-        return "bg-teal-100 text-teal-800";
+        return "bg-teal-100 text-teal-800 dark:bg-teal-900 dark:text-teal-200";
       case "Military":
-        return "bg-red-100 text-red-800";
+        return "bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200";
       default:
-        return "bg-gray-100 text-gray-800";
+        return "bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-300";
     }
   };
 
@@ -116,10 +135,41 @@ const EventPage = () => {
       : formatDate(event.date);
   };
 
+  // Check if the date is BCE
+  const isDateBCE = () => {
+    if (!event || !event.date) return false;
+
+    // If the date is a negative number, it's BCE
+    return Number(event.date) < 0;
+  };
+
+  // Prepare initial data for the AddEventForm
+  const prepareInitialData = () => {
+    if (!event) return {};
+
+    // If the date is BCE, we need to convert it to a positive number
+    let displayDate = event.date;
+    if (isDateBCE()) {
+      // Convert from internal format (-year+1) to display format (positive year)
+      displayDate = Math.abs(Number(event.date) - 1).toString();
+    }
+
+    return {
+      name: event.name,
+      date: displayDate,
+      description: event.description || "",
+      kingIds: event.kingIds || [],
+      type: event.type || "",
+      importance: event.importance || "medium",
+    };
+  };
+
   if (loading || !event) {
     return (
       <div className="flex justify-center items-center h-64">
-        <div className="text-xl text-gray-500">Loading...</div>
+        <div className="text-xl text-gray-500 dark:text-gray-400">
+          Loading...
+        </div>
       </div>
     );
   }
@@ -142,32 +192,14 @@ const EventPage = () => {
                 onClick={() => setIsEditing(true)}
                 className="btn btn-secondary flex items-center"
               >
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  className="h-5 w-5 mr-1"
-                  viewBox="0 0 20 20"
-                  fill="currentColor"
-                >
-                  <path d="M13.586 3.586a2 2 0 112.828 2.828l-.793.793-2.828-2.828.793-.793zM11.379 5.793L3 14.172V17h2.828l8.38-8.379-2.83-2.828z" />
-                </svg>
+                <Pencil className="h-5 w-5 mr-2" />
                 Edit
               </button>
               <button
-                onClick={handleDelete}
+                onClick={handleDeleteClick}
                 className="btn btn-danger flex items-center"
               >
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  className="h-5 w-5 mr-1"
-                  viewBox="0 0 20 20"
-                  fill="currentColor"
-                >
-                  <path
-                    fillRule="evenodd"
-                    d="M9 2a1 1 0 00-.894.553L7.382 4H4a1 1 0 000 2v10a2 2 0 002 2h8a2 2 0 002-2V6a1 1 0 100-2h-3.382l-.724-1.447A1 1 0 0011 2H9zM7 8a1 1 0 012 0v6a1 1 0 11-2 0V8zm5-1a1 1 0 00-1 1v6a1 1 0 102 0V8a1 1 0 00-1-1z"
-                    clipRule="evenodd"
-                  />
-                </svg>
+                <Trash className="h-5 w-5 mr-2" />
                 Delete
               </button>
             </div>
@@ -202,141 +234,85 @@ const EventPage = () => {
                 Related Rulers
               </h2>
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-                {relatedKings.map((king) => (
-                  <Link
-                    key={king.id}
-                    to={`/kings/${king.id}`}
-                    state={{ from: location.pathname }}
-                    className="bg-gray-50 dark:bg-gray-700 p-4 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-600 transition-colors"
-                  >
-                    <div className="flex items-center">
-                      {king.dynasty && (
+                {relatedKings.map((king) =>
+                  king.isOneTime ? (
+                    <div
+                      key={king.id}
+                      className="bg-gray-50 dark:bg-gray-700 p-4 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-600 transition-colors"
+                    >
+                      <div className="flex items-center">
                         <div
                           className="w-3 h-3 rounded-full mr-2"
-                          style={{ backgroundColor: king.dynasty.color }}
+                          style={{ backgroundColor: king.color }}
                         ></div>
+                        <h3 className="font-bold dark:text-white">
+                          {king.name}
+                        </h3>
+                      </div>
+                      {king.dynastyName && (
+                        <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">
+                          {king.dynastyName} Dynasty
+                        </p>
                       )}
-                      <h3 className="font-bold dark:text-white">{king.name}</h3>
                     </div>
-                    {king.dynasty && (
-                      <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">
-                        {king.dynasty.name} Dynasty
-                      </p>
-                    )}
-                  </Link>
-                ))}
+                  ) : (
+                    <Link
+                      key={king.id}
+                      to={`/kings/${king.id}`}
+                      state={{ from: location.pathname }}
+                      className="bg-gray-50 dark:bg-gray-700 p-4 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-600 transition-colors"
+                    >
+                      <div className="flex items-center">
+                        {king.dynasty && (
+                          <div
+                            className="w-3 h-3 rounded-full mr-2"
+                            style={{ backgroundColor: king.dynasty.color }}
+                          ></div>
+                        )}
+                        <h3 className="font-bold dark:text-white">
+                          {king.name}
+                        </h3>
+                      </div>
+                      {king.dynasty && (
+                        <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">
+                          {king.dynasty.name} Dynasty
+                        </p>
+                      )}
+                    </Link>
+                  )
+                )}
               </div>
             </div>
           )}
         </div>
       )}
 
-      {isEditing && event && (
-        <div className="bg-white dark:bg-gray-800 rounded-lg shadow-md p-6 mb-6">
-          <h2 className="text-xl font-bold mb-4 dark:text-white">Edit Event</h2>
-          <form onSubmit={handleEditSubmit} className="space-y-4">
-            <div>
-              <label className="form-label">Event Name</label>
-              <input
-                type="text"
-                value={editForm.name}
-                onChange={(e) =>
-                  setEditForm({ ...editForm, name: e.target.value })
-                }
-                className="form-input"
-                required
-              />
-            </div>
-
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              <div>
-                <label className="form-label">Date</label>
-                <input
-                  type="text"
-                  value={editForm.date}
-                  onChange={(e) =>
-                    setEditForm({ ...editForm, date: e.target.value })
-                  }
-                  className="form-input"
-                  placeholder="YYYY or YYYY-MM-DD"
-                  required
-                />
-              </div>
-              <div>
-                <label className="form-label">Type</label>
-                <select
-                  value={editForm.type}
-                  onChange={(e) =>
-                    setEditForm({ ...editForm, type: e.target.value })
-                  }
-                  className="form-input"
-                >
-                  <option value="">Select Type</option>
-                  <option value="Political">Political</option>
-                  <option value="Military">Military</option>
-                  <option value="Religious">Religious</option>
-                  <option value="Cultural">Cultural</option>
-                  <option value="Economic">Economic</option>
-                  <option value="Scientific">Scientific</option>
-                  <option value="Diplomatic">Diplomatic</option>
-                  <option value="Other">Other</option>
-                </select>
-              </div>
-            </div>
-
-            <div>
-              <label className="form-label">Importance</label>
-              <div className="flex space-x-4">
-                {["low", "medium", "high"].map((level) => (
-                  <label
-                    key={level}
-                    className="flex items-center space-x-2 cursor-pointer"
-                  >
-                    <input
-                      type="radio"
-                      value={level}
-                      checked={editForm.importance === level}
-                      onChange={(e) =>
-                        setEditForm({ ...editForm, importance: e.target.value })
-                      }
-                      className="h-4 w-4 text-dynasty-primary dark:text-blue-400 border-gray-300 focus:ring-dynasty-primary"
-                    />
-                    <span className="text-gray-700 dark:text-gray-300 capitalize">
-                      {level}
-                    </span>
-                  </label>
-                ))}
-              </div>
-            </div>
-
-            <div>
-              <label className="form-label">Description</label>
-              <textarea
-                value={editForm.description}
-                onChange={(e) =>
-                  setEditForm({ ...editForm, description: e.target.value })
-                }
-                rows="4"
-                className="form-input"
-                required
-              ></textarea>
-            </div>
-
-            <div className="flex justify-end space-x-2">
-              <button
-                type="button"
-                onClick={() => setIsEditing(false)}
-                className="px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-md text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700"
-              >
-                Cancel
-              </button>
-              <button type="submit" className="btn btn-primary">
-                Save Changes
-              </button>
-            </div>
-          </form>
+      {/* Edit Modal - Using AddEventForm */}
+      <Modal isOpen={isEditing} onClose={() => setIsEditing(false)}>
+        <div className="p-1">
+          <div className="text-xl font-bold mb-4 dark:text-white">
+            Edit Event
+          </div>
+          <AddEventForm
+            onClose={() => setIsEditing(false)}
+            initialData={prepareInitialData()}
+            initialBCE={{ dateBce: isDateBCE() }}
+            isEditing={true}
+            onSave={handleUpdateEvent}
+          />
         </div>
-      )}
+      </Modal>
+
+      {/* Delete Confirmation Dialog */}
+      <ConfirmationDialog
+        isOpen={showDeleteConfirm}
+        title="Delete Event"
+        message={`Are you sure you want to delete "${event?.name}"? This action cannot be undone.`}
+        confirmText="Delete"
+        confirmButtonClass="bg-red-600 hover:bg-red-700"
+        onConfirm={handleConfirmDelete}
+        onCancel={handleCancelDelete}
+      />
     </div>
   );
 };

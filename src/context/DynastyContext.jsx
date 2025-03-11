@@ -366,15 +366,17 @@ export const DynastyProvider = ({ children }) => {
   };
 
   const updateEvent = (id, updatedData) => {
-    setEvents(
-      events.map((event) =>
-        event.id === id ? { ...event, ...updatedData } : event
-      )
+    const newEvents = events.map((event) =>
+      event.id === id ? { ...event, ...updatedData } : event
     );
+    setEvents(newEvents);
+    cleanupOrphanedOneTimeKings(newEvents);
   };
 
   const deleteEvent = (id) => {
-    setEvents(events.filter((event) => event.id !== id));
+    const newEvents = events.filter((event) => event.id !== id);
+    setEvents(newEvents);
+    cleanupOrphanedOneTimeKings(newEvents);
   };
 
   // War management functions
@@ -390,13 +392,17 @@ export const DynastyProvider = ({ children }) => {
   };
 
   const updateWar = (id, updatedData) => {
-    setWars(
-      wars.map((war) => (war.id === id ? { ...war, ...updatedData } : war))
+    const newWars = wars.map((war) =>
+      war.id === id ? { ...war, ...updatedData } : war
     );
+    setWars(newWars);
+    cleanupOrphanedOneTimeKings(events, newWars);
   };
 
   const deleteWar = (id) => {
-    setWars(wars.filter((war) => war.id !== id));
+    const newWars = wars.filter((war) => war.id !== id);
+    setWars(newWars);
+    cleanupOrphanedOneTimeKings();
   };
 
   // UI Settings Functions
@@ -560,11 +566,42 @@ export const DynastyProvider = ({ children }) => {
       endYear: kingData.endYear || null,
       isOneTime: true, // Flag to mark this as a one-time king
       color: kingData.color || generateSeededColor(kingData.name),
+      dynastyName: kingData.dynastyName,
       createdAt: new Date().toISOString(),
     };
 
     setKings([...kings, newKing]);
     return newKing;
+  };
+
+  const cleanupOrphanedOneTimeKings = (
+    latestEvents = events,
+    latestWars = wars
+  ) => {
+    // Find all one-time kings
+    const oneTimeKings = kings.filter((king) => king.isOneTime === true);
+
+    // Identify kings that are no longer referenced
+    const kingsToDelete = oneTimeKings
+      .filter((king) => {
+        const isReferencedInEvents = latestEvents.some(
+          (event) => event.kingIds && event.kingIds.includes(king.id)
+        );
+        const isReferencedInWars = latestWars.some(
+          (war) =>
+            war.participants &&
+            war.participants.some((p) => p.kingId === king.id)
+        );
+        return !isReferencedInEvents && !isReferencedInWars;
+      })
+      .map((king) => king.id);
+
+    // Remove unreferenced kings from state
+    if (kingsToDelete.length > 0) {
+      setKings((prevKings) =>
+        prevKings.filter((king) => !kingsToDelete.includes(king.id))
+      );
+    }
   };
 
   const value = {

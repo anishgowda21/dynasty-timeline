@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { useDynasty } from "../context/DynastyContext";
-import { formatYear } from "../utils/dateUtils";
+import { parseYear, formatYear } from "../utils/dateUtils";
 
 const AddKingForm = ({
   onClose,

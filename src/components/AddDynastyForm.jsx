@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { useDynasty } from "../context/DynastyContext";
-import { parseYear, formatYear } from "../utils/dateUtils";
+import { DateInput, FormInput, FormTextArea, FormActions } from "./common";
 
 const AddDynastyForm = ({
   onClose,
@@ -136,124 +136,51 @@ const AddDynastyForm = ({
   return (
     <form onSubmit={handleSubmit} className="space-y-4">
       {!isEditing && (
-        <div className="text-xl font-bold mb-4">Add New Dynasty</div>
+        <div className="text-xl font-bold mb-4 dark:text-white">Add New Dynasty</div>
       )}
 
-      <div>
-        <label
-          htmlFor="name"
-          className="block text-sm font-medium text-gray-700 dark:text-gray-100 mb-1"
-        >
-          Dynasty Name
-        </label>
-        <input
-          type="text"
-          id="name"
-          name="name"
-          value={formData.name}
-          onChange={handleChange}
-          className={`w-full p-2 border rounded-md ${
-            errors.name ? "border-red-500" : "border-gray-300"
-          }
-            bg-white dark:bg-gray-800 
-            text-gray-900 dark:text-gray-100
-            focus:ring-blue-500 dark:focus:ring-blue-400 focus:border-blue-500 dark:focus:border-blue-400
-            `}
-          placeholder="e.g., Tudor, Ming, Habsburg"
-        />
-        {errors.name && (
-          <p className="text-red-500 text-xs mt-1">{errors.name}</p>
-        )}
-      </div>
+      <FormInput
+        id="name"
+        name="name"
+        value={formData.name}
+        onChange={handleChange}
+        label="Dynasty Name"
+        placeholder="e.g., Tudor, Ming, Habsburg"
+        error={errors.name}
+        isRequired={true}
+      />
 
       <div className="grid grid-cols-2 gap-4">
-        <div>
-          <label
-            htmlFor="startYear"
-            className="block text-sm font-medium text-gray-700  dark:text-gray-100 mb-1"
-          >
-            Start Year
-          </label>
-          <div className="flex items-center">
-            <input
-              type="number"
-              id="startYear"
-              name="startYear"
-              value={formData.startYear}
-              onChange={handleChange}
-              className={`w-full p-2 border rounded-md ${
-                errors.startYear ? "border-red-500" : "border-gray-300"
-              }
-              bg-white dark:bg-gray-800 
-            text-gray-900 dark:text-gray-100
-            focus:ring-blue-500 dark:focus:ring-blue-400 focus:border-blue-500 dark:focus:border-blue-400  
-              `}
-              placeholder="e.g., 1485"
-            />
-            <div className="ml-2 flex items-center">
-              <input
-                type="checkbox"
-                id="startYearBce"
-                checked={startYearBce}
-                onChange={() => setStartYearBce(!startYearBce)}
-                className="mr-1"
-              />
-              <label htmlFor="startYearBce" className="text-sm">
-                BCE
-              </label>
-            </div>
-          </div>
-          {errors.startYear && (
-            <p className="text-red-500 text-xs mt-1">{errors.startYear}</p>
-          )}
-        </div>
+        <DateInput
+          id="startYear"
+          name="startYear"
+          value={formData.startYear}
+          onChange={handleChange}
+          isBce={startYearBce}
+          onBceChange={setStartYearBce}
+          label="Start Year"
+          placeholder="e.g., 1485"
+          error={errors.startYear}
+          isRequired={true}
+        />
 
-        <div>
-          <label
-            htmlFor="endYear"
-            className="block text-sm font-medium text-gray-700  dark:text-gray-100 mb-1"
-          >
-            End Year {!isEditing && "(leave blank if ongoing)"}
-          </label>
-          <div className="flex items-center">
-            <input
-              type="number"
-              id="endYear"
-              name="endYear"
-              value={formData.endYear}
-              onChange={handleChange}
-              className={`w-full p-2 border rounded-md ${
-                errors.endYear ? "border-red-500" : "border-gray-300"
-              }
-              bg-white dark:bg-gray-800 
-            text-gray-900 dark:text-gray-100
-            focus:ring-blue-500 dark:focus:ring-blue-400 focus:border-blue-500 dark:focus:border-blue-400  
-              `}
-              placeholder="e.g., 1603"
-            />
-            <div className="ml-2 flex items-center">
-              <input
-                type="checkbox"
-                id="endYearBce"
-                checked={endYearBce}
-                onChange={() => setEndYearBce(!endYearBce)}
-                className="mr-1"
-              />
-              <label htmlFor="endYearBce" className="text-sm">
-                BCE
-              </label>
-            </div>
-          </div>
-          {errors.endYear && (
-            <p className="text-red-500 text-xs mt-1">{errors.endYear}</p>
-          )}
-        </div>
+        <DateInput
+          id="endYear"
+          name="endYear"
+          value={formData.endYear}
+          onChange={handleChange}
+          isBce={endYearBce}
+          onBceChange={setEndYearBce}
+          label={`End Year ${!isEditing ? "(leave blank if ongoing)" : ""}`}
+          placeholder="e.g., 1603"
+          error={errors.endYear}
+        />
       </div>
 
       <div>
         <label
           htmlFor="color"
-          className="block text-sm font-medium text-gray-700  dark:text-gray-100 mb-1"
+          className="block text-sm font-medium text-gray-700 dark:text-gray-100 mb-1"
         >
           Color
         </label>
@@ -271,45 +198,26 @@ const AddDynastyForm = ({
             value={formData.color}
             onChange={handleChange}
             name="color"
-            className="ml-2 p-2 border border-gray-300 rounded-md bg-white dark:bg-gray-800 
-            text-gray-900 dark:text-gray-100
-            focus:ring-blue-500 dark:focus:ring-blue-400 focus:border-blue-500 dark:focus:border-blue-400"
+            className="ml-2 p-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-800 
+            text-gray-900 dark:text-gray-100"
           />
         </div>
       </div>
 
-      <div>
-        <label
-          htmlFor="description"
-          className="block text-sm font-medium text-gray-700  dark:text-gray-100 mb-1"
-        >
-          Description
-        </label>
-        <textarea
-          id="description"
-          name="description"
-          value={formData.description}
-          onChange={handleChange}
-          rows="3"
-          className="w-full p-2 border border-gray-300 rounded-md bg-white dark:bg-gray-800 
-            text-gray-900 dark:text-gray-100
-            focus:ring-blue-500 dark:focus:ring-blue-400 focus:border-blue-500 dark:focus:border-blue-400"
-          placeholder="Brief description of the dynasty..."
-        ></textarea>
-      </div>
+      <FormTextArea
+        id="description"
+        name="description"
+        value={formData.description}
+        onChange={handleChange}
+        label="Description"
+        placeholder="Brief description of the dynasty..."
+      />
 
-      <div className="flex justify-end space-x-2 pt-4">
-        <button
-          type="button"
-          onClick={onClose}
-          className="px-4 py-2 border border-gray-300 rounded-md text-gray-700 dark:text-gray-100 hover:bg-gray-50 dark:hover:bg-gray-600"
-        >
-          Cancel
-        </button>
-        <button type="submit" className="btn btn-primary">
-          {isEditing ? "Save Changes" : "Add Dynasty"}
-        </button>
-      </div>
+      <FormActions
+        onCancel={onClose}
+        isEditing={isEditing}
+        submitLabel={isEditing ? "Save Changes" : "Add Dynasty"}
+      />
     </form>
   );
 };

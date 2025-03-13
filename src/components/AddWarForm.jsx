@@ -1,7 +1,14 @@
 import { useState, useEffect } from "react";
 import { useDynasty } from "../context/DynastyContext";
 import { generateRandomColor } from "../utils/colorUtils";
-import { X } from "lucide-react";
+import { 
+  DateInput,
+  FormInput, 
+  FormSelect, 
+  FormTextArea, 
+  FormActions,
+  RulerPicker
+} from "./common";
 
 const AddWarForm = ({
   onClose,
@@ -25,23 +32,10 @@ const AddWarForm = ({
     ...(initialData || {}), // Use initialData if provided
   });
 
-  const [searchQuery, setSearchQuery] = useState("");
-  const [filteredKings, setFilteredKings] = useState([]);
-  const [showAddOneTime, setShowAddOneTime] = useState(false);
-  const [participant, setParticipant] = useState({
-    role: "participant",
-  });
-
-  const [oneTimeKing, setOneTimeKing] = useState({
-    name: "",
-    dynastyName: "",
-  });
-
-  const [errors, setErrors] = useState({});
-  const [selectedParticipants, setSelectedParticipants] = useState([]);
-
   const [startYearBce, setStartYearBce] = useState(false);
   const [endYearBce, setEndYearBce] = useState(false);
+  const [errors, setErrors] = useState({});
+  const [selectedParticipants, setSelectedParticipants] = useState([]);
 
   // Initialize form data from initialData if provided
   useEffect(() => {
@@ -127,30 +121,13 @@ const AddWarForm = ({
       setSelectedParticipants(initParticipants);
       setFormData((prev) => ({
         ...prev,
-        participants: initParticipants,
+        participants: initParticipants.map(p => ({
+          kingId: p.kingId,
+          role: p.role
+        })),
       }));
     }
   }, [preselectedKingId, kings, dynasties, isEditing, initialData]);
-
-  // Filter kings based on search
-  useEffect(() => {
-    if (searchQuery.trim() === "") {
-      setFilteredKings(kings);
-    } else {
-      const query = searchQuery.toLowerCase();
-      const filtered = kings.filter(
-        (king) =>
-          !selectedParticipants.some((p) => p.kingId === king.id) &&
-          (king.name.toLowerCase().includes(query) ||
-            (king.dynastyId &&
-              dynasties
-                .find((d) => d.id === king.dynastyId)
-                ?.name.toLowerCase()
-                .includes(query)))
-      );
-      setFilteredKings(filtered);
-    }
-  }, [searchQuery, kings, dynasties, selectedParticipants]);
 
   const handleChange = (e) => {
     const { name, value, type, checked } = e.target;
@@ -170,173 +147,71 @@ const AddWarForm = ({
     }
   };
 
-  const handleParticipantChange = (e) => {
-    const { name, value } = e.target;
-    setParticipant({
-      ...participant,
-      [name]: value,
+  const handleAddParticipant = (participant) => {
+    // Add to displayed participants
+    setSelectedParticipants([...selectedParticipants, participant]);
+    
+    // Add minimal data to formData
+    const minimalParticipant = {
+      kingId: participant.kingId,
+      role: participant.role || "participant"
+    };
+    
+    setFormData({
+      ...formData,
+      participants: [...formData.participants, minimalParticipant]
     });
   };
 
-  // Update role for a specific participant
-  const updateParticipantRole = (index, newRole) => {
-    // Update the displayed participants
-    const updatedParticipants = [...selectedParticipants];
-    updatedParticipants[index] = {
-      ...updatedParticipants[index],
-      role: newRole,
-    };
-    setSelectedParticipants(updatedParticipants);
+  const handleRemoveParticipant = (participant) => {
+    // Don't allow removal of preselected kings
+    if (preselectedKingId && (participant.kingId === preselectedKingId || participant.id === preselectedKingId)) {
+      return;
+    }
 
-    // Also update in the minimal participants data
-    const minimalParticipants = formData.participants.map((p, i) => {
-      if (i === index) {
-        return { ...p, role: newRole };
+    const kingId = participant.kingId || participant.id;
+    
+    // Remove from display participants
+    const updatedParticipants = selectedParticipants.filter(p => 
+      p.kingId !== kingId && p.id !== kingId
+    );
+    setSelectedParticipants(updatedParticipants);
+    
+    // Remove from data structure
+    const updatedFormParticipants = formData.participants.filter(p => 
+      p.kingId !== kingId
+    );
+    
+    setFormData({
+      ...formData,
+      participants: updatedFormParticipants
+    });
+  };
+
+  const handleUpdateParticipant = (updatedParticipant) => {
+    // Update in display list
+    const updatedParticipants = selectedParticipants.map(p => {
+      if (p.kingId === updatedParticipant.kingId || p.id === updatedParticipant.kingId) {
+        return { ...p, ...updatedParticipant };
       }
       return p;
     });
-
-    setFormData({
-      ...formData,
-      participants: minimalParticipants,
-    });
-  };
-
-  const handleOneTimeChange = (e) => {
-    const { name, value } = e.target;
-    setOneTimeKing({
-      ...oneTimeKing,
-      [name]: value,
-    });
-
-    // Clear error
-    if (errors[`oneTime_${name}`]) {
-      setErrors({
-        ...errors,
-        [`oneTime_${name}`]: null,
-      });
-    }
-  };
-
-  const handleSearchChange = (e) => {
-    setSearchQuery(e.target.value);
-  };
-
-  const handleShowAddOneTime = () => {
-    // Auto-fill name from search query if available
-    if (searchQuery.trim() !== "") {
-      setOneTimeKing({
-        ...oneTimeKing,
-        name: searchQuery,
-      });
-    }
-    setShowAddOneTime(true);
-  };
-
-  const addOneTimeKingToParticipants = () => {
-    // Validate
-    if (!oneTimeKing.name.trim()) {
-      setErrors({
-        ...errors,
-        oneTime_name: "Ruler name is required",
-      });
-      return;
-    }
-
-    // Create a temporary ID for the one-time king (will be replaced when saved)
-    const tempId = `temp_${Date.now()}`;
-
-    // Create minimal participant data
-    const newParticipant = {
-      kingId: tempId,
-      role: participant.role,
-    };
-
-    // Full display data for UI purposes
-    const participantForDisplay = {
-      ...newParticipant,
-      name: oneTimeKing.name,
-      dynastyName: oneTimeKing.dynastyName || null,
-      isOneTime: true,
-    };
-
-    // Add to participants for display
-    const updatedParticipants = [
-      ...selectedParticipants,
-      participantForDisplay,
-    ];
     setSelectedParticipants(updatedParticipants);
-
-    // Only store minimal data in formData
-    const minimalParticipants = formData.participants.concat(newParticipant);
+    
+    // Update in data structure
+    const updatedFormParticipants = formData.participants.map(p => {
+      if (p.kingId === updatedParticipant.kingId) {
+        return { 
+          kingId: p.kingId,
+          role: updatedParticipant.role
+        };
+      }
+      return p;
+    });
+    
     setFormData({
       ...formData,
-      participants: minimalParticipants,
-    });
-
-    // Reset forms
-    setOneTimeKing({
-      name: "",
-      dynastyName: "",
-    });
-    setShowAddOneTime(false);
-  };
-
-  const addKingFromSearch = (king) => {
-    // Create new participant with only the essential data
-    const newParticipant = {
-      kingId: king.id,
-      role: participant.role,
-    };
-
-    // For UI display purposes only, keep the full information in selectedParticipants
-    const participantForDisplay = {
-      ...newParticipant,
-      name: king.name,
-      dynastyId: king.dynastyId,
-      dynastyName:
-        king.dynastyName ||
-        (king.dynastyId
-          ? dynasties.find((d) => d.id === king.dynastyId)?.name
-          : null),
-    };
-
-    // Add to participants
-    const updatedParticipants = [
-      ...selectedParticipants,
-      participantForDisplay,
-    ];
-    setSelectedParticipants(updatedParticipants);
-
-    // But store only the minimal data in the form
-    const minimalParticipants = formData.participants.concat(newParticipant);
-    setFormData({
-      ...formData,
-      participants: minimalParticipants,
-    });
-
-    // Reset search
-    setSearchQuery("");
-  };
-
-  const removeParticipant = (index) => {
-    // Don't allow removal of preselected kings (from ruler page)
-    if (selectedParticipants[index].isPreselected) {
-      return;
-    }
-
-    // Remove from display participants
-    const updatedParticipants = [...selectedParticipants];
-    updatedParticipants.splice(index, 1);
-    setSelectedParticipants(updatedParticipants);
-
-    // Also remove from minimal data structure
-    const minimalParticipants = [...formData.participants];
-    minimalParticipants.splice(index, 1);
-
-    setFormData({
-      ...formData,
-      participants: minimalParticipants,
+      participants: updatedFormParticipants
     });
   };
 
@@ -451,15 +326,15 @@ const AddWarForm = ({
   };
 
   const warTypes = [
-    "Conquest",
-    "Civil War",
-    "Succession",
-    "Religious",
-    "Trade",
-    "Naval",
-    "Colonial",
-    "Territorial",
-    "Other",
+    { value: "Conquest", label: "Conquest" },
+    { value: "Civil War", label: "Civil War" },
+    { value: "Succession", label: "Succession" },
+    { value: "Religious", label: "Religious" },
+    { value: "Trade", label: "Trade" },
+    { value: "Naval", label: "Naval" },
+    { value: "Colonial", label: "Colonial" },
+    { value: "Territorial", label: "Territorial" },
+    { value: "Other", label: "Other" },
   ];
 
   const importanceLevels = [
@@ -484,205 +359,84 @@ const AddWarForm = ({
         </div>
       )}
 
-      <div>
-        <label
-          htmlFor="name"
-          className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1"
-        >
-          War/Conflict Name
-        </label>
-        <input
-          type="text"
-          id="name"
-          name="name"
-          value={formData.name}
+      <FormInput
+        id="name"
+        name="name"
+        value={formData.name}
+        onChange={handleChange}
+        label="War/Conflict Name"
+        placeholder="e.g., Hundred Years' War, First Punic War"
+        error={errors.name}
+        isRequired={true}
+      />
+
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <FormSelect
+          id="type"
+          name="type"
+          value={formData.type}
           onChange={handleChange}
-          className={`w-full p-2 border rounded-md ${
-            errors.name
-              ? "border-red-500 dark:border-red-400"
-              : "border-gray-300 dark:border-gray-600"
-          } bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100`}
-          placeholder="e.g., Hundred Years' War, First Punic War"
+          options={warTypes}
+          label="War Type"
+          error={errors.type}
+          isRequired={true}
         />
-        {errors.name && (
-          <p className="text-red-500 text-xs mt-1">{errors.name}</p>
-        )}
+
+        <FormSelect
+          id="importance"
+          name="importance"
+          value={formData.importance}
+          onChange={handleChange}
+          options={importanceLevels}
+          label="Importance"
+        />
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        <div>
-          <label
-            htmlFor="type"
-            className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1"
-          >
-            War Type
-          </label>
-          <select
-            id="type"
-            name="type"
-            value={formData.type}
-            onChange={handleChange}
-            className={`w-full p-2 border rounded-md ${
-              errors.type
-                ? "border-red-500 dark:border-red-400"
-                : "border-gray-300 dark:border-gray-600"
-            } bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100`}
-          >
-            {warTypes.map((type) => (
-              <option key={type} value={type}>
-                {type}
-              </option>
-            ))}
-          </select>
-          {errors.type && (
-            <p className="text-red-500 text-xs mt-1">{errors.type}</p>
-          )}
-        </div>
-
-        <div>
-          <label
-            htmlFor="importance"
-            className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1"
-          >
-            Importance
-          </label>
-          <select
-            id="importance"
-            name="importance"
-            value={formData.importance}
-            onChange={handleChange}
-            className="w-full p-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100"
-          >
-            {importanceLevels.map((level) => (
-              <option key={level.value} value={level.value}>
-                {level.label}
-              </option>
-            ))}
-          </select>
-        </div>
-      </div>
-
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        <div>
-          <label
-            htmlFor="startYear"
-            className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1"
-          >
-            Start Year
-          </label>
-          <div className="flex items-center">
-            <input
-              type="number"
-              id="startYear"
-              name="startYear"
-              value={formData.startYear}
-              onChange={handleChange}
-              className={`w-full p-2 border rounded-md ${
-                errors.startYear
-                  ? "border-red-500 dark:border-red-400"
-                  : "border-gray-300 dark:border-gray-600"
-              } bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100`}
-              placeholder="e.g., 1337"
-            />
-            <div className="ml-2 flex items-center">
-              <input
-                type="checkbox"
-                id="startYearBce"
-                checked={startYearBce}
-                onChange={() => setStartYearBce(!startYearBce)}
-                className="mr-1 dark:bg-gray-700 dark:border-gray-600"
-              />
-              <label
-                htmlFor="startYearBce"
-                className="text-sm dark:text-gray-300"
-              >
-                BCE
-              </label>
-            </div>
-          </div>
-          {errors.startYear && (
-            <p className="text-red-500 text-xs mt-1">{errors.startYear}</p>
-          )}
-        </div>
-
-        <div>
-          <label
-            htmlFor="endYear"
-            className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1"
-          >
-            End Year
-          </label>
-          <div className="flex items-center">
-            <input
-              type="number"
-              id="endYear"
-              name="endYear"
-              value={formData.endYear}
-              onChange={handleChange}
-              className={`w-full p-2 border rounded-md ${
-                errors.endYear
-                  ? "border-red-500 dark:border-red-400"
-                  : "border-gray-300 dark:border-gray-600"
-              } bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100`}
-              placeholder="e.g., 1453"
-            />
-            <div className="ml-2 flex items-center">
-              <input
-                type="checkbox"
-                id="endYearBce"
-                checked={endYearBce}
-                onChange={() => setEndYearBce(!endYearBce)}
-                className="mr-1 dark:bg-gray-700 dark:border-gray-600"
-              />
-              <label
-                htmlFor="endYearBce"
-                className="text-sm dark:text-gray-300"
-              >
-                BCE
-              </label>
-            </div>
-          </div>
-          {errors.endYear && (
-            <p className="text-red-500 text-xs mt-1">{errors.endYear}</p>
-          )}
-        </div>
-      </div>
-
-      <div>
-        <label
-          htmlFor="location"
-          className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1"
-        >
-          Location
-        </label>
-        <input
-          type="text"
-          id="location"
-          name="location"
-          value={formData.location}
+        <DateInput
+          id="startYear"
+          name="startYear"
+          value={formData.startYear}
           onChange={handleChange}
-          className="w-full p-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100"
-          placeholder="e.g., Western Europe, Mediterranean"
+          isBce={startYearBce}
+          onBceChange={setStartYearBce}
+          label="Start Year"
+          placeholder="e.g., 1337"
+          error={errors.startYear}
+          isRequired={true}
+        />
+
+        <DateInput
+          id="endYear"
+          name="endYear"
+          value={formData.endYear}
+          onChange={handleChange}
+          isBce={endYearBce}
+          onBceChange={setEndYearBce}
+          label="End Year"
+          placeholder="e.g., 1453"
+          error={errors.endYear}
+          isRequired={true}
         />
       </div>
 
-      <div>
-        <label
-          htmlFor="description"
-          className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1"
-        >
-          Description
-        </label>
-        <textarea
-          id="description"
-          name="description"
-          value={formData.description}
-          onChange={handleChange}
-          rows={3}
-          className="w-full p-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100"
-          placeholder="Brief description of the war/conflict"
-        />
-      </div>
+      <FormInput
+        id="location"
+        name="location"
+        value={formData.location}
+        onChange={handleChange}
+        label="Location"
+        placeholder="e.g., Western Europe, Mediterranean"
+      />
+
+      <FormTextArea
+        id="description"
+        name="description"
+        value={formData.description}
+        onChange={handleChange}
+        label="Description"
+        placeholder="Brief description of the war/conflict"
+      />
 
       {/* Participants Section */}
       <div className="border-t border-gray-200 dark:border-gray-700 pt-4">
@@ -690,217 +444,23 @@ const AddWarForm = ({
           <h3 className="text-lg font-medium dark:text-white">Participants</h3>
         </div>
 
-        {/* Selected Participants */}
-        <div className="mb-4">
-          {selectedParticipants.length > 0 ? (
-            <div className="space-y-2 mb-3">
-              {selectedParticipants.map((participant, index) => (
-                <div
-                  key={index}
-                  className="flex justify-between items-center p-2 bg-gray-50 dark:bg-gray-700 rounded"
-                >
-                  <div className="flex items-center justify-between w-full">
-                    <div>
-                      <span className="font-medium dark:text-white">
-                        {participant.name}
-                      </span>
-                      {participant.dynastyName && (
-                        <span className="text-gray-600 dark:text-gray-400">
-                          {" "}
-                          ({participant.dynastyName})
-                        </span>
-                      )}
-                      {participant.isOneTime && (
-                        <span className="text-gray-500 dark:text-gray-400 ml-1">
-                          (One-time)
-                        </span>
-                      )}
-                    </div>
-
-                    <div className="flex items-center">
-                      <select
-                        value={participant.role}
-                        onChange={(e) =>
-                          updateParticipantRole(index, e.target.value)
-                        }
-                        className="p-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 text-sm"
-                      >
-                        {participantRoles.map((role) => (
-                          <option key={role.value} value={role.value}>
-                            {role.label}
-                          </option>
-                        ))}
-                      </select>
-
-                      {!participant.isPreselected && (
-                        <button
-                          type="button"
-                          onClick={() => removeParticipant(index)}
-                          className="ml-2 text-red-500 hover:text-red-700 dark:text-red-400 dark:hover:text-red-300"
-                        >
-                          <X className="h-5 w-5" />
-                        </button>
-                      )}
-                    </div>
-                  </div>
-                </div>
-              ))}
-            </div>
-          ) : (
-            <p
-              className={`text-sm mb-3 ${
-                errors.participants
-                  ? "text-red-500"
-                  : "text-gray-500 dark:text-gray-400"
-              }`}
-            >
-              No participants added yet.
-            </p>
-          )}
-          {errors.participants && (
-            <p className="text-red-500 text-xs">{errors.participants}</p>
-          )}
-        </div>
-
-        {/* Add new participant */}
-        <div className="mb-4">
-          {/* Search Field and Add One-time button */}
-          <div className="flex space-x-2 mb-2">
-            <div className="flex-1">
-              <input
-                type="text"
-                placeholder="Search for rulers..."
-                value={searchQuery}
-                onChange={handleSearchChange}
-                className="w-full p-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100"
-              />
-            </div>
-            <button
-              type="button"
-              onClick={handleShowAddOneTime}
-              className="px-3 py-2 bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-200 rounded-md hover:bg-gray-300 dark:hover:bg-gray-600"
-            >
-              Add One-time
-            </button>
-          </div>
-
-          {/* Search Results */}
-          {searchQuery && !showAddOneTime && (
-            <div className="max-h-40 overflow-y-auto border border-gray-300 dark:border-gray-600 rounded-md mb-3 bg-white dark:bg-gray-800">
-              {filteredKings.length > 0 ? (
-                <ul className="divide-y divide-gray-200 dark:divide-gray-700">
-                  {filteredKings.map((king) => {
-                    const dynastyName =
-                      king.dynastyName ||
-                      (king.dynastyId
-                        ? dynasties.find((d) => d.id === king.dynastyId)?.name
-                        : "No dynasty");
-
-                    return (
-                      <li
-                        key={king.id}
-                        className="p-2 hover:bg-gray-100 dark:hover:bg-gray-700 cursor-pointer"
-                        onClick={() => addKingFromSearch(king)}
-                      >
-                        <div className="flex justify-between">
-                          <div>
-                            <span className="font-medium dark:text-white">
-                              {king.name}
-                            </span>
-                            <span className="text-gray-500 dark:text-gray-400 text-sm ml-2">
-                              ({dynastyName})
-                            </span>
-                          </div>
-                          <div className="text-xs text-gray-500 dark:text-gray-400">
-                            {king.startYear}
-                            {king.endYear ? `-${king.endYear}` : ""}
-                          </div>
-                        </div>
-                      </li>
-                    );
-                  })}
-                </ul>
-              ) : (
-                <div className="p-3 text-center text-gray-500 dark:text-gray-400">
-                  No matching rulers found
-                </div>
-              )}
-            </div>
-          )}
-
-          {/* Add One-time King Form */}
-          {showAddOneTime && (
-            <div className="border border-gray-300 dark:border-gray-600 rounded-md p-3 mb-3 bg-gray-50 dark:bg-gray-700">
-              <div className="text-sm font-medium mb-2 dark:text-white">
-                Add a one-time ruler
-              </div>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                <div>
-                  <input
-                    type="text"
-                    name="name"
-                    value={oneTimeKing.name}
-                    onChange={handleOneTimeChange}
-                    placeholder="Ruler name *"
-                    className={`w-full p-2 border ${
-                      errors.oneTime_name
-                        ? "border-red-500 dark:border-red-400"
-                        : "border-gray-300 dark:border-gray-600"
-                    } rounded-md text-sm bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100`}
-                  />
-                  {errors.oneTime_name && (
-                    <p className="text-red-500 text-xs mt-1">
-                      {errors.oneTime_name}
-                    </p>
-                  )}
-                </div>
-                <div>
-                  <input
-                    type="text"
-                    name="dynastyName"
-                    value={oneTimeKing.dynastyName}
-                    onChange={handleOneTimeChange}
-                    placeholder="Dynasty name (optional)"
-                    className="w-full p-2 border border-gray-300 dark:border-gray-600 rounded-md text-sm bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100"
-                  />
-                </div>
-              </div>
-              <div className="flex justify-end space-x-2 mt-2">
-                <button
-                  type="button"
-                  onClick={() => setShowAddOneTime(false)}
-                  className="px-2 py-1 text-sm border border-gray-300 dark:border-gray-600 rounded-md hover:bg-gray-100 dark:hover:bg-gray-600 dark:text-gray-200"
-                >
-                  Cancel
-                </button>
-                <button
-                  type="button"
-                  onClick={addOneTimeKingToParticipants}
-                  className="px-2 py-1 text-sm bg-green-600 text-white rounded-md hover:bg-green-700"
-                >
-                  Add
-                </button>
-              </div>
-            </div>
-          )}
-        </div>
+        <RulerPicker
+          selectedRulers={selectedParticipants}
+          onAddRuler={handleAddParticipant}
+          onRemoveRuler={handleRemoveParticipant}
+          onUpdateRuler={handleUpdateParticipant}
+          error={errors.participants}
+          preselectedKingId={preselectedKingId}
+          showRoles={true}
+          roleOptions={participantRoles}
+        />
       </div>
 
-      <div className="flex justify-end space-x-2 pt-4">
-        <button
-          type="button"
-          onClick={onClose}
-          className="px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-md text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-700"
-        >
-          Cancel
-        </button>
-        <button
-          type="submit"
-          className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700"
-        >
-          {isEditing ? "Save Changes" : "Add War/Conflict"}
-        </button>
-      </div>
+      <FormActions
+        onCancel={onClose}
+        isEditing={isEditing}
+        submitLabel={isEditing ? "Save Changes" : "Add War/Conflict"}
+      />
     </form>
   );
 };

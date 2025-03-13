@@ -1,6 +1,13 @@
 import { useState, useEffect } from "react";
 import { useDynasty } from "../context/DynastyContext";
-import { parseYear, formatYear } from "../utils/dateUtils";
+import { formatYear } from "../utils/dateUtils";
+import { 
+  DateInput, 
+  FormInput, 
+  FormSelect, 
+  FormTextArea, 
+  FormActions 
+} from "./common";
 
 const AddKingForm = ({
   onClose,
@@ -204,289 +211,121 @@ const AddKingForm = ({
     if (onClose) onClose();
   };
 
+  // Prepare dynasty options for select
+  const dynastyOptions = [
+    { value: "", label: "Select a dynasty" },
+    ...dynasties.map((dynasty) => ({
+      value: dynasty.id,
+      label: `${dynasty.name} (${formatYear(dynasty.startYear)} - ${formatYear(dynasty.endYear)})`,
+    })),
+  ];
+
   return (
     <form onSubmit={handleSubmit} className="space-y-4">
       <div className="text-xl font-bold mb-4 dark:text-white">
         {isEditing ? `Edit ${formData.name}` : "Add New Ruler"}
       </div>
 
-      <div>
-        <label
-          htmlFor="name"
-          className="block text-sm font-medium text-gray-700 dark:text-gray-100 mb-1"
-        >
-          Ruler Name
-        </label>
-        <input
-          type="text"
-          id="name"
-          name="name"
-          value={formData.name}
+      <FormInput
+        id="name"
+        name="name"
+        value={formData.name}
+        onChange={handleChange}
+        label="Ruler Name"
+        placeholder="e.g., Elizabeth I, Louis XIV"
+        error={errors.name}
+        isRequired={true}
+      />
+
+      <FormSelect
+        id="dynastyId"
+        name="dynastyId"
+        value={formData.dynastyId}
+        onChange={handleChange}
+        options={dynastyOptions}
+        label="Dynasty"
+        error={errors.dynastyId}
+        isRequired={true}
+        disabled={isEditing && preselectedDynastyId}
+      />
+
+      <div className="grid grid-cols-2 gap-4">
+        <DateInput
+          id="startYear"
+          name="startYear"
+          value={formData.startYear}
           onChange={handleChange}
-          className={`w-full p-2 border rounded-md ${
-            errors.name
-              ? "border-red-500 dark:border-red-400"
-              : "border-gray-300 dark:border-gray-600"
-          } bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100`}
-          placeholder="e.g., Elizabeth I, Louis XIV"
+          isBce={startYearBce}
+          onBceChange={setStartYearBce}
+          label="Start Year of Reign"
+          placeholder="e.g., 1558"
+          error={errors.startYear}
+          isRequired={true}
         />
-        {errors.name && (
-          <p className="text-red-500 text-xs mt-1">{errors.name}</p>
-        )}
-      </div>
 
-      <div>
-        <label
-          htmlFor="dynastyId"
-          className="block text-sm font-medium text-gray-700 dark:text-gray-100 mb-1"
-        >
-          Dynasty
-        </label>
-        <select
-          id="dynastyId"
-          name="dynastyId"
-          value={formData.dynastyId}
+        <DateInput
+          id="endYear"
+          name="endYear"
+          value={formData.endYear}
           onChange={handleChange}
-          className={`w-full p-2 border rounded-md ${
-            errors.dynastyId
-              ? "border-red-500 dark:border-red-400"
-              : "border-gray-300 dark:border-gray-600"
-          } bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100`}
-          disabled={isEditing && preselectedDynastyId}
-        >
-          <option value="">Select a dynasty</option>
-          {dynasties.map((dynasty) => (
-            <option key={dynasty.id} value={dynasty.id}>
-              {dynasty.name} ({formatYear(dynasty.startYear)} -{" "}
-              {formatYear(dynasty.endYear)})
-            </option>
-          ))}
-        </select>
-        {errors.dynastyId && (
-          <p className="text-red-500 text-xs mt-1">{errors.dynastyId}</p>
-        )}
-      </div>
-
-      <div className="grid grid-cols-2 gap-4">
-        <div>
-          <label
-            htmlFor="startYear"
-            className="block text-sm font-medium text-gray-700 dark:text-gray-100 mb-1"
-          >
-            Start Year of Reign
-          </label>
-          <div className="flex items-center">
-            <input
-              type="number"
-              id="startYear"
-              name="startYear"
-              value={formData.startYear}
-              onChange={handleChange}
-              className={`w-full p-2 border rounded-md ${
-                errors.startYear
-                  ? "border-red-500 dark:border-red-400"
-                  : "border-gray-300 dark:border-gray-600"
-              } bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100`}
-              placeholder="e.g., 1558"
-            />
-            <div className="ml-2 flex items-center">
-              <input
-                type="checkbox"
-                id="startYearBce"
-                checked={startYearBce}
-                onChange={() => setStartYearBce(!startYearBce)}
-                className="mr-1 dark:bg-gray-700 dark:border-gray-600"
-              />
-              <label
-                htmlFor="startYearBce"
-                className="text-sm dark:text-gray-200"
-              >
-                BCE
-              </label>
-            </div>
-          </div>
-          {errors.startYear && (
-            <p className="text-red-500 text-xs mt-1">{errors.startYear}</p>
-          )}
-        </div>
-
-        <div>
-          <label
-            htmlFor="endYear"
-            className="block text-sm font-medium text-gray-700 dark:text-gray-100 mb-1"
-          >
-            End Year of Reign
-          </label>
-          <div className="flex items-center">
-            <input
-              type="number"
-              id="endYear"
-              name="endYear"
-              value={formData.endYear}
-              onChange={handleChange}
-              className={`w-full p-2 border rounded-md ${
-                errors.endYear
-                  ? "border-red-500 dark:border-red-400"
-                  : "border-gray-300 dark:border-gray-600"
-              } bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100`}
-              placeholder="e.g., 1603"
-            />
-            <div className="ml-2 flex items-center">
-              <input
-                type="checkbox"
-                id="endYearBce"
-                checked={endYearBce}
-                onChange={() => setEndYearBce(!endYearBce)}
-                className="mr-1 dark:bg-gray-700 dark:border-gray-600"
-              />
-              <label
-                htmlFor="endYearBce"
-                className="text-sm dark:text-gray-200"
-              >
-                BCE
-              </label>
-            </div>
-          </div>
-          {errors.endYear && (
-            <p className="text-red-500 text-xs mt-1">{errors.endYear}</p>
-          )}
-        </div>
-      </div>
-
-      <div className="grid grid-cols-2 gap-4">
-        <div>
-          <label
-            htmlFor="birthYear"
-            className="block text-sm font-medium text-gray-700 dark:text-gray-100 mb-1"
-          >
-            Birth Year (optional)
-          </label>
-          <div className="flex items-center">
-            <input
-              type="number"
-              id="birthYear"
-              name="birthYear"
-              value={formData.birthYear}
-              onChange={handleChange}
-              className={`w-full p-2 border rounded-md ${
-                errors.birthYear
-                  ? "border-red-500 dark:border-red-400"
-                  : "border-gray-300 dark:border-gray-600"
-              } bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100`}
-              placeholder="e.g., 1533"
-            />
-            <div className="ml-2 flex items-center">
-              <input
-                type="checkbox"
-                id="birthYearBce"
-                checked={birthYearBce}
-                onChange={() => setBirthYearBce(!birthYearBce)}
-                className="mr-1 dark:bg-gray-700 dark:border-gray-600"
-              />
-              <label
-                htmlFor="birthYearBce"
-                className="text-sm dark:text-gray-200"
-              >
-                BCE
-              </label>
-            </div>
-          </div>
-          {errors.birthYear && (
-            <p className="text-red-500 text-xs mt-1">{errors.birthYear}</p>
-          )}
-        </div>
-
-        <div>
-          <label
-            htmlFor="deathYear"
-            className="block text-sm font-medium text-gray-700 dark:text-gray-100 mb-1"
-          >
-            Death Year (optional)
-          </label>
-          <div className="flex items-center">
-            <input
-              type="number"
-              id="deathYear"
-              name="deathYear"
-              value={formData.deathYear}
-              onChange={handleChange}
-              className={`w-full p-2 border rounded-md ${
-                errors.deathYear
-                  ? "border-red-500 dark:border-red-400"
-                  : "border-gray-300 dark:border-gray-600"
-              } bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100`}
-              placeholder="e.g., 1603"
-            />
-            <div className="ml-2 flex items-center">
-              <input
-                type="checkbox"
-                id="deathYearBce"
-                checked={deathYearBce}
-                onChange={() => setDeathYearBce(!deathYearBce)}
-                className="mr-1 dark:bg-gray-700 dark:border-gray-600"
-              />
-              <label
-                htmlFor="deathYearBce"
-                className="text-sm dark:text-gray-200"
-              >
-                BCE
-              </label>
-            </div>
-          </div>
-          {errors.deathYear && (
-            <p className="text-red-500 text-xs mt-1">{errors.deathYear}</p>
-          )}
-        </div>
-      </div>
-
-      <div>
-        <label
-          htmlFor="description"
-          className="block text-sm font-medium text-gray-700 dark:text-gray-100 mb-1"
-        >
-          Description
-        </label>
-        <textarea
-          id="description"
-          name="description"
-          value={formData.description}
-          onChange={handleChange}
-          rows="3"
-          className="w-full p-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100"
-          placeholder="Brief description of the ruler..."
-        ></textarea>
-      </div>
-
-      <div>
-        <label
-          htmlFor="imageUrl"
-          className="block text-sm font-medium text-gray-700 dark:text-gray-100 mb-1"
-        >
-          Image URL (optional)
-        </label>
-        <input
-          type="text"
-          id="imageUrl"
-          name="imageUrl"
-          value={formData.imageUrl}
-          onChange={handleChange}
-          className="w-full p-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100"
-          placeholder="https://example.com/image.jpg"
+          isBce={endYearBce}
+          onBceChange={setEndYearBce}
+          label="End Year of Reign"
+          placeholder="e.g., 1603"
+          error={errors.endYear}
+          isRequired={true}
         />
       </div>
 
-      <div className="flex justify-end space-x-2 pt-4">
-        <button
-          type="button"
-          onClick={onClose}
-          className="px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-md text-gray-700 dark:text-gray-100 hover:bg-gray-50 dark:hover:bg-gray-600"
-        >
-          Cancel
-        </button>
-        <button type="submit" className="btn btn-primary">
-          {isEditing ? "Save Changes" : "Add Ruler"}
-        </button>
+      <div className="grid grid-cols-2 gap-4">
+        <DateInput
+          id="birthYear"
+          name="birthYear"
+          value={formData.birthYear}
+          onChange={handleChange}
+          isBce={birthYearBce}
+          onBceChange={setBirthYearBce}
+          label="Birth Year"
+          placeholder="e.g., 1533"
+          error={errors.birthYear}
+        />
+
+        <DateInput
+          id="deathYear"
+          name="deathYear"
+          value={formData.deathYear}
+          onChange={handleChange}
+          isBce={deathYearBce}
+          onBceChange={setDeathYearBce}
+          label="Death Year"
+          placeholder="e.g., 1603"
+          error={errors.deathYear}
+        />
       </div>
+
+      <FormTextArea
+        id="description"
+        name="description"
+        value={formData.description}
+        onChange={handleChange}
+        label="Description"
+        placeholder="Brief description of the ruler..."
+      />
+
+      <FormInput
+        id="imageUrl"
+        name="imageUrl"
+        value={formData.imageUrl}
+        onChange={handleChange}
+        label="Image URL"
+        placeholder="https://example.com/image.jpg"
+      />
+
+      <FormActions
+        onCancel={onClose}
+        isEditing={isEditing}
+        submitLabel={isEditing ? "Save Changes" : "Add Ruler"}
+      />
     </form>
   );
 };

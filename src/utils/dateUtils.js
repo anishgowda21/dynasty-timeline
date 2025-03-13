@@ -51,9 +51,9 @@ export const formatYear = (year, includeBceLabel = true, formatStyle = 'default'
     if (!includeBceLabel) {
       result = bceYear.toString();
     } else if (formatStyle === 'compact') {
-      result = `${bceYear}B`;
+      result = `${bceYear} BCE`;  // Always show full BCE for compact
     } else if (formatStyle === 'timeline') {
-      result = `${bceYear}`;
+      result = `${bceYear} BCE`;  // Always show full BCE for timeline
     } else {
       result = `${bceYear} BCE`;
     }
@@ -61,8 +61,10 @@ export const formatYear = (year, includeBceLabel = true, formatStyle = 'default'
     // CE years
     if (!includeBceLabel) {
       result = numYear.toString();
-    } else if (formatStyle === 'compact' || formatStyle === 'timeline') {
-      result = `${numYear}`;
+    } else if (formatStyle === 'compact') {
+      result = numYear < 1000 ? `${numYear} CE` : `${numYear}`;  // Show CE only for years < 1000
+    } else if (formatStyle === 'timeline') {
+      result = `${numYear} CE`;
     } else {
       result = `${numYear} CE`;
     }

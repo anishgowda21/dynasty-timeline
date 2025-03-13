@@ -22,7 +22,7 @@ const TimelineItem = React.memo(({ item, type, startPosition, endPosition, width
         </div>
         <div className="w-3/4 sm:w-4/5 relative h-8">
           <div
-            className="absolute h-6 rounded-md flex items-center px-2 text-white text-xs font-medium hover:opacity-90 transition-opacity"
+            className="absolute h-6 rounded-md flex items-center px-2 text-white text-xs font-medium hover:opacity-90 transition-opacity overflow-hidden"
             style={{
               left: `${startPosition}%`,
               width: `${width}%`,
@@ -33,7 +33,15 @@ const TimelineItem = React.memo(({ item, type, startPosition, endPosition, width
             }}
             title={`${item.name}: ${formatYear(item.startYear)} - ${formatYear(item.endYear)}`}
           >
-            {width > 8 ? `${formatYear(item.startYear)} - ${formatYear(item.endYear)}` : ""}
+            {width > 15 ? (
+              <span className="whitespace-nowrap overflow-hidden text-ellipsis w-full text-center">
+                {formatYear(item.startYear)} - {formatYear(item.endYear)}
+              </span>
+            ) : (
+              <span className="whitespace-nowrap overflow-hidden text-ellipsis w-full text-center">
+                {width > 8 ? formatYear(item.startYear) : ""}
+              </span>
+            )}
           </div>
         </div>
       </div>
@@ -51,7 +59,7 @@ const DecadeMarker = React.memo(({ decade }) => {
     >
       <div className="h-3 border-l border-gray-400"></div>
       <div
-        className={`text-xs ${decade.isTransitionYear ? "font-bold text-blue-600" : "text-gray-600"}`}
+        className={`text-xs whitespace-nowrap ${decade.isTransitionYear ? "font-bold text-blue-600" : "text-gray-600"}`}
       >
         {decade.isTransitionYear
           ? "BCE/CE"
@@ -299,16 +307,16 @@ const Timeline = ({
         minYear,
         maxYear
       );
-      const width = endPosition - startPosition;
+      const width = Math.max(endPosition - startPosition, 3); // Ensure minimum width of 3%
       
       // Add a small vertical offset for overlapping timelines to make them more visible
       // Use more pronounced offsets in mobile view to avoid congestion
       const isMobile = windowWidth < 640; // sm breakpoint
       const offsetY = isMobile
-        ? (index % 3) * 10 // More offset on mobile (0, 10, 20px)
+        ? (index % 3) * 12 // More offset on mobile (0, 12, 24px)
         : index % 2 === 0
         ? 0
-        : 12; // Regular offset on desktop
+        : 8; // Reduced offset on desktop for better aesthetics
         
       return {
         item,

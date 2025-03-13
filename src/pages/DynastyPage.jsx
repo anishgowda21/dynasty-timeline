@@ -170,10 +170,7 @@ const DynastyPage = () => {
         title="Add New Ruler"
       >
         <AddKingForm
-          onSave={(king) => {
-            setShowAddModal(false);
-          }}
-          onCancel={() => setShowAddModal(false)}
+          onClose={() => setShowAddModal(false)}
           preselectedDynastyId={id}
         />
       </Modal>
@@ -185,9 +182,13 @@ const DynastyPage = () => {
         title="Edit Dynasty"
       >
         <AddDynastyForm
-          dynasty={dynasty}
+          initialData={dynasty}
+          initialBCE={{
+            startYearBce: dynasty?.startYear < 0,
+            endYearBce: dynasty?.endYear < 0
+          }}
+          onClose={() => setIsEditing(false)}
           onSave={handleEditDynasty}
-          onCancel={() => setIsEditing(false)}
           isEditing={true}
         />
       </Modal>

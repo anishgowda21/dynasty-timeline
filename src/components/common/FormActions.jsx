@@ -11,8 +11,12 @@ const FormActions = React.memo(({
   cancelLabel = "Cancel",
   className = "" 
 }) => {
-  // Use a memoized callback for the cancel action to prevent creating new functions on each render
-  const handleCancel = React.useCallback(() => {
+  // Handle the cancel button click - prevent form submission and call onCancel
+  const handleCancel = React.useCallback((e) => {
+    // Prevent default to make sure it doesn't submit the form
+    e.preventDefault();
+    e.stopPropagation();
+    
     if (onCancel) onCancel();
   }, [onCancel]);
 

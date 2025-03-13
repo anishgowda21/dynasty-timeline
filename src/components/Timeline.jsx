@@ -185,17 +185,17 @@ const Timeline = ({
   }, []);
 
   // Generate decade markers for the timeline
-  const generateDecadeMarkers = useCallback((min, max) => {
+  const generateDecadeMarkers = useCallback((min, max, stepMultiplier = 1) => {
     const decadeMarkers = [];
     const span = max - min;
 
     // Determine step size based on the span
-    let step = 10; // default decade
-    if (span > 500) step = 50; // half century
-    if (span > 1000) step = 100; // century
-    if (span > 2000) step = 200; // double century
-    if (span > 5000) step = 500; // half millennium
-    if (span > 10000) step = 1000; // millennium
+    let step = 10 * stepMultiplier; // default decade
+    if (span > 500) step = 50 * stepMultiplier; // half century
+    if (span > 1000) step = 100 * stepMultiplier; // century
+    if (span > 2000) step = 200 * stepMultiplier; // double century
+    if (span > 5000) step = 500 * stepMultiplier; // half millennium
+    if (span > 10000) step = 1000 * stepMultiplier; // millennium
 
     // Round min down and max up to nearest step
     const startDecade = Math.floor(min / step) * step;
@@ -204,9 +204,9 @@ const Timeline = ({
     // Calculate how many markers we would have
     const expectedMarkers = Math.ceil((endDecade - startDecade) / step) + 1;
 
-    // If too many markers, increase step size
+    // If too many markers, increase step size and try again
     if (expectedMarkers > 15) {
-      return generateDecadeMarkers(min, max); // Recalculate with larger step
+      return generateDecadeMarkers(min, max, stepMultiplier * 2); // Recalculate with larger step
     }
 
     // Special handling for BCE/CE transition

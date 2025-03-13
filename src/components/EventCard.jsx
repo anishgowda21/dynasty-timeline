@@ -1,5 +1,6 @@
 import { Link, useNavigate } from "react-router-dom";
 import { formatDate, formatYear } from "../utils/dateUtils";
+import { getEventTypeClass, getImportanceClass } from "../utils/styleUtils";
 import { useState } from "react";
 import { useDynasty } from "../context/DynastyContext";
 import ConfirmationDialog from "./ConfirmationDialog";
@@ -21,40 +22,6 @@ const EventCard = ({ event, kings = [], showLink = true }) => {
     ? formatYear(parseInt(event.date))
     : formattedDate;
 
-  const getImportanceClass = () => {
-    switch (event.importance) {
-      case "high":
-        return "bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200";
-      case "medium":
-        return "bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200";
-      case "low":
-        return "bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200";
-      default:
-        return "bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-300";
-    }
-  };
-
-  const getTypeClass = () => {
-    switch (event.type) {
-      case "Religious":
-        return "bg-purple-100 text-purple-800 dark:bg-purple-900 dark:text-purple-200";
-      case "Political":
-        return "bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200";
-      case "Cultural":
-        return "bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200";
-      case "Economic":
-        return "bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200";
-      case "Scientific":
-        return "bg-indigo-100 text-indigo-800 dark:bg-indigo-900 dark:text-indigo-200";
-      case "Diplomatic":
-        return "bg-teal-100 text-teal-800 dark:bg-teal-900 dark:text-teal-200";
-      case "Military":
-        return "bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200";
-      default:
-        return "bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-300";
-    }
-  };
-
   const handleKingClick = (e, king) => {
     e.preventDefault();
     e.stopPropagation();
@@ -71,20 +38,20 @@ const EventCard = ({ event, kings = [], showLink = true }) => {
     setShowDeleteConfirm(true);
   };
 
-  const handleCancelDelete = (e) => {
-    if (e) {
-      e.preventDefault();
-      e.stopPropagation();
-    }
-    setShowDeleteConfirm(false);
-  };
-
   const handleConfirmDelete = (e) => {
     if (e) {
       e.preventDefault();
       e.stopPropagation();
     }
     deleteEvent(event.id);
+    setShowDeleteConfirm(false);
+  };
+
+  const handleCancelDelete = (e) => {
+    if (e) {
+      e.preventDefault();
+      e.stopPropagation();
+    }
     setShowDeleteConfirm(false);
   };
 
@@ -102,7 +69,7 @@ const EventCard = ({ event, kings = [], showLink = true }) => {
             )}
             {event.type && (
               <span
-                className={`text-xs px-2 py-1 rounded-full ${getTypeClass()}`}
+                className={`text-xs px-2 py-1 rounded-full ${getEventTypeClass(event.type)}`}
               >
                 {event.type}
               </span>
@@ -121,7 +88,7 @@ const EventCard = ({ event, kings = [], showLink = true }) => {
       <div className="flex flex-wrap gap-2 mb-3">
         {event.importance && (
           <span
-            className={`px-2 py-1 rounded-full text-xs font-medium ${getImportanceClass()}`}
+            className={`px-2 py-1 rounded-full text-xs font-medium ${getImportanceClass(event.importance)}`}
           >
             {event.importance.charAt(0).toUpperCase() +
               event.importance.slice(1)}{" "}

@@ -2,6 +2,7 @@ import { Link, useNavigate } from "react-router-dom";
 import { useState } from "react";
 import { useDynasty } from "../context/DynastyContext";
 import { formatYear } from "../utils/dateUtils";
+import { getWarTypeClass, getImportanceClass, getParticipantRoleClass } from "../utils/styleUtils";
 import ConfirmationDialog from "./ConfirmationDialog";
 import { Trash } from "lucide-react";
 
@@ -31,59 +32,6 @@ const WarCard = ({ war, currentKingId, kings = [], showLink = true }) => {
       isOneTime: king ? king.isOneTime : false
     };
   });
-
-  const getImportanceClass = () => {
-    switch (war.importance) {
-      case "high":
-        return "bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200";
-      case "medium":
-        return "bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200";
-      case "low":
-        return "bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200";
-      default:
-        return "bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-300";
-    }
-  };
-
-  const getTypeClass = () => {
-    switch (war.type) {
-      case "Conquest":
-        return "bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200";
-      case "Civil War":
-        return "bg-orange-100 text-orange-800 dark:bg-orange-900 dark:text-orange-200";
-      case "Succession":
-        return "bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200";
-      case "Religious":
-        return "bg-purple-100 text-purple-800 dark:bg-purple-900 dark:text-purple-200";
-      case "Trade":
-        return "bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200";
-      case "Naval":
-        return "bg-indigo-100 text-indigo-800 dark:bg-indigo-900 dark:text-indigo-200";
-      case "Colonial":
-        return "bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200";
-      case "Territorial":
-        return "bg-teal-100 text-teal-800 dark:bg-teal-900 dark:text-teal-200";
-      default:
-        return "bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-300";
-    }
-  };
-
-  const getRoleClass = (role) => {
-    switch (role) {
-      case "victor":
-        return "bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200";
-      case "defeated":
-        return "bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200";
-      case "participant":
-        return "bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200";
-      case "ally":
-        return "bg-indigo-100 text-indigo-800 dark:bg-indigo-900 dark:text-indigo-200";
-      case "neutral":
-        return "bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-300";
-      default:
-        return "bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-300";
-    }
-  };
 
   const handleDeleteClick = (e) => {
     e.preventDefault(); // Prevent link navigation when clicking delete
@@ -132,7 +80,7 @@ const WarCard = ({ war, currentKingId, kings = [], showLink = true }) => {
             )}
             {war.type && (
               <span
-                className={`text-xs px-2 py-1 rounded-full ${getTypeClass()}`}
+                className={`text-xs px-2 py-1 rounded-full ${getWarTypeClass(war.type)}`}
               >
                 {war.type}
               </span>
@@ -149,17 +97,18 @@ const WarCard = ({ war, currentKingId, kings = [], showLink = true }) => {
       </div>
 
       <div className="flex flex-wrap gap-2 mb-3">
-        {war.importance && (
+        {war.type && (
           <span
-            className={`px-2 py-1 rounded-full text-xs font-medium ${getImportanceClass()}`}
+            className={`px-2 py-1 rounded-full text-xs font-medium ${getWarTypeClass(war.type)}`}
           >
-            {war.importance.charAt(0).toUpperCase() + war.importance.slice(1)}{" "}
-            Importance
+            {war.type}
           </span>
         )}
-        {war.location && (
-          <span className="px-2 py-1 rounded-full text-xs font-medium bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-300">
-            {war.location}
+        {war.importance && (
+          <span
+            className={`px-2 py-1 rounded-full text-xs font-medium ${getImportanceClass(war.importance)}`}
+          >
+            {war.importance.charAt(0).toUpperCase() + war.importance.slice(1)}
           </span>
         )}
       </div>
@@ -188,13 +137,14 @@ const WarCard = ({ war, currentKingId, kings = [], showLink = true }) => {
                   {king.name} {king.dynastyName ? `(${king.dynastyName})` : ""}
                 </span>
                 {king.role && (
-                  <span
-                    className={`ml-1 text-xs px-1.5 py-0.5 rounded-full ${getRoleClass(
+                  <div
+                    className={`text-xs px-2 py-0.5 rounded-full ${getParticipantRoleClass(
                       king.role
-                    )}`}
+                    )} ml-2`}
                   >
-                    {king.role}
-                  </span>
+                    {king.role?.charAt(0).toUpperCase() +
+                      king.role?.slice(1) || "Participant"}
+                  </div>
                 )}
               </div>
             ))}

@@ -26,9 +26,9 @@ const EventCard = ({ event, kings = [], showLink = true }) => {
     e.preventDefault();
     e.stopPropagation();
 
+    // Only navigate if the king exists and is not a one-time ruler
     if (king.id && !king.isOneTime) {
       navigate(`/kings/${king.id}`);
-      console.log("Navigation function called");
     }
   };
 
@@ -109,9 +109,12 @@ const EventCard = ({ event, kings = [], showLink = true }) => {
                 className="flex items-center"
               >
                 <span
-                  onClick={(e) => handleKingClick(e, king)}
+                  onClick={king.id && !king.isOneTime ? (e) => handleKingClick(e, king) : undefined}
                   className={
-                    "text-xs bg-gray-100 dark:bg-gray-700 px-2 py-1 rounded text-gray-800 dark:text-gray-200 hover:bg-gray-200 dark:hover:bg-gray-600 cursor-pointer"
+                    "text-xs bg-gray-100 dark:bg-gray-700 px-2 py-1 rounded text-gray-800 dark:text-gray-200 " +
+                    (king.id && !king.isOneTime
+                      ? "hover:bg-gray-200 dark:hover:bg-gray-600 cursor-pointer"
+                      : "opacity-75")
                   }
                 >
                   {king.name} {king.dynastyName ? `(${king.dynastyName})` : ""}

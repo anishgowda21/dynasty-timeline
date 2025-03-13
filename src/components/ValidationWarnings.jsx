@@ -115,26 +115,38 @@ const ValidationWarnings = ({ warnings, onClose }) => {
         return (
           <div>
             <p className="dark:text-gray-300">
-              <strong>{warning.data.kingName}</strong> (
-              {formatYear(warning.data.kingStart)} -{" "}
-              {formatYear(warning.data.kingEnd)}) is outside the timespan of
-              their dynasty <strong>{warning.data.dynastyName}</strong> (
-              {formatYear(warning.data.dynastyStart)} -{" "}
-              {formatYear(warning.data.dynastyEnd)})
+              {warning.data ? (
+                <>
+                  <strong>{warning.data.kingName}</strong> (
+                  {formatYear(warning.data.kingStart)} -{" "}
+                  {formatYear(warning.data.kingEnd)}) is outside the timespan of
+                  their dynasty <strong>{warning.data.dynastyName}</strong> (
+                  {formatYear(warning.data.dynastyStart)} -{" "}
+                  {formatYear(warning.data.dynastyEnd)})
+                </>
+              ) : (
+                // Fallback if data is missing
+                <>{warning.message}</>
+              )}
             </p>
             <div className="mt-2 flex space-x-2">
-              <Link
-                to={`/kings/${warning.data.kingId}`}
-                className="text-blue-600 hover:underline text-sm dark:text-blue-400 dark:hover:text-blue-300"
-              >
-                View Ruler
-              </Link>
-              <Link
-                to={`/dynasties/${warning.data.dynastyId}`}
-                className="text-blue-600 hover:underline text-sm dark:text-blue-400 dark:hover:text-blue-300"
-              >
-                View Dynasty
-              </Link>
+              {warning.data && warning.data.kingId && (
+                <Link
+                  to={`/kings/${warning.data.kingId}`}
+                  className="text-blue-600 hover:underline text-sm dark:text-blue-400 dark:hover:text-blue-300"
+                >
+                  View Ruler
+                </Link>
+              )}
+              {/* Additional safety check for navigation */}
+              {warning.relatedIds && warning.relatedIds[0] && !warning.data && (
+                <Link
+                  to={`/kings/${warning.relatedIds[0]}`}
+                  className="text-blue-600 hover:underline text-sm dark:text-blue-400 dark:hover:text-blue-300"
+                >
+                  View Ruler
+                </Link>
+              )}
             </div>
           </div>
         );
@@ -143,27 +155,47 @@ const ValidationWarnings = ({ warnings, onClose }) => {
         return (
           <div>
             <p className="dark:text-gray-300">
-              <strong>{warning.data.king1Name}</strong> (
-              {formatYear(warning.data.king1Start)} -{" "}
-              {formatYear(warning.data.king1End)}) and{" "}
-              <strong>{warning.data.king2Name}</strong> (
-              {formatYear(warning.data.king2Start)} -{" "}
-              {formatYear(warning.data.king2End)}) have overlapping reign
-              periods in the same dynasty.
+              {warning.data ? (
+                <>
+                  <strong>{warning.data.king1Name}</strong> (
+                  {formatYear(warning.data.king1Start)} -{" "}
+                  {formatYear(warning.data.king1End)}) and{" "}
+                  <strong>{warning.data.king2Name}</strong> (
+                  {formatYear(warning.data.king2Start)} -{" "}
+                  {formatYear(warning.data.king2End)}) have overlapping reign
+                  periods in the same dynasty.
+                </>
+              ) : (
+                // Fallback if data is missing
+                <>{warning.message}</>
+              )}
             </p>
             <div className="mt-2 flex space-x-2">
-              <Link
-                to={`/kings/${warning.data.king1Id}`}
-                className="text-blue-600 hover:underline text-sm dark:text-blue-400 dark:hover:text-blue-300"
-              >
-                View {warning.data.king1Name}
-              </Link>
-              <Link
-                to={`/kings/${warning.data.king2Id}`}
-                className="text-blue-600 hover:underline text-sm dark:text-blue-400 dark:hover:text-blue-300"
-              >
-                View {warning.data.king2Name}
-              </Link>
+              {warning.data && warning.data.king1Id && (
+                <Link
+                  to={`/kings/${warning.data.king1Id}`}
+                  className="text-blue-600 hover:underline text-sm dark:text-blue-400 dark:hover:text-blue-300"
+                >
+                  View {warning.data.king1Name}
+                </Link>
+              )}
+              {warning.data && warning.data.king2Id && (
+                <Link
+                  to={`/kings/${warning.data.king2Id}`}
+                  className="text-blue-600 hover:underline text-sm dark:text-blue-400 dark:hover:text-blue-300"
+                >
+                  View {warning.data.king2Name}
+                </Link>
+              )}
+              {/* Additional safety check for navigation */}
+              {warning.relatedIds && warning.relatedIds[0] && !warning.data && (
+                <Link
+                  to={`/kings/${warning.relatedIds[0]}`}
+                  className="text-blue-600 hover:underline text-sm dark:text-blue-400 dark:hover:text-blue-300"
+                >
+                  View Ruler
+                </Link>
+              )}
             </div>
           </div>
         );
@@ -172,25 +204,45 @@ const ValidationWarnings = ({ warnings, onClose }) => {
         return (
           <div>
             <p className="dark:text-gray-300">
-              Event <strong>{warning.data.eventName}</strong> (
-              {formatYear(warning.data.eventDate)}) is outside the reign of
-              associated ruler <strong>{warning.data.kingName}</strong> (
-              {formatYear(warning.data.kingStart)} -{" "}
-              {formatYear(warning.data.kingEnd)})
+              {warning.data ? (
+                <>
+                  Event <strong>{warning.data.eventName}</strong> (
+                  {formatYear(warning.data.eventDate)}) is outside the reign of
+                  associated ruler <strong>{warning.data.kingName}</strong> (
+                  {formatYear(warning.data.kingStart)} -{" "}
+                  {formatYear(warning.data.kingEnd)})
+                </>
+              ) : (
+                // Fallback if data is missing
+                <>{warning.message}</>
+              )}
             </p>
             <div className="mt-2 flex space-x-2">
-              <Link
-                to={`/events/${warning.data.eventId}`}
-                className="text-blue-600 hover:underline text-sm dark:text-blue-400 dark:hover:text-blue-300"
-              >
-                View Event
-              </Link>
-              <Link
-                to={`/kings/${warning.data.kingId}`}
-                className="text-blue-600 hover:underline text-sm dark:text-blue-400 dark:hover:text-blue-300"
-              >
-                View Ruler
-              </Link>
+              {warning.data && warning.data.eventId && (
+                <Link
+                  to={`/events/${warning.data.eventId}`}
+                  className="text-blue-600 hover:underline text-sm dark:text-blue-400 dark:hover:text-blue-300"
+                >
+                  View Event
+                </Link>
+              )}
+              {warning.data && warning.data.kingId && (
+                <Link
+                  to={`/kings/${warning.data.kingId}`}
+                  className="text-blue-600 hover:underline text-sm dark:text-blue-400 dark:hover:text-blue-300"
+                >
+                  View Ruler
+                </Link>
+              )}
+              {/* Additional safety check for navigation */}
+              {warning.relatedIds && warning.relatedIds[0] && !warning.data && (
+                <Link
+                  to={`/kings/${warning.relatedIds[0]}`}
+                  className="text-blue-600 hover:underline text-sm dark:text-blue-400 dark:hover:text-blue-300"
+                >
+                  View Ruler
+                </Link>
+              )}
             </div>
           </div>
         );
@@ -199,26 +251,46 @@ const ValidationWarnings = ({ warnings, onClose }) => {
         return (
           <div>
             <p className="dark:text-gray-300">
-              War <strong>{warning.data.warName}</strong> (
-              {formatYear(warning.data.warStart)} -{" "}
-              {formatYear(warning.data.warEnd)}) is outside the reign of
-              associated ruler <strong>{warning.data.kingName}</strong> (
-              {formatYear(warning.data.kingStart)} -{" "}
-              {formatYear(warning.data.kingEnd)})
+              {warning.data ? (
+                <>
+                  War <strong>{warning.data.warName}</strong> (
+                  {formatYear(warning.data.warStart)} -{" "}
+                  {formatYear(warning.data.warEnd)}) is outside the reign of
+                  associated ruler <strong>{warning.data.kingName}</strong> (
+                  {formatYear(warning.data.kingStart)} -{" "}
+                  {formatYear(warning.data.kingEnd)})
+                </>
+              ) : (
+                // Fallback if data is missing
+                <>{warning.message}</>
+              )}
             </p>
             <div className="mt-2 flex space-x-2">
-              <Link
-                to={`/wars/${warning.data.warId}`}
-                className="text-blue-600 hover:underline text-sm dark:text-blue-400 dark:hover:text-blue-300"
-              >
-                View War
-              </Link>
-              <Link
-                to={`/kings/${warning.data.kingId}`}
-                className="text-blue-600 hover:underline text-sm dark:text-blue-400 dark:hover:text-blue-300"
-              >
-                View Ruler
-              </Link>
+              {warning.data && warning.data.warId && (
+                <Link
+                  to={`/wars/${warning.data.warId}`}
+                  className="text-blue-600 hover:underline text-sm dark:text-blue-400 dark:hover:text-blue-300"
+                >
+                  View War
+                </Link>
+              )}
+              {warning.data && warning.data.kingId && (
+                <Link
+                  to={`/kings/${warning.data.kingId}`}
+                  className="text-blue-600 hover:underline text-sm dark:text-blue-400 dark:hover:text-blue-300"
+                >
+                  View Ruler
+                </Link>
+              )}
+              {/* Additional safety check for navigation */}
+              {warning.relatedIds && warning.relatedIds[0] && !warning.data && (
+                <Link
+                  to={`/kings/${warning.relatedIds[0]}`}
+                  className="text-blue-600 hover:underline text-sm dark:text-blue-400 dark:hover:text-blue-300"
+                >
+                  View Ruler
+                </Link>
+              )}
             </div>
           </div>
         );
@@ -227,26 +299,46 @@ const ValidationWarnings = ({ warnings, onClose }) => {
         return (
           <div>
             <p className="dark:text-gray-300">
-              War <strong>{warning.data.warName}</strong> (
-              {formatYear(warning.data.warStart)} -{" "}
-              {formatYear(warning.data.warEnd)}) is outside the period of
-              associated dynasty <strong>{warning.data.dynastyName}</strong> (
-              {formatYear(warning.data.dynastyStart)} -{" "}
-              {formatYear(warning.data.dynastyEnd)})
+              {warning.data ? (
+                <>
+                  War <strong>{warning.data.warName}</strong> (
+                  {formatYear(warning.data.warStart)} -{" "}
+                  {formatYear(warning.data.warEnd)}) is outside the period of
+                  associated dynasty <strong>{warning.data.dynastyName}</strong> (
+                  {formatYear(warning.data.dynastyStart)} -{" "}
+                  {formatYear(warning.data.dynastyEnd)})
+                </>
+              ) : (
+                // Fallback if data is missing
+                <>{warning.message}</>
+              )}
             </p>
             <div className="mt-2 flex space-x-2">
-              <Link
-                to={`/wars/${warning.data.warId}`}
-                className="text-blue-600 hover:underline text-sm dark:text-blue-400 dark:hover:text-blue-300"
-              >
-                View War
-              </Link>
-              <Link
-                to={`/dynasties/${warning.data.dynastyId}`}
-                className="text-blue-600 hover:underline text-sm dark:text-blue-400 dark:hover:text-blue-300"
-              >
-                View Dynasty
-              </Link>
+              {warning.data && warning.data.warId && (
+                <Link
+                  to={`/wars/${warning.data.warId}`}
+                  className="text-blue-600 hover:underline text-sm dark:text-blue-400 dark:hover:text-blue-300"
+                >
+                  View War
+                </Link>
+              )}
+              {warning.data && warning.data.dynastyId && (
+                <Link
+                  to={`/dynasties/${warning.data.dynastyId}`}
+                  className="text-blue-600 hover:underline text-sm dark:text-blue-400 dark:hover:text-blue-300"
+                >
+                  View Dynasty
+                </Link>
+              )}
+              {/* Additional safety check for navigation */}
+              {warning.relatedIds && warning.relatedIds[0] && !warning.data && (
+                <Link
+                  to={`/kings/${warning.relatedIds[0]}`}
+                  className="text-blue-600 hover:underline text-sm dark:text-blue-400 dark:hover:text-blue-300"
+                >
+                  View Ruler
+                </Link>
+              )}
             </div>
           </div>
         );
@@ -255,17 +347,35 @@ const ValidationWarnings = ({ warnings, onClose }) => {
         return (
           <div>
             <p className="dark:text-gray-300">
-              Ruler <strong>{warning.data.kingName}</strong> has birth year (
-              {formatYear(warning.data.birthYear)}) after death year (
-              {formatYear(warning.data.deathYear)})
+              {warning.data ? (
+                <>
+                  Ruler <strong>{warning.data.kingName}</strong> has birth year (
+                  {formatYear(warning.data.birthYear)}) after death year (
+                  {formatYear(warning.data.deathYear)})
+                </>
+              ) : (
+                // Fallback if data is missing
+                <>{warning.message}</>
+              )}
             </p>
             <div className="mt-2">
-              <Link
-                to={`/kings/${warning.data.kingId}`}
-                className="text-blue-600 hover:underline text-sm dark:text-blue-400 dark:hover:text-blue-300"
-              >
-                View Ruler
-              </Link>
+              {warning.data && warning.data.kingId && (
+                <Link
+                  to={`/kings/${warning.data.kingId}`}
+                  className="text-blue-600 hover:underline text-sm dark:text-blue-400 dark:hover:text-blue-300"
+                >
+                  View Ruler
+                </Link>
+              )}
+              {/* Additional safety check for navigation */}
+              {warning.relatedIds && warning.relatedIds[0] && !warning.data && (
+                <Link
+                  to={`/kings/${warning.relatedIds[0]}`}
+                  className="text-blue-600 hover:underline text-sm dark:text-blue-400 dark:hover:text-blue-300"
+                >
+                  View Ruler
+                </Link>
+              )}
             </div>
           </div>
         );
@@ -274,19 +384,37 @@ const ValidationWarnings = ({ warnings, onClose }) => {
         return (
           <div>
             <p className="dark:text-gray-300">
-              Ruler <strong>{warning.data.kingName}</strong>'s reign (
-              {formatYear(warning.data.reignStart)} -{" "}
-              {formatYear(warning.data.reignEnd)}) is outside their lifespan (
-              {formatYear(warning.data.birthYear)} -{" "}
-              {formatYear(warning.data.deathYear)})
+              {warning.data ? (
+                <>
+                  Ruler <strong>{warning.data.kingName}</strong>'s reign (
+                  {formatYear(warning.data.reignStart)} -{" "}
+                  {formatYear(warning.data.reignEnd)}) is outside their lifespan (
+                  {formatYear(warning.data.birthYear)} -{" "}
+                  {formatYear(warning.data.deathYear)})
+                </>
+              ) : (
+                // Fallback if data is missing
+                <>{warning.message}</>
+              )}
             </p>
             <div className="mt-2">
-              <Link
-                to={`/kings/${warning.data.kingId}`}
-                className="text-blue-600 hover:underline text-sm dark:text-blue-400 dark:hover:text-blue-300"
-              >
-                View Ruler
-              </Link>
+              {warning.data && warning.data.kingId && (
+                <Link
+                  to={`/kings/${warning.data.kingId}`}
+                  className="text-blue-600 hover:underline text-sm dark:text-blue-400 dark:hover:text-blue-300"
+                >
+                  View Ruler
+                </Link>
+              )}
+              {/* Additional safety check for navigation */}
+              {warning.relatedIds && warning.relatedIds[0] && !warning.data && (
+                <Link
+                  to={`/kings/${warning.relatedIds[0]}`}
+                  className="text-blue-600 hover:underline text-sm dark:text-blue-400 dark:hover:text-blue-300"
+                >
+                  View Ruler
+                </Link>
+              )}
             </div>
           </div>
         );

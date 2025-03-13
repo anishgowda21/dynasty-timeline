@@ -6,9 +6,11 @@ import { parseYear } from "../utils/dateUtils";
 
 const DynastyContext = createContext();
 
-export const useDynasty = () => {
+// Define the hook separately and then export it
+// This pattern is more compatible with Fast Refresh
+function useDynasty() {
   return useContext(DynastyContext);
-};
+}
 
 // Utility function to create indexed maps from arrays for faster lookups
 const createEntityMap = (entities) => {
@@ -18,7 +20,7 @@ const createEntityMap = (entities) => {
   }, {});
 };
 
-export const DynastyProvider = ({ children }) => {
+const DynastyProvider = ({ children }) => {
   const [dynasties, setDynasties] = useState([]);
   const [kings, setKings] = useState([]);
   const [events, setEvents] = useState([]);
@@ -133,6 +135,15 @@ export const DynastyProvider = ({ children }) => {
             level: "warning",
             message: `${king.name} began rule in ${king.startYear}, before the ${dynasty.name} dynasty started in ${dynasty.startYear}.`,
             relatedIds: [king.id, dynasty.id],
+            data: {
+              kingName: king.name,
+              kingId: king.id,
+              kingStart: king.startYear,
+              kingEnd: king.endYear,
+              dynastyName: dynasty.name,
+              dynastyStart: dynasty.startYear,
+              dynastyEnd: dynasty.endYear
+            }
           });
         }
 
@@ -144,6 +155,15 @@ export const DynastyProvider = ({ children }) => {
             level: "warning",
             message: `${king.name} ended rule in ${king.endYear}, after the ${dynasty.name} dynasty ended in ${dynasty.endYear}.`,
             relatedIds: [king.id, dynasty.id],
+            data: {
+              kingName: king.name,
+              kingId: king.id,
+              kingStart: king.startYear,
+              kingEnd: king.endYear,
+              dynastyName: dynasty.name,
+              dynastyStart: dynasty.startYear,
+              dynastyEnd: dynasty.endYear
+            }
           });
         }
       }
@@ -349,32 +369,10 @@ export const DynastyProvider = ({ children }) => {
   }, []);
 
   const deleteDynasty = useCallback((id) => {
-    // Get kings belonging to this dynasty before deleting
-    const dynastyKingIds = kings
-      .filter(king => king.dynastyId === id)
-      .map(king => king.id);
+    // Delete kings belonging to this dynasty, but don't delete associated events/wars
+    setKings(prevKings => prevKings.filter(king => king.dynastyId !== id));
     
-    // Batch state updates for better performance
-    // First, delete all kings belonging to this dynasty
-    if (dynastyKingIds.length > 0) {
-      setKings(prevKings => prevKings.filter(king => king.dynastyId !== id));
-      
-      // Remove events referencing these kings
-      setEvents(prevEvents => 
-        prevEvents.filter(event => 
-          !event.kingIds.some(kingId => dynastyKingIds.includes(kingId))
-        )
-      );
-      
-      // Remove wars referencing these kings
-      setWars(prevWars => 
-        prevWars.filter(war => 
-          !war.participants.some(p => dynastyKingIds.includes(p.kingId))
-        )
-      );
-    }
-    
-    // Then delete the dynasty
+    // Delete the dynasty itself
     setDynasties(prevDynasties => prevDynasties.filter(dynasty => dynasty.id !== id));
 
     // Remove from selected dynasties if present
@@ -389,7 +387,7 @@ export const DynastyProvider = ({ children }) => {
       }
       return prev;
     });
-  }, [kings]);
+  }, []);
 
   const addKing = useCallback((king) => {
     // Find related dynasty to get its color for the king
@@ -416,9 +414,7 @@ export const DynastyProvider = ({ children }) => {
   }, []);
 
   const deleteKing = useCallback((id) => {
-    // Batch updates for better performance
-    setEvents(prevEvents => prevEvents.filter(event => !event.kingIds.includes(id)));
-    setWars(prevWars => prevWars.filter(war => !war.participants.some(p => p.kingId === id)));
+    // Simply delete the king without affecting related events and wars
     setKings(prevKings => prevKings.filter(king => king.id !== id));
   }, []);
 
@@ -716,3 +712,5 @@ export const DynastyProvider = ({ children }) => {
     <DynastyContext.Provider value={value}>{children}</DynastyContext.Provider>
   );
 };
+
+export { DynastyProvider, useDynasty };

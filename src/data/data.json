@@ -1,0 +1,774 @@
+{
+  "dynasties": [
+    {
+      "id": "d1c8f728-5d3b-4e8a-b73e-75a08b7f5537",
+      "name": "Maurya Empire",
+      "startYear": -322,
+      "endYear": -185,
+      "color": "#F59E0B",
+      "description": "The first dynasty to unify most of the Indian subcontinent, founded by Chandragupta Maurya after overthrowing the Nanda Empire.",
+      "createdAt": "2025-03-13T07:00:00.000Z"
+    },
+    {
+      "id": "e1f3a228-5c9f-47f2-98e8-b2d50a8b6bd9",
+      "name": "Gupta Empire",
+      "startYear": 240,
+      "endYear": 550,
+      "color": "#10B981",
+      "description": "Known as the Golden Age of India with advancements in science, mathematics, and arts.",
+      "createdAt": "2025-03-13T07:01:00.000Z"
+    },
+    {
+      "id": "f2g4b339-6d0a-58g3-a9f9-c3e61b9c7cea",
+      "name": "Chola Dynasty",
+      "startYear": -300,
+      "endYear": 1279,
+      "color": "#3B82F6",
+      "description": "A powerful South Indian dynasty known for its naval prowess and temple architecture.",
+      "createdAt": "2025-03-13T07:02:00.000Z"
+    },
+    {
+      "id": "g3h5c44a-7e1b-69h4-b0g0-d4f72c0d8dfb",
+      "name": "Delhi Sultanate",
+      "startYear": 1206,
+      "endYear": 1526,
+      "color": "#8B5CF6",
+      "description": "A series of Muslim dynasties that ruled northern India, including Mamluk, Khalji, Tughlaq, Sayyid, and Lodi dynasties.",
+      "createdAt": "2025-03-13T07:03:00.000Z"
+    },
+    {
+      "id": "h4i6d55b-8f2c-70i5-c1h1-e5g83d1e9egc",
+      "name": "Mughal Empire",
+      "startYear": 1526,
+      "endYear": 1857,
+      "color": "#EF4444",
+      "description": "A prominent empire known for its cultural and architectural achievements, founded by Babur.",
+      "createdAt": "2025-03-13T07:04:00.000Z"
+    },
+    {
+      "id": "i5j7e66c-9g3d-81j6-d2i2-f6h94e2f0fhd",
+      "name": "Maratha Empire",
+      "startYear": 1674,
+      "endYear": 1818,
+      "color": "#F97316",
+      "description": "A Hindu empire founded by Shivaji that resisted Mughal rule and expanded across India.",
+      "createdAt": "2025-03-13T07:05:00.000Z"
+    },
+    {
+      "id": "j6k8f77d-0h4e-92k7-e3j3-g7i05f3g1gie",
+      "name": "Rashtrakuta Dynasty",
+      "startYear": 753,
+      "endYear": 982,
+      "color": "#6B7280",
+      "description": "A dynasty that ruled the Deccan, known for its patronage of art and architecture, including the Kailasa Temple.",
+      "createdAt": "2025-03-13T07:06:00.000Z"
+    },
+    {
+      "id": "k7l9g88e-1i5f-03l8-f4k4-h8j16g4h2hjf",
+      "name": "Pallava Dynasty",
+      "startYear": 275,
+      "endYear": 897,
+      "color": "#14B8A6",
+      "description": "A South Indian dynasty famous for rock-cut architecture and early Dravidian temples.",
+      "createdAt": "2025-03-13T07:07:00.000Z"
+    },
+    {
+      "id": "l8m0h99f-2j6g-14m9-g5l5-i9k27h5i3ikg",
+      "name": "Vijayanagara Empire",
+      "startYear": 1336,
+      "endYear": 1646,
+      "color": "#D97706",
+      "description": "A South Indian empire known for its wealth, trade, and the city of Hampi.",
+      "createdAt": "2025-03-13T07:08:00.000Z"
+    },
+    {
+      "id": "m9n1i00g-3k7h-25n0-h6m6-j0l38i6j4jlh",
+      "name": "Sikh Empire",
+      "startYear": 1799,
+      "endYear": 1849,
+      "color": "#1D4ED8",
+      "description": "Founded by Maharaja Ranjit Singh, uniting Punjab under Sikh rule.",
+      "createdAt": "2025-03-13T07:09:00.000Z"
+    },
+    {
+      "id": "n0o2j11h-4l8i-36o1-i7n7-k1m49j7k5kmj",
+      "name": "Satavahana Dynasty",
+      "startYear": -230,
+      "endYear": 220,
+      "color": "#7C3AED",
+      "description": "An ancient dynasty that ruled the Deccan, known for trade with Rome and Buddhist patronage.",
+      "createdAt": "2025-03-13T07:10:00.000Z"
+    },
+    {
+      "id": "o1p3k22i-5m9j-47p2-j8o8-l2n50k8l6lnk",
+      "name": "Chalukya Dynasty",
+      "startYear": 543,
+      "endYear": 753,
+      "color": "#F87171",
+      "description": "A dynasty in the Deccan known for its temple architecture and conflicts with the Pallavas.",
+      "createdAt": "2025-03-13T07:11:00.000Z"
+    }
+  ],
+  "kings": [
+    {
+      "id": "a1b2c345-6d7e-89f0-a1b2-c3d4e5f6a7b8",
+      "name": "Chandragupta Maurya",
+      "dynastyId": "d1c8f728-5d3b-4e8a-b73e-75a08b7f5537",
+      "startYear": -321,
+      "endYear": -297,
+      "birthYear": -340,
+      "deathYear": -297,
+      "description": "Founder of the Maurya Empire, unified India with the help of Chanakya.",
+      "imageUrl": "",
+      "color": "#F59E0B",
+      "isOneTime": false,
+      "createdAt": "2025-03-13T07:12:00.000Z"
+    },
+    {
+      "id": "b2c3d456-7e8f-90a1-b2c3-d4e5f6a7b8c9",
+      "name": "Bindusara",
+      "dynastyId": "d1c8f728-5d3b-4e8a-b73e-75a08b7f5537",
+      "startYear": -297,
+      "endYear": -273,
+      "birthYear": null,
+      "deathYear": -273,
+      "description": "Expanded the Maurya Empire southward, known as Amitraghata (slayer of enemies).",
+      "imageUrl": "",
+      "color": "#F59E0B",
+      "isOneTime": false,
+      "createdAt": "2025-03-13T07:13:00.000Z"
+    },
+    {
+      "id": "c3d4e567-8f9a-01b2-c3d4-e5f6a7b8c9d0",
+      "name": "Ashoka the Great",
+      "dynastyId": "d1c8f728-5d3b-4e8a-b73e-75a08b7f5537",
+      "startYear": -268,
+      "endYear": -232,
+      "birthYear": -304,
+      "deathYear": -232,
+      "description": "Expanded the empire and converted to Buddhism after the Kalinga War.",
+      "imageUrl": "",
+      "color": "#F59E0B",
+      "isOneTime": false,
+      "createdAt": "2025-03-13T07:14:00.000Z"
+    },
+    {
+      "id": "d4e5f678-9a0b-12c3-d4e5-f6a7b8c9d0e1",
+      "name": "Chandragupta I",
+      "dynastyId": "e1f3a228-5c9f-47f2-98e8-b2d50a8b6bd9",
+      "startYear": 319,
+      "endYear": 335,
+      "birthYear": null,
+      "deathYear": 335,
+      "description": "Founder of the Gupta Empire, established through marriage alliances.",
+      "imageUrl": "",
+      "color": "#10B981",
+      "isOneTime": false,
+      "createdAt": "2025-03-13T07:15:00.000Z"
+    },
+    {
+      "id": "e5f6g789-0b1c-23d4-e5f6-a7b8c9d0e1f2",
+      "name": "Samudragupta",
+      "dynastyId": "e1f3a228-5c9f-47f2-98e8-b2d50a8b6bd9",
+      "startYear": 335,
+      "endYear": 375,
+      "birthYear": null,
+      "deathYear": 375,
+      "description": "Known as the 'Napoleon of India' for his military conquests.",
+      "imageUrl": "",
+      "color": "#10B981",
+      "isOneTime": false,
+      "createdAt": "2025-03-13T07:16:00.000Z"
+    },
+    {
+      "id": "f6g7h890-1c2d-34e5-f6g7-b8c9d0e1f2g3",
+      "name": "Chandragupta II",
+      "dynastyId": "e1f3a228-5c9f-47f2-98e8-b2d50a8b6bd9",
+      "startYear": 375,
+      "endYear": 415,
+      "birthYear": null,
+      "deathYear": 415,
+      "description": "Presided over the Gupta Golden Age, defeating the Western Kshatrapas.",
+      "imageUrl": "",
+      "color": "#10B981",
+      "isOneTime": false,
+      "createdAt": "2025-03-13T07:17:00.000Z"
+    },
+    {
+      "id": "g7h8i901-2d3e-45f6-g7h8-c9d0e1f2g3h4",
+      "name": "Rajaraja Chola I",
+      "dynastyId": "f2g4b339-6d0a-58g3-a9f9-c3e61b9c7cea",
+      "startYear": 985,
+      "endYear": 1014,
+      "birthYear": null,
+      "deathYear": 1014,
+      "description": "Expanded the Chola Empire and built the Brihadeeswarar Temple.",
+      "imageUrl": "",
+      "color": "#3B82F6",
+      "isOneTime": false,
+      "createdAt": "2025-03-13T07:18:00.000Z"
+    },
+    {
+      "id": "h8i9j012-3e4f-56g7-h8i9-d0e1f2g3h4i5",
+      "name": "Rajendra Chola I",
+      "dynastyId": "f2g4b339-6d0a-58g3-a9f9-c3e61b9c7cea",
+      "startYear": 1014,
+      "endYear": 1044,
+      "birthYear": null,
+      "deathYear": 1044,
+      "description": "Expanded Chola influence to Southeast Asia with naval expeditions.",
+      "imageUrl": "",
+      "color": "#3B82F6",
+      "isOneTime": false,
+      "createdAt": "2025-03-13T07:19:00.000Z"
+    },
+    {
+      "id": "i9j0k123-4f5g-67h8-i9j0-e1f2g3h4i5j6",
+      "name": "Qutbuddin Aibak",
+      "dynastyId": "g3h5c44a-7e1b-69h4-b0g0-d4f72c0d8dfb",
+      "startYear": 1206,
+      "endYear": 1210,
+      "birthYear": null,
+      "deathYear": 1210,
+      "description": "Founder of the Mamluk Dynasty of the Delhi Sultanate.",
+      "imageUrl": "",
+      "color": "#8B5CF6",
+      "isOneTime": false,
+      "createdAt": "2025-03-13T07:20:00.000Z"
+    },
+    {
+      "id": "j0k1l234-5g6h-78i9-j0k1-f2g3h4i5j6k7",
+      "name": "Iltutmish",
+      "dynastyId": "g3h5c44a-7e1b-69h4-b0g0-d4f72c0d8dfb",
+      "startYear": 1211,
+      "endYear": 1236,
+      "birthYear": null,
+      "deathYear": 1236,
+      "description": "Consolidated the Delhi Sultanate and introduced the silver tanka.",
+      "imageUrl": "",
+      "color": "#8B5CF6",
+      "isOneTime": false,
+      "createdAt": "2025-03-13T07:21:00.000Z"
+    },
+    {
+      "id": "k1l2m345-6h7i-89j0-k1l2-g3h4i5j6k7l8",
+      "name": "Alauddin Khalji",
+      "dynastyId": "g3h5c44a-7e1b-69h4-b0g0-d4f72c0d8dfb",
+      "startYear": 1296,
+      "endYear": 1316,
+      "birthYear": null,
+      "deathYear": 1316,
+      "description": "Expanded the Sultanate and repelled Mongol invasions.",
+      "imageUrl": "",
+      "color": "#8B5CF6",
+      "isOneTime": false,
+      "createdAt": "2025-03-13T07:22:00.000Z"
+    },
+    {
+      "id": "l2m3n456-7i8j-90k1-l2m3-h4i5j6k7l8m9",
+      "name": "Babur",
+      "dynastyId": "h4i6d55b-8f2c-70i5-c1h1-e5g83d1e9egc",
+      "startYear": 1526,
+      "endYear": 1530,
+      "birthYear": 1483,
+      "deathYear": 1530,
+      "description": "Founded the Mughal Empire after the First Battle of Panipat.",
+      "imageUrl": "",
+      "color": "#EF4444",
+      "isOneTime": false,
+      "createdAt": "2025-03-13T07:23:00.000Z"
+    },
+    {
+      "id": "m3n4o567-8j9k-01l2-m3n4-i5j6k7l8m9n0",
+      "name": "Akbar",
+      "dynastyId": "h4i6d55b-8f2c-70i5-c1h1-e5g83d1e9egc",
+      "startYear": 1556,
+      "endYear": 1605,
+      "birthYear": 1542,
+      "deathYear": 1605,
+      "description": "Expanded the Mughal Empire and promoted religious tolerance.",
+      "imageUrl": "",
+      "color": "#EF4444",
+      "isOneTime": false,
+      "createdAt": "2025-03-13T07:24:00.000Z"
+    },
+    {
+      "id": "n4o5p678-9k0l-12m3-n4o5-j6k7l8m9n0o1",
+      "name": "Aurangzeb",
+      "dynastyId": "h4i6d55b-8f2c-70i5-c1h1-e5g83d1e9egc",
+      "startYear": 1658,
+      "endYear": 1707,
+      "birthYear": 1618,
+      "deathYear": 1707,
+      "description": "Expanded the empire to its maximum extent but faced rebellions.",
+      "imageUrl": "",
+      "color": "#EF4444",
+      "isOneTime": false,
+      "createdAt": "2025-03-13T07:25:00.000Z"
+    },
+    {
+      "id": "o5p6q789-0l1m-23n4-o5p6-k7l8m9n0o1p2",
+      "name": "Shivaji",
+      "dynastyId": "i5j7e66c-9g3d-81j6-d2i2-f6h94e2f0fhd",
+      "startYear": 1674,
+      "endYear": 1680,
+      "birthYear": 1630,
+      "deathYear": 1680,
+      "description": "Founder of the Maratha Empire, resisted Mughal rule.",
+      "imageUrl": "",
+      "color": "#F97316",
+      "isOneTime": false,
+      "createdAt": "2025-03-13T07:26:00.000Z"
+    },
+    {
+      "id": "p6q7r890-1m2n-34o5-p6q7-l8m9n0o1p2q3",
+      "name": "Baji Rao I",
+      "dynastyId": "i5j7e66c-9g3d-81j6-d2i2-f6h94e2f0fhd",
+      "startYear": 1720,
+      "endYear": 1740,
+      "birthYear": 1700,
+      "deathYear": 1740,
+      "description": "Peshwa who expanded Maratha power across India.",
+      "imageUrl": "",
+      "color": "#F97316",
+      "isOneTime": false,
+      "createdAt": "2025-03-13T07:27:00.000Z"
+    },
+    {
+      "id": "q7r8s901-2n3o-45p6-q7r8-m9n0o1p2q3r4",
+      "name": "Dantidurga",
+      "dynastyId": "j6k8f77d-0h4e-92k7-e3j3-g7i05f3g1gie",
+      "startYear": 735,
+      "endYear": 756,
+      "birthYear": null,
+      "deathYear": 756,
+      "description": "Founder of the Rashtrakuta Dynasty, overthrew the Chalukyas.",
+      "imageUrl": "",
+      "color": "#6B7280",
+      "isOneTime": false,
+      "createdAt": "2025-03-13T07:28:00.000Z"
+    },
+    {
+      "id": "r8s9t012-3o4p-56q7-r8s9-n0o1p2q3r4s5",
+      "name": "Amoghavarsha",
+      "dynastyId": "j6k8f77d-0h4e-92k7-e3j3-g7i05f3g1gie",
+      "startYear": 814,
+      "endYear": 878,
+      "birthYear": null,
+      "deathYear": 878,
+      "description": "Patron of Jainism and builder of the Kailasa Temple.",
+      "imageUrl": "",
+      "color": "#6B7280",
+      "isOneTime": false,
+      "createdAt": "2025-03-13T07:29:00.000Z"
+    },
+    {
+      "id": "s9t0u123-4p5q-67r8-s9t0-o1p2q3r4s5t6",
+      "name": "Narasimhavarman I",
+      "dynastyId": "k7l9g88e-1i5f-03l8-f4k4-h8j16g4h2hjf",
+      "startYear": 630,
+      "endYear": 668,
+      "birthYear": null,
+      "deathYear": 668,
+      "description": "Defeated the Chalukyas and built the Shore Temple at Mamallapuram.",
+      "imageUrl": "",
+      "color": "#14B8A6",
+      "isOneTime": false,
+      "createdAt": "2025-03-13T07:30:00.000Z"
+    },
+    {
+      "id": "t0u1v234-5q6r-78s9-t0u1-p2q3r4s5t6u7",
+      "name": "Krishnadevaraya",
+      "dynastyId": "l8m0h99f-2j6g-14m9-g5l5-i9k27h5i3ikg",
+      "startYear": 1509,
+      "endYear": 1529,
+      "birthYear": null,
+      "deathYear": 1529,
+      "description": "Led the Vijayanagara Empire to its peak, patron of arts and architecture.",
+      "imageUrl": "",
+      "color": "#D97706",
+      "isOneTime": false,
+      "createdAt": "2025-03-13T07:31:00.000Z"
+    },
+    {
+      "id": "u1v2w345-6r7s-89t0-u1v2-q3r4s5t6u7v8",
+      "name": "Ranjit Singh",
+      "dynastyId": "m9n1i00g-3k7h-25n0-h6m6-j0l38i6j4jlh",
+      "startYear": 1801,
+      "endYear": 1839,
+      "birthYear": 1780,
+      "deathYear": 1839,
+      "description": "Founded the Sikh Empire, modernized its military.",
+      "imageUrl": "",
+      "color": "#1D4ED8",
+      "isOneTime": false,
+      "createdAt": "2025-03-13T07:32:00.000Z"
+    },
+    {
+      "id": "v2w3x456-7s8t-90u1-v2w3-r4s5t6u7v8w9",
+      "name": "Gautamiputra Satakarni",
+      "dynastyId": "n0o2j11h-4l8i-36o1-i7n7-k1m49j7k5kmj",
+      "startYear": 78,
+      "endYear": 102,
+      "birthYear": null,
+      "deathYear": 102,
+      "description": "Restored Satavahana power by defeating the Western Kshatrapas.",
+      "imageUrl": "",
+      "color": "#7C3AED",
+      "isOneTime": false,
+      "createdAt": "2025-03-13T07:33:00.000Z"
+    },
+    {
+      "id": "w3x4y567-8t9u-01v2-w3x4-s5t6u7v8w9x0",
+      "name": "Pulakeshin II",
+      "dynastyId": "o1p3k22i-5m9j-47p2-j8o8-l2n50k8l6lnk",
+      "startYear": 610,
+      "endYear": 642,
+      "birthYear": null,
+      "deathYear": 642,
+      "description": "Expanded Chalukya power, defeated Harsha of Kannauj.",
+      "imageUrl": "",
+      "color": "#F87171",
+      "isOneTime": false,
+      "createdAt": "2025-03-13T07:34:00.000Z"
+    },
+    {
+      "id": "x4y5z678-9u0v-12w3-x4y5-t6u7v8w9x0y1",
+      "name": "King Porus",
+      "dynastyId": null,
+      "startYear": null,
+      "endYear": null,
+      "birthYear": null,
+      "deathYear": null,
+      "description": "Ruler of the Paurava Kingdom, fought Alexander the Great.",
+      "imageUrl": "",
+      "color": "#B45309",
+      "isOneTime": true,
+      "dynastyName": "Paurava Kingdom",
+      "createdAt": "2025-03-13T07:35:00.000Z"
+    },
+    {
+      "id": "y5z6a789-0v1w-23x4-y5z6-u7v8w9x0y1z2",
+      "name": "Ruler of Kalinga",
+      "dynastyId": null,
+      "startYear": null,
+      "endYear": null,
+      "birthYear": null,
+      "deathYear": null,
+      "description": "Unnamed ruler defeated by Ashoka in the Kalinga War.",
+      "imageUrl": "",
+      "color": "#F59E0B",
+      "isOneTime": true,
+      "dynastyName": "Kalinga Kingdom",
+      "createdAt": "2025-03-13T07:36:00.000Z"
+    },
+    {
+      "id": "z6a7b890-1w2x-34y5-z6a7-v8w9x0y1z2a3",
+      "name": "Aliya Rama Raya",
+      "dynastyId": null,
+      "startYear": 1542,
+      "endYear": 1565,
+      "birthYear": null,
+      "deathYear": 1565,
+      "description": "Regent of Vijayanagara, defeated at Talikota.",
+      "imageUrl": "",
+      "color": "#D97706",
+      "isOneTime": true,
+      "dynastyName": "Vijayanagara Empire",
+      "createdAt": "2025-03-13T07:37:00.000Z"
+    },
+    {
+      "id": "a7b8c901-2x3y-45z6-a7b8-w9x0y1z2a3b4",
+      "name": "Ibrahim Lodi",
+      "dynastyId": null,
+      "startYear": 1517,
+      "endYear": 1526,
+      "birthYear": null,
+      "deathYear": 1526,
+      "description": "Last ruler of the Lodi Dynasty, defeated by Babur.",
+      "imageUrl": "",
+      "color": "#8B5CF6",
+      "isOneTime": true,
+      "dynastyName": "Delhi Sultanate (Lodi)",
+      "createdAt": "2025-03-13T07:38:00.000Z"
+    },
+    {
+      "id": "r0a1n2a3-4s5a-6n7g-8a9r-0a1n2a3s4a5n",
+      "name": "Rana Sanga",
+      "dynastyId": null,
+      "dynastyName": "Sisodia Rajput",
+      "startYear": 1508,
+      "endYear": 1527,
+      "birthYear": null,
+      "deathYear": 1527,
+      "description": "Rajput ruler of Mewar who fought Babur in the Battle of Khanwa.",
+      "imageUrl": "",
+      "color": "#A855F7",
+      "isOneTime": true,
+      "createdAt": "2025-03-13T07:19:48.316358Z"
+    },
+    {
+      "id": "s0a1d2a3-4s5h-6i7v-8r9a-0o1b2h3a4u5m",
+      "name": "Sadashivrao Bhau",
+      "dynastyId": null,
+      "dynastyName": "Maratha Confederacy",
+      "startYear": 1758,
+      "endYear": 1761,
+      "birthYear": null,
+      "deathYear": 1761,
+      "description": "Commander of the Maratha army in the Third Battle of Panipat.",
+      "imageUrl": "",
+      "color": "#F97316",
+      "isOneTime": true,
+      "createdAt": "2025-03-13T07:19:48.316369Z"
+    }
+  ],
+  "events": [
+    {
+      "id": "e1v2e3n4-5t6i-7d8e-9f0g-1h2i3j4k5l6m",
+      "name": "Ashoka\u2019s Conversion to Buddhism",
+      "date": "-263",
+      "description": "Ashoka embraced Buddhism after the Kalinga War, promoting peace.",
+      "type": "Religious",
+      "importance": "high",
+      "kingIds": [
+        "c3d4e567-8f9a-01b2-c3d4-e5f6a7b8c9d0"
+      ],
+      "createdAt": "2025-03-13T07:39:00.000Z"
+    },
+    {
+      "id": "f2w3f456-6u7j-8e9f-a0g1-2i3j4k5l6m7n",
+      "name": "Construction of the Iron Pillar",
+      "date": "402",
+      "description": "Erected during Chandragupta II\u2019s reign, showcasing Gupta metallurgy.",
+      "type": "Scientific",
+      "importance": "high",
+      "kingIds": [
+        "f6g7h890-1c2d-34e5-f6g7-b8c9d0e1f2g3"
+      ],
+      "createdAt": "2025-03-13T07:40:00.000Z"
+    },
+    {
+      "id": "g3x4g567-7v8k-9f0g-b1h2-3j4k5l6m7n8o",
+      "name": "Brihadeeswarar Temple Completion",
+      "date": "1010",
+      "description": "Rajaraja Chola I completed the grand temple at Thanjavur.",
+      "type": "Cultural",
+      "importance": "high",
+      "kingIds": [
+        "g7h8i901-2d3e-45f6-g7h8-c9d0e1f2g3h4"
+      ],
+      "createdAt": "2025-03-13T07:41:00.000Z"
+    },
+    {
+      "id": "h4y5h678-8w9l-01h2-c3i4-5k6l7m8n9o0p",
+      "name": "Akbar\u2019s Abolition of Jizya",
+      "date": "1564",
+      "description": "Akbar abolished the jizya tax, promoting religious tolerance.",
+      "type": "Political",
+      "importance": "high",
+      "kingIds": [
+        "m3n4o567-8j9k-01l2-m3n4-i5j6k7l8m9n0"
+      ],
+      "createdAt": "2025-03-13T07:42:00.000Z"
+    },
+    {
+      "id": "i5z6i789-9x0m-12i3-d4j5-6l7m8n9o0p1q",
+      "name": "Shivaji\u2019s Raids on Surat",
+      "date": "1664",
+      "description": "Shivaji raided the Mughal port of Surat, weakening Mughal control.",
+      "type": "Military",
+      "importance": "medium",
+      "kingIds": [
+        "o5p6q789-0l1m-23n4-o5p6-k7l8m9n0o1p2"
+      ],
+      "createdAt": "2025-03-13T07:43:00.000Z"
+    },
+    {
+      "id": "j6a7j890-0y1n-23j4-e5k6-7m8n9o0p1q2r",
+      "name": "Kailasa Temple Construction",
+      "date": "760",
+      "description": "Rashtrakutas under Dantidurga began the Kailasa Temple at Ellora.",
+      "type": "Cultural",
+      "importance": "high",
+      "kingIds": [
+        "q7r8s901-2n3o-45p6-q7r8-m9n0o1p2q3r4"
+      ],
+      "createdAt": "2025-03-13T07:44:00.000Z"
+    }
+  ],
+  "wars": [
+    {
+      "id": "w1a2r3k4-5l6i-7n8g-9a0b-1c2d3e4f5g6h",
+      "name": "Kalinga War",
+      "startYear": -261,
+      "endYear": -261,
+      "description": "Ashoka\u2019s conquest of Kalinga led to his conversion to Buddhism.",
+      "participants": [
+        {
+          "kingId": "c3d4e567-8f9a-01b2-c3d4-e5f6a7b8c9d0",
+          "role": "victor"
+        },
+        {
+          "kingId": "y5z6a789-0v1w-23x4-y5z6-u7v8w9x0y1z2",
+          "role": "defeated"
+        }
+      ],
+      "location": "Kalinga (modern Odisha)",
+      "type": "Conquest",
+      "importance": "high",
+      "createdAt": "2025-03-13T07:45:00.000Z"
+    },
+    {
+      "id": "x2b3s456-6m7j-8n9h-c1i2-3k4l5m6n7o8p",
+      "name": "First Battle of Panipat",
+      "startYear": 1526,
+      "endYear": 1526,
+      "description": "Babur defeated Ibrahim Lodi, establishing Mughal rule.",
+      "participants": [
+        {
+          "kingId": "l2m3n456-7i8j-90k1-l2m3-h4i5j6k7l8m9",
+          "role": "victor"
+        },
+        {
+          "kingId": "a7b8c901-2x3y-45z6-a7b8-w9x0y1z2a3b4",
+          "role": "defeated"
+        }
+      ],
+      "location": "Panipat (modern Haryana)",
+      "type": "Conquest",
+      "importance": "high",
+      "createdAt": "2025-03-13T07:46:00.000Z"
+    },
+    {
+      "id": "y3c4t567-7n8k-9o0i-d2j3-4l5m6n7o8p9q",
+      "name": "Battle of Talikota",
+      "startYear": 1565,
+      "endYear": 1565,
+      "description": "The Deccan Sultanates defeated Vijayanagara, leading to its decline.",
+      "participants": [
+        {
+          "kingId": "z6a7b890-1w2x-34y5-z6a7-v8w9x0y1z2a3",
+          "role": "defeated"
+        }
+      ],
+      "location": "Talikota (modern Karnataka)",
+      "type": "Territorial",
+      "importance": "high",
+      "createdAt": "2025-03-13T07:47:00.000Z"
+    },
+    {
+      "id": "z4d5u678-8o9l-01j2-e3k4-5m6n7o8p9q0r",
+      "name": "Battle of Hydaspes",
+      "startYear": -326,
+      "endYear": -326,
+      "description": "Alexander defeated Porus, who retained his kingdom as an ally.",
+      "participants": [
+        {
+          "kingId": "x4y5z678-9u0v-12w3-x4y5-t6u7v8w9x0y1",
+          "role": "defeated"
+        }
+      ],
+      "location": "Hydaspes River (modern Punjab)",
+      "type": "Conquest",
+      "importance": "high",
+      "createdAt": "2025-03-13T07:48:00.000Z"
+    },
+    {
+      "id": "a5e6v789-9p0m-12k3-f4l5-6n7o8p9q0r1s",
+      "name": "Battle of Pratapgarh",
+      "startYear": 1659,
+      "endYear": 1659,
+      "description": "Shivaji defeated Afzal Khan, boosting Maratha power.",
+      "participants": [
+        {
+          "kingId": "o5p6q789-0l1m-23n4-o5p6-k7l8m9n0o1p2",
+          "role": "victor"
+        }
+      ],
+      "location": "Pratapgarh (modern Maharashtra)",
+      "type": "Territorial",
+      "importance": "high",
+      "createdAt": "2025-03-13T07:49:00.000Z"
+    },
+    {
+      "id": "b6f7w890-0q1n-23l4-g5m6-7o8p9q0r1s2t",
+      "name": "Chalukya-Pallava War",
+      "startYear": 642,
+      "endYear": 642,
+      "description": "Narasimhavarman I defeated Pulakeshin II, sacking Vatapi.",
+      "participants": [
+        {
+          "kingId": "s9t0u123-4p5q-67r8-s9t0-o1p2q3r4s5t6",
+          "role": "victor"
+        },
+        {
+          "kingId": "w3x4y567-8t9u-01v2-w3x4-s5t6u7v8w9x0",
+          "role": "defeated"
+        }
+      ],
+      "location": "Vatapi (modern Karnataka)",
+      "type": "Territorial",
+      "importance": "high",
+      "createdAt": "2025-03-13T07:50:00.000Z"
+    },
+    {
+      "id": "c7g8x901-1r2o-34m5-h6n7-8p9q0r1s2t3u",
+      "name": "Battle of Khanwa",
+      "startYear": 1527,
+      "endYear": 1527,
+      "description": "Babur defeated Rana Sanga, consolidating Mughal power.",
+      "participants": [
+        {
+          "kingId": "l2m3n456-7i8j-90k1-l2m3-h4i5j6k7l8m9",
+          "role": "victor"
+        },
+        {
+          "kingId": "r0a1n2a3-4s5a-6n7g-8a9r-0a1n2a3s4a5n",
+          "role": "defeated"
+        }
+      ],
+      "location": "Khanwa (modern Rajasthan)",
+      "type": "Conquest",
+      "importance": "high",
+      "createdAt": "2025-03-13T07:51:00.000Z"
+    },
+    {
+      "id": "d8h9y012-2s3p-45n6-i7o8-9q0r1s2t3u4v",
+      "name": "Third Battle of Panipat",
+      "startYear": 1761,
+      "endYear": 1761,
+      "description": "Ahmad Shah Durrani defeated the Marathas, halting their expansion.",
+      "participants": [
+        {
+          "kingId": "s0a1d2a3-4s5h-6i7v-8r9a-0o1b2h3a4u5m",
+          "role": "defeated"
+        }
+      ],
+      "location": "Panipat (modern Haryana)",
+      "type": "Territorial",
+      "importance": "high",
+      "createdAt": "2025-03-13T07:52:00.000Z"
+    }
+  ],
+  "uiSettings": {
+    "selectedDynasties": [
+      "d1c8f728-5d3b-4e8a-b73e-75a08b7f5537",
+      "e1f3a228-5c9f-47f2-98e8-b2d50a8b6bd9",
+      "f2g4b339-6d0a-58g3-a9f9-c3e61b9c7cea",
+      "g3h5c44a-7e1b-69h4-b0g0-d4f72c0d8dfb",
+      "h4i6d55b-8f2c-70i5-c1h1-e5g83d1e9egc",
+      "i5j7e66c-9g3d-81j6-d2i2-f6h94e2f0fhd",
+      "j6k8f77d-0h4e-92k7-e3j3-g7i05f3g1gie",
+      "k7l9g88e-1i5f-03l8-f4k4-h8j16g4h2hjf",
+      "l8m0h99f-2j6g-14m9-g5l5-i9k27h5i3ikg",
+      "m9n1i00g-3k7h-25n0-h6m6-j0l38i6j4jlh",
+      "n0o2j11h-4l8i-36o1-i7n7-k1m49j7k5kmj",
+      "o1p3k22i-5m9j-47p2-j8o8-l2n50k8l6lnk"
+    ],
+    "showIncompleteTimelines": true,
+    "validationLevel": "warn"
+  },
+  "exportDate": "2025-03-13T08:00:00.000Z",
+  "appVersion": "1.0.0"
+}

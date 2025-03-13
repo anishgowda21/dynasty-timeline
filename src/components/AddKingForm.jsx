@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback, useMemo } from "react";
 import { useDynasty } from "../context/DynastyContext";
 import { formatYear } from "../utils/dateUtils";
 import { 
@@ -9,7 +9,14 @@ import {
   FormActions 
 } from "./common";
 
-const AddKingForm = ({
+// Helper function to convert year values considering BCE
+const convertYearValue = (yearStr, isBce) => {
+  const yearValue = parseInt(yearStr);
+  if (isNaN(yearValue)) return null;
+  return isBce ? -yearValue + 1 : yearValue;
+};
+
+const AddKingForm = React.memo(({
   onClose,
   preselectedDynastyId = null,
   initialData,
@@ -59,23 +66,28 @@ const AddKingForm = ({
     }
   }, [initialBCE]);
 
-  const handleChange = (e) => {
+  // Memoized handler for input changes
+  const handleChange = useCallback((e) => {
     const { name, value } = e.target;
-    setFormData({
-      ...formData,
+    setFormData(prevData => ({
+      ...prevData,
       [name]: value,
-    });
+    }));
 
     // Clear error when field is modified
-    if (errors[name]) {
-      setErrors({
-        ...errors,
-        [name]: null,
-      });
-    }
-  };
+    setErrors(prevErrors => {
+      if (prevErrors[name]) {
+        return {
+          ...prevErrors,
+          [name]: null,
+        };
+      }
+      return prevErrors;
+    });
+  }, []);
 
-  const validate = () => {
+  // Memoized validation function
+  const validate = useCallback(() => {
     const newErrors = {};
 
     if (!formData.name.trim()) {
@@ -99,35 +111,14 @@ const AddKingForm = ({
     }
 
     // Convert years to internal representation for comparison
-    let startYearValue = parseInt(formData.startYear);
-    let endYearValue = parseInt(formData.endYear);
-    let birthYearValue = formData.birthYear
-      ? parseInt(formData.birthYear)
-      : null;
-    let deathYearValue = formData.deathYear
-      ? parseInt(formData.deathYear)
-      : null;
-
-    // Apply BCE conversion if needed
-    if (startYearBce && !isNaN(startYearValue)) {
-      startYearValue = -startYearValue + 1;
-    }
-
-    if (endYearBce && !isNaN(endYearValue)) {
-      endYearValue = -endYearValue + 1;
-    }
-
-    if (birthYearBce && birthYearValue !== null && !isNaN(birthYearValue)) {
-      birthYearValue = -birthYearValue + 1;
-    }
-
-    if (deathYearBce && deathYearValue !== null && !isNaN(deathYearValue)) {
-      deathYearValue = -deathYearValue + 1;
-    }
+    const startYearValue = convertYearValue(formData.startYear, startYearBce);
+    const endYearValue = convertYearValue(formData.endYear, endYearBce);
+    const birthYearValue = formData.birthYear ? convertYearValue(formData.birthYear, birthYearBce) : null;
+    const deathYearValue = formData.deathYear ? convertYearValue(formData.deathYear, deathYearBce) : null;
 
     if (
-      !isNaN(startYearValue) &&
-      !isNaN(endYearValue) &&
+      startYearValue !== null &&
+      endYearValue !== null &&
       startYearValue > endYearValue
     ) {
       newErrors.endYear = "End year must be after start year";
@@ -144,8 +135,6 @@ const AddKingForm = ({
     if (
       birthYearValue !== null &&
       deathYearValue !== null &&
-      !isNaN(birthYearValue) &&
-      !isNaN(deathYearValue) &&
       birthYearValue > deathYearValue
     ) {
       newErrors.deathYear = "Death year must be after birth year";
@@ -153,39 +142,19 @@ const AddKingForm = ({
 
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
-  };
+  }, [formData, startYearBce, endYearBce, birthYearBce, deathYearBce]);
 
-  const handleSubmit = (e) => {
+  // Memoized submit handler
+  const handleSubmit = useCallback((e) => {
     e.preventDefault();
 
     if (!validate()) return;
 
     // Convert years to internal representation
-    let startYearValue = parseInt(formData.startYear);
-    let endYearValue = parseInt(formData.endYear);
-    let birthYearValue = formData.birthYear
-      ? parseInt(formData.birthYear)
-      : null;
-    let deathYearValue = formData.deathYear
-      ? parseInt(formData.deathYear)
-      : null;
-
-    // Apply BCE conversion if needed
-    if (startYearBce && !isNaN(startYearValue)) {
-      startYearValue = -startYearValue + 1;
-    }
-
-    if (endYearBce && !isNaN(endYearValue)) {
-      endYearValue = -endYearValue + 1;
-    }
-
-    if (birthYearBce && birthYearValue !== null && !isNaN(birthYearValue)) {
-      birthYearValue = -birthYearValue + 1;
-    }
-
-    if (deathYearBce && deathYearValue !== null && !isNaN(deathYearValue)) {
-      deathYearValue = -deathYearValue + 1;
-    }
+    const startYearValue = convertYearValue(formData.startYear, startYearBce);
+    const endYearValue = convertYearValue(formData.endYear, endYearBce);
+    const birthYearValue = formData.birthYear ? convertYearValue(formData.birthYear, birthYearBce) : null;
+    const deathYearValue = formData.deathYear ? convertYearValue(formData.deathYear, deathYearBce) : null;
 
     const kingData = {
       ...formData,
@@ -209,16 +178,16 @@ const AddKingForm = ({
     }
 
     if (onClose) onClose();
-  };
+  }, [formData, startYearBce, endYearBce, birthYearBce, deathYearBce, validate, isEditing, onSave, addKing, onClose]);
 
-  // Prepare dynasty options for select
-  const dynastyOptions = [
+  // Prepare dynasty options for select - memoized to prevent recalculation
+  const dynastyOptions = useMemo(() => [
     { value: "", label: "Select a dynasty" },
     ...dynasties.map((dynasty) => ({
       value: dynasty.id,
       label: `${dynasty.name} (${formatYear(dynasty.startYear)} - ${formatYear(dynasty.endYear)})`,
     })),
-  ];
+  ], [dynasties]);
 
   return (
     <form onSubmit={handleSubmit} className="space-y-4">
@@ -328,6 +297,6 @@ const AddKingForm = ({
       />
     </form>
   );
-};
+});
 
 export default AddKingForm;

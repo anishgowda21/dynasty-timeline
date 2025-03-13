@@ -1,31 +1,37 @@
+import React, { useMemo } from "react";
 import { Link } from "react-router-dom";
 import { formatYear } from "../utils/dateUtils";
 
-const KingCard = ({
+const KingCard = React.memo(({
   king,
   dynastyColor = "#4F46E5",
   eventsCount = 0,
   dynastyName,
 }) => {
-  // Format reign years
-  const reignYears = king.startYear
-    ? `${formatYear(king.startYear)}${
-        king.endYear ? ` - ${formatYear(king.endYear)}` : " - Present"
-      }`
-    : "- Present"; // Special case when startYear is missing
+  // Memoize calculated values to prevent recalculation on re-renders
+  const { reignYears, lifeYears, reignDuration } = useMemo(() => {
+    // Format reign years
+    const reignYears = king.startYear
+      ? `${formatYear(king.startYear)}${
+          king.endYear ? ` - ${formatYear(king.endYear)}` : " - Present"
+        }`
+      : "- Present"; // Special case when startYear is missing
 
-  // Format lifetime years
-  const lifeYears = king.birthYear
-    ? `${formatYear(king.birthYear)}${
-        king.deathYear ? ` - ${formatYear(king.deathYear)}` : ""
-      }`
-    : "";
-
-  // Calculate duration
-  const reignDuration =
-    king.endYear && king.startYear
-      ? `(${Math.abs(king.endYear - king.startYear)} years)`
+    // Format lifetime years
+    const lifeYears = king.birthYear
+      ? `${formatYear(king.birthYear)}${
+          king.deathYear ? ` - ${formatYear(king.deathYear)}` : ""
+        }`
       : "";
+
+    // Calculate duration
+    const reignDuration =
+      king.endYear && king.startYear
+        ? `(${Math.abs(king.endYear - king.startYear)} years)`
+        : "";
+        
+    return { reignYears, lifeYears, reignDuration };
+  }, [king.startYear, king.endYear, king.birthYear, king.deathYear]);
 
   return (
     <Link
@@ -63,6 +69,6 @@ const KingCard = ({
       </div>
     </Link>
   );
-};
+});
 
 export default KingCard;

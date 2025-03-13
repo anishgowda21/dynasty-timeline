@@ -2,8 +2,9 @@ import React from 'react';
 
 /**
  * Reusable component for textarea inputs
+ * Memoized to prevent unnecessary re-renders
  */
-const FormTextArea = ({ 
+const FormTextArea = React.memo(({ 
   id, 
   name, 
   value, 
@@ -33,6 +34,6 @@ const FormTextArea = ({
       />
     </div>
   );
-};
+});
 
 export default FormTextArea;

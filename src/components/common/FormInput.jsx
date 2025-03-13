@@ -2,8 +2,9 @@ import React from 'react';
 
 /**
  * Reusable component for text/number inputs with consistent styling
+ * Memoized to prevent unnecessary re-renders
  */
-const FormInput = ({ 
+const FormInput = React.memo(({ 
   id, 
   name, 
   value, 
@@ -41,6 +42,6 @@ const FormInput = ({
       )}
     </div>
   );
-};
+});
 
 export default FormInput;

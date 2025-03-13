@@ -1,12 +1,22 @@
+import React, { useMemo } from "react";
 import { Link } from "react-router-dom";
 import { formatYear } from "../utils/dateUtils";
 
-const DynastyCard = ({ dynasty, kingsCount }) => {
-  // Calculate duration if both start and end years are available
-  const duration =
-    dynasty.endYear && dynasty.startYear
-      ? `(${dynasty.endYear - dynasty.startYear} years)`
-      : "";
+const DynastyCard = React.memo(({ dynasty, kingsCount }) => {
+  // Memoize calculated values to prevent recalculation on re-renders
+  const { duration, formattedStartYear, formattedEndYear } = useMemo(() => {
+    // Calculate duration if both start and end years are available
+    const duration =
+      dynasty.endYear && dynasty.startYear
+        ? `(${Math.abs(dynasty.endYear - dynasty.startYear)} years)`
+        : "";
+
+    // Pre-format years to avoid repeated calls to formatYear
+    const formattedStartYear = dynasty.startYear ? formatYear(dynasty.startYear) : "?";
+    const formattedEndYear = dynasty.endYear ? formatYear(dynasty.endYear) : "Present";
+
+    return { duration, formattedStartYear, formattedEndYear };
+  }, [dynasty.startYear, dynasty.endYear]);
 
   return (
     <Link
@@ -20,7 +30,7 @@ const DynastyCard = ({ dynasty, kingsCount }) => {
             {dynasty.name}
           </h3>
           <p className="text-gray-600 dark:text-gray-300 mb-2">
-            {formatYear(dynasty.startYear)} - {formatYear(dynasty.endYear)}{" "}
+            {formattedStartYear} - {formattedEndYear}{" "}
             {duration}
           </p>
         </div>
@@ -41,6 +51,6 @@ const DynastyCard = ({ dynasty, kingsCount }) => {
       </div>
     </Link>
   );
-};
+});
 
 export default DynastyCard;

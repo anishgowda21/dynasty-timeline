@@ -2,8 +2,9 @@ import React from 'react';
 
 /**
  * Reusable component for select dropdowns
+ * Memoized to prevent unnecessary re-renders
  */
-const FormSelect = ({ 
+const FormSelect = React.memo(({ 
   id, 
   name, 
   value, 
@@ -15,6 +16,15 @@ const FormSelect = ({
   disabled = false,
   className = ""
 }) => {
+  // Memoize option elements to prevent recreating them on each render
+  const optionElements = React.useMemo(() => {
+    return options.map((option) => (
+      <option key={option.value} value={option.value}>
+        {option.label}
+      </option>
+    ));
+  }, [options]);
+
   return (
     <div className={className}>
       <label
@@ -37,17 +47,13 @@ const FormSelect = ({
           disabled ? "opacity-60 cursor-not-allowed" : ""
         }`}
       >
-        {options.map((option) => (
-          <option key={option.value} value={option.value}>
-            {option.label}
-          </option>
-        ))}
+        {optionElements}
       </select>
       {error && (
         <p className="text-red-500 text-xs mt-1">{error}</p>
       )}
     </div>
   );
-};
+});
 
 export default FormSelect;

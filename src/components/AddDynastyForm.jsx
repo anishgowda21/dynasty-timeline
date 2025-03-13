@@ -1,8 +1,15 @@
-import { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback, useMemo } from "react";
 import { useDynasty } from "../context/DynastyContext";
 import { DateInput, FormInput, FormTextArea, FormActions } from "./common";
 
-const AddDynastyForm = ({
+// Helper function to convert year values considering BCE
+const convertYearValue = (yearStr, isBce) => {
+  const yearValue = parseInt(yearStr);
+  if (isNaN(yearValue)) return null;
+  return isBce ? -yearValue + 1 : yearValue;
+};
+
+const AddDynastyForm = React.memo(({
   onClose,
   initialData,
   initialBCE,
@@ -38,23 +45,28 @@ const AddDynastyForm = ({
     }
   }, [initialBCE]);
 
-  const handleChange = (e) => {
+  // Memoized handler for input changes
+  const handleChange = useCallback((e) => {
     const { name, value } = e.target;
-    setFormData({
-      ...formData,
+    setFormData(prevData => ({
+      ...prevData,
       [name]: value,
-    });
+    }));
 
     // Clear error when field is modified
-    if (errors[name]) {
-      setErrors({
-        ...errors,
-        [name]: null,
-      });
-    }
-  };
+    setErrors(prevErrors => {
+      if (prevErrors[name]) {
+        return {
+          ...prevErrors,
+          [name]: null,
+        };
+      }
+      return prevErrors;
+    });
+  }, []);
 
-  const validate = () => {
+  // Memoized validation function
+  const validate = useCallback(() => {
     const newErrors = {};
 
     if (!formData.name.trim()) {
@@ -79,44 +91,27 @@ const AddDynastyForm = ({
       !isNaN(parseInt(formData.endYear))
     ) {
       // Convert years to internal representation for comparison
-      let startYearValue = parseInt(formData.startYear);
-      let endYearValue = parseInt(formData.endYear);
+      const startYearValue = convertYearValue(formData.startYear, startYearBce);
+      const endYearValue = convertYearValue(formData.endYear, endYearBce);
 
-      // Apply BCE conversion if needed
-      if (startYearBce && !isNaN(startYearValue)) {
-        startYearValue = -startYearValue + 1;
-      }
-
-      if (endYearBce && !isNaN(endYearValue)) {
-        endYearValue = -endYearValue + 1;
-      }
-
-      if (startYearValue > endYearValue) {
+      if (startYearValue !== null && endYearValue !== null && startYearValue > endYearValue) {
         newErrors.endYear = "End year must be after start year";
       }
     }
 
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
-  };
+  }, [formData, startYearBce, endYearBce]);
 
-  const handleSubmit = (e) => {
+  // Memoized submit handler
+  const handleSubmit = useCallback((e) => {
     e.preventDefault();
 
     if (!validate()) return;
 
     // Convert years to internal representation
-    let startYearValue = parseInt(formData.startYear);
-    let endYearValue = formData.endYear ? parseInt(formData.endYear) : null;
-
-    // Apply BCE conversion if needed
-    if (startYearBce && !isNaN(startYearValue)) {
-      startYearValue = -startYearValue + 1;
-    }
-
-    if (endYearBce && !isNaN(endYearValue)) {
-      endYearValue = -endYearValue + 1;
-    }
+    const startYearValue = convertYearValue(formData.startYear, startYearBce);
+    const endYearValue = formData.endYear ? convertYearValue(formData.endYear, endYearBce) : null;
 
     const finalData = {
       ...formData,
@@ -131,13 +126,23 @@ const AddDynastyForm = ({
     }
 
     if (onClose) onClose();
-  };
+  }, [formData, startYearBce, endYearBce, validate, isEditing, onSave, addDynasty, onClose]);
+
+  // Memoized form title
+  const formTitle = useMemo(() => {
+    return !isEditing ? (
+      <div className="text-xl font-bold mb-4 dark:text-white">Add New Dynasty</div>
+    ) : null;
+  }, [isEditing]);
+
+  // Memoized end year label
+  const endYearLabel = useMemo(() => {
+    return `End Year ${!isEditing ? "(leave blank if ongoing)" : ""}`;
+  }, [isEditing]);
 
   return (
     <form onSubmit={handleSubmit} className="space-y-4">
-      {!isEditing && (
-        <div className="text-xl font-bold mb-4 dark:text-white">Add New Dynasty</div>
-      )}
+      {formTitle}
 
       <FormInput
         id="name"
@@ -171,7 +176,7 @@ const AddDynastyForm = ({
           onChange={handleChange}
           isBce={endYearBce}
           onBceChange={setEndYearBce}
-          label={`End Year ${!isEditing ? "(leave blank if ongoing)" : ""}`}
+          label={endYearLabel}
           placeholder="e.g., 1603"
           error={errors.endYear}
         />
@@ -220,6 +225,6 @@ const AddDynastyForm = ({
       />
     </form>
   );
-};
+});
 
 export default AddDynastyForm;

@@ -24,67 +24,82 @@ export const formatDate = (dateStr) => {
   }
 };
 
+// Cache for formatted years to avoid redundant calculations
+const yearFormatCache = new Map();
+
 // Format a year with BCE/CE designation
 export const formatYear = (year, includeBceLabel = true, formatStyle = 'default') => {
   if (year === null || year === undefined) return "";
 
   // Convert to number to ensure proper comparison
   const numYear = parseInt(year);
-
   if (isNaN(numYear)) return year;
 
+  // Create a cache key
+  const cacheKey = `${numYear}-${includeBceLabel}-${formatStyle}`;
+  
+  // Check if we have a cached result
+  if (yearFormatCache.has(cacheKey)) {
+    return yearFormatCache.get(cacheKey);
+  }
+
+  let result;
   if (numYear <= 0) {
     // For BCE years, we need to convert from internal representation (0 = 1 BCE, -1 = 2 BCE, etc.)
     const bceYear = Math.abs(numYear) + 1;
 
     if (!includeBceLabel) {
-      return bceYear.toString();
-    }
-
-    // Different format styles
-    switch (formatStyle) {
-      case 'compact':
-        return `${bceYear}B`;
-      case 'timeline':
-        return `${bceYear}`;
-      default:
-        return `${bceYear} BCE`;
+      result = bceYear.toString();
+    } else if (formatStyle === 'compact') {
+      result = `${bceYear}B`;
+    } else if (formatStyle === 'timeline') {
+      result = `${bceYear}`;
+    } else {
+      result = `${bceYear} BCE`;
     }
   } else {
     // CE years
     if (!includeBceLabel) {
-      return numYear.toString();
-    }
-
-    // Different format styles
-    switch (formatStyle) {
-      case 'compact':
-        return `${numYear}`;
-      case 'timeline':
-        return `${numYear}`;
-      default:
-        return `${numYear} CE`;
+      result = numYear.toString();
+    } else if (formatStyle === 'compact' || formatStyle === 'timeline') {
+      result = `${numYear}`;
+    } else {
+      result = `${numYear} CE`;
     }
   }
+
+  // Cache the result
+  yearFormatCache.set(cacheKey, result);
+  return result;
 };
+
+// Cache for parsed years
+const yearParseCache = new Map();
 
 // Convert displayed year to internal representation
 export const parseYear = (yearStr) => {
   if (!yearStr || yearStr.trim() === '') return null;
+  
+  // Check cache first
+  if (yearParseCache.has(yearStr)) {
+    return yearParseCache.get(yearStr);
+  }
 
   // Handle if it's already a negative number (internal BCE format)
   if (/^-\d+$/.test(yearStr)) {
-    return parseInt(yearStr);
+    const result = parseInt(yearStr);
+    yearParseCache.set(yearStr, result);
+    return result;
   }
 
   // Remove any commas or spaces
-  yearStr = yearStr.replace(/,|\s+/g, '');
+  const cleanYearStr = yearStr.replace(/,|\s+/g, '');
 
-  // Check for BCE/BC suffix
-  const isBce = /BCE$|BC$|B\.C\.E\.$|B\.C\.$/.test(yearStr.toUpperCase());
+  // Simplified BCE detection - check for B at the end or BCE/BC
+  const isBce = /B(?:CE|C)?$/i.test(cleanYearStr);
 
   // Remove suffix and convert to number
-  const numericPart = yearStr.replace(/BCE$|BC$|CE$|AD$|B\.C\.E\.$|B\.C\.$|C\.E\.$|A\.D\.$|[^\d-]/gi, '');
+  const numericPart = cleanYearStr.replace(/[^\d-]/gi, '');
   let year = parseInt(numericPart);
 
   if (isNaN(year)) return null;
@@ -94,6 +109,8 @@ export const parseYear = (yearStr) => {
     year = -year + 1;
   }
 
+  // Cache the result
+  yearParseCache.set(yearStr, year);
   return year;
 };
 
@@ -119,10 +136,29 @@ export const calculateTimelinePosition = (year, minYear, maxYear) => {
 export const getYearRange = (items) => {
   if (!items || items.length === 0) return { minYear: 0, maxYear: 0 };
 
-  const minYear = Math.min(...items.map(item => item.startYear));
-  const maxYear = Math.max(...items.map(item => item.endYear));
+  let minYear = Infinity;
+  let maxYear = -Infinity;
+  
+  for (const item of items) {
+    if (item.startYear < minYear) minYear = item.startYear;
+    if (item.endYear > maxYear) maxYear = item.endYear;
+  }
 
   return { minYear, maxYear };
+};
+
+// Determine if a year is within a time range
+export const isYearInRange = (year, startYear, endYear) => {
+  return year >= startYear && year <= endYear;
+};
+
+// Compare two years, handling BCE dates properly
+export const compareYears = (year1, year2) => {
+  if (year1 === year2) return 0;
+  if (year1 === null || year1 === undefined) return -1;
+  if (year2 === null || year2 === undefined) return 1;
+
+  return year1 - year2;
 };
 
 // Generate a color based on text (for use when no color is specified)
@@ -141,18 +177,4 @@ export const stringToColor = (str) => {
   }
 
   return color;
-};
-
-// Determine if a year is within a time range
-export const isYearInRange = (year, startYear, endYear) => {
-  return year >= startYear && year <= endYear;
-};
-
-// Compare two years, handling BCE dates properly
-export const compareYears = (year1, year2) => {
-  if (year1 === year2) return 0;
-  if (year1 === null || year1 === undefined) return -1;
-  if (year2 === null || year2 === undefined) return 1;
-
-  return year1 - year2;
 };

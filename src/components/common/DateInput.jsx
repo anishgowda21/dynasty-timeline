@@ -2,8 +2,9 @@ import React from 'react';
 
 /**
  * Reusable component for date inputs with BCE toggle
+ * Memoized to prevent unnecessary re-renders
  */
-const DateInput = ({ 
+const DateInput = React.memo(({ 
   id, 
   name, 
   value, 
@@ -17,6 +18,11 @@ const DateInput = ({
   className = "",
   type = "number"
 }) => {
+  // Handle BCE toggle with a callback to prevent creating new functions on each render
+  const handleBceToggle = React.useCallback(() => {
+    onBceChange(!isBce);
+  }, [isBce, onBceChange]);
+
   return (
     <div className={className}>
       <label
@@ -44,7 +50,7 @@ const DateInput = ({
             type="checkbox"
             id={`${id}Bce`}
             checked={isBce}
-            onChange={() => onBceChange(!isBce)}
+            onChange={handleBceToggle}
             className="mr-1 dark:bg-gray-700 dark:border-gray-600"
           />
           <label
@@ -60,6 +66,6 @@ const DateInput = ({
       )}
     </div>
   );
-};
+});
 
 export default DateInput;

@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from "react";
+import React,{ useState, useEffect, useRef, useMemo, useCallback } from "react";
 import { Link } from "react-router-dom";
 import {
   calculateTimelinePosition,
@@ -7,6 +7,59 @@ import {
 } from "../utils/dateUtils";
 import { useDynasty } from "../context/DynastyContext";
 import { ChevronDown, ChevronUp, Expand, Minus, Plus } from "lucide-react";
+
+// Memoized timeline item component to prevent unnecessary re-renders
+const TimelineItem = React.memo(({ item, type, startPosition, endPosition, width, offsetY }) => {
+  return (
+    <Link
+      key={item.id}
+      to={type === "dynasty" ? `/dynasties/${item.id}` : `/kings/${item.id}`}
+      className="block"
+    >
+      <div className="flex items-center mb-1">
+        <div className="w-1/4 sm:w-1/5 text-xs sm:text-sm font-medium truncate pr-2">
+          {item.name}
+        </div>
+        <div className="w-3/4 sm:w-4/5 relative h-8">
+          <div
+            className="absolute h-6 rounded-md flex items-center px-2 text-white text-xs font-medium hover:opacity-90 transition-opacity"
+            style={{
+              left: `${startPosition}%`,
+              width: `${width}%`,
+              backgroundColor: item.color || "#4F46E5",
+              minWidth: "30px",
+              top: `${offsetY}px`,
+              zIndex: offsetY > 0 ? 2 : 1,
+            }}
+            title={`${item.name}: ${formatYear(item.startYear)} - ${formatYear(item.endYear)}`}
+          >
+            {width > 8 ? `${formatYear(item.startYear)} - ${formatYear(item.endYear)}` : ""}
+          </div>
+        </div>
+      </div>
+    </Link>
+  );
+});
+
+// Memoized decade marker component
+const DecadeMarker = React.memo(({ decade }) => {
+  return (
+    <div
+      key={decade.year}
+      className="absolute transform -translate-x-1/2"
+      style={{ left: `${decade.position}%` }}
+    >
+      <div className="h-3 border-l border-gray-400"></div>
+      <div
+        className={`text-xs ${decade.isTransitionYear ? "font-bold text-blue-600" : "text-gray-600"}`}
+      >
+        {decade.isTransitionYear
+          ? "BCE/CE"
+          : formatYear(decade.year, true, "compact")}
+      </div>
+    </div>
+  );
+});
 
 const Timeline = ({
   items,
@@ -27,25 +80,26 @@ const Timeline = ({
   const [isDragging, setIsDragging] = useState(false);
   const [startX, setStartX] = useState(0);
   const [scrollLeft, setScrollLeft] = useState(0);
+  const [windowWidth, setWindowWidth] = useState(window.innerWidth);
 
-  // Handle timeline zoom
-  const handleZoomIn = () => {
+  // Memoized zoom handlers to prevent recreation on each render
+  const handleZoomIn = useCallback(() => {
     setZoomLevel((prevZoom) => Math.min(prevZoom + 0.25, 3));
-  };
+  }, []);
 
-  const handleZoomOut = () => {
+  const handleZoomOut = useCallback(() => {
     setZoomLevel((prevZoom) => Math.max(prevZoom - 0.25, 0.5));
-  };
+  }, []);
 
-  const handleZoomReset = () => {
+  const handleZoomReset = useCallback(() => {
     setZoomLevel(1);
     if (timelineContainerRef.current) {
       timelineContainerRef.current.scrollLeft = 0;
     }
-  };
+  }, []);
 
   // Calculate automatic zoom level based on time span and number of items
-  const calculateAutomaticZoomLevel = (min, max, itemCount) => {
+  const calculateAutomaticZoomLevel = useCallback((min, max, itemCount) => {
     const timeSpan = max - min;
 
     // Base zoom level on time span
@@ -74,117 +128,64 @@ const Timeline = ({
     }
 
     return Math.min(Math.max(automaticZoom, 0.5), 3.5); // Keep within 0.5 to 3.5 range
-  };
+  }, []);
 
-  const toggleExpand = () => {
+  const toggleExpand = useCallback(() => {
     setIsExpanded(!isExpanded);
-  };
+  }, [isExpanded]);
 
-  // Handle timeline panning
-  const handleMouseDown = (e) => {
+  // Handle timeline panning with useCallback to prevent recreation on each render
+  const handleMouseDown = useCallback((e) => {
     setIsDragging(true);
     setStartX(e.pageX - timelineContainerRef.current.offsetLeft);
     setScrollLeft(timelineContainerRef.current.scrollLeft);
-  };
+  }, []);
 
-  const handleTouchStart = (e) => {
+  const handleTouchStart = useCallback((e) => {
     if (e.touches.length === 1) {
       setIsDragging(true);
       setStartX(e.touches[0].pageX - timelineContainerRef.current.offsetLeft);
       setScrollLeft(timelineContainerRef.current.scrollLeft);
     }
-  };
+  }, []);
 
-  const handleMouseUp = () => {
+  const handleMouseUp = useCallback(() => {
     setIsDragging(false);
-  };
+  }, []);
 
-  const handleTouchEnd = () => {
+  const handleTouchEnd = useCallback(() => {
     setIsDragging(false);
-  };
+  }, []);
 
-  const handleMouseMove = (e) => {
+  const handleMouseMove = useCallback((e) => {
     if (!isDragging) return;
     e.preventDefault();
     const x = e.pageX - timelineContainerRef.current.offsetLeft;
     const walk = (x - startX) * 2; // Speed multiplier
     timelineContainerRef.current.scrollLeft = scrollLeft - walk;
-  };
+  }, [isDragging, startX, scrollLeft]);
 
-  const handleTouchMove = (e) => {
+  const handleTouchMove = useCallback((e) => {
     if (!isDragging || e.touches.length !== 1) return;
     const x = e.touches[0].pageX - timelineContainerRef.current.offsetLeft;
     const walk = (x - startX) * 2; // Speed multiplier
     timelineContainerRef.current.scrollLeft = scrollLeft - walk;
-  };
+  }, [isDragging, startX, scrollLeft]);
 
-  // Calculate year range and filtered items
+  // Handle window resize
   useEffect(() => {
-    if (!items || items.length === 0) return;
+    const handleResize = () => {
+      setWindowWidth(window.innerWidth);
+    };
 
-    // Filter items based on selection if provided
-    let itemsToShow = items;
-    if (selectedItems) {
-      itemsToShow = items.filter((item) => selectedItems.includes(item.id));
-    }
-
-    // Separate complete and incomplete timeline items
-    const completeItems = [];
-    const incomplete = [];
-
-    itemsToShow.forEach((item) => {
-      if (item.startYear && item.endYear) {
-        completeItems.push(item);
-      } else if (item.startYear) {
-        incomplete.push(item);
-      }
-    });
-
-    setFilteredItems(completeItems);
-    setIncompleteItems(incomplete);
-
-    // Calculate year range from complete items only
-    if (completeItems.length > 0) {
-      // Use override values if provided, otherwise calculate from items
-      const { minYear: calculatedMinYear, maxYear: calculatedMaxYear } =
-        getYearRange(completeItems);
-      const min = minYearOverride || calculatedMinYear;
-      const max = maxYearOverride || calculatedMaxYear;
-
-      setMinYear(min);
-      setMaxYear(max);
-
-      // Automatically set zoom level based on time span and number of items
-      const autoZoom = calculateAutomaticZoomLevel(
-        min,
-        max,
-        completeItems.length
-      );
-      setZoomLevel(autoZoom);
-
-      // Generate decade markers
-      const startDecade = Math.floor(min / 10) * 10;
-      const endDecade = Math.ceil(max / 10) * 10;
-      const decadeArray = [];
-
-      // Generate decade markers with appropriate spacing based on time span
-      const totalSpan = endDecade - startDecade;
-      const decadeInterval =
-        totalSpan > 500 ? 50 : totalSpan > 200 ? 20 : totalSpan > 100 ? 10 : 5;
-
-      for (let year = startDecade; year <= endDecade; year += decadeInterval) {
-        decadeArray.push({
-          year,
-          position: calculateTimelinePosition(year, min, max),
-        });
-      }
-
-      setDecades(decadeArray);
-    }
-  }, [items, minYearOverride, maxYearOverride, selectedItems]);
+    window.addEventListener('resize', handleResize);
+    return () => {
+      window.removeEventListener('resize', handleResize);
+    };
+  }, []);
 
   // Generate decade markers for the timeline
-  const generateDecadeMarkers = (min, max) => {
+  const generateDecadeMarkers = useCallback((min, max) => {
     const decadeMarkers = [];
     const span = max - min;
 
@@ -232,7 +233,103 @@ const Timeline = ({
     }
 
     return decadeMarkers;
-  };
+  }, []);
+
+  // Calculate year range and filtered items
+  useEffect(() => {
+    if (!items || items.length === 0) return;
+
+    // Filter items based on selection if provided
+    const itemsToShow = selectedItems 
+      ? items.filter((item) => selectedItems.includes(item.id))
+      : items;
+
+    // Separate complete and incomplete timeline items
+    const completeItems = [];
+    const incomplete = [];
+
+    itemsToShow.forEach((item) => {
+      if (item.startYear && item.endYear) {
+        completeItems.push(item);
+      } else if (item.startYear) {
+        incomplete.push(item);
+      }
+    });
+
+    setFilteredItems(completeItems);
+    setIncompleteItems(incomplete);
+
+    // Calculate year range from complete items only
+    if (completeItems.length > 0) {
+      // Use override values if provided, otherwise calculate from items
+      const { minYear: calculatedMinYear, maxYear: calculatedMaxYear } =
+        getYearRange(completeItems);
+      const min = minYearOverride || calculatedMinYear;
+      const max = maxYearOverride || calculatedMaxYear;
+
+      setMinYear(min);
+      setMaxYear(max);
+
+      // Automatically set zoom level based on time span and number of items
+      const autoZoom = calculateAutomaticZoomLevel(
+        min,
+        max,
+        completeItems.length
+      );
+      setZoomLevel(autoZoom);
+
+      // Generate decade markers
+      const decadeMarkers = generateDecadeMarkers(min, max);
+      setDecades(decadeMarkers);
+    }
+  }, [items, minYearOverride, maxYearOverride, selectedItems, calculateAutomaticZoomLevel, generateDecadeMarkers]);
+
+  // Memoize the timeline items to prevent unnecessary recalculations
+  const timelineItemsData = useMemo(() => {
+    if (!filteredItems.length || minYear === 0 || maxYear === 0) return [];
+    
+    return filteredItems.map((item, index) => {
+      const startPosition = calculateTimelinePosition(
+        item.startYear,
+        minYear,
+        maxYear
+      );
+      const endPosition = calculateTimelinePosition(
+        item.endYear,
+        minYear,
+        maxYear
+      );
+      const width = endPosition - startPosition;
+      
+      // Add a small vertical offset for overlapping timelines to make them more visible
+      // Use more pronounced offsets in mobile view to avoid congestion
+      const isMobile = windowWidth < 640; // sm breakpoint
+      const offsetY = isMobile
+        ? (index % 3) * 10 // More offset on mobile (0, 10, 20px)
+        : index % 2 === 0
+        ? 0
+        : 12; // Regular offset on desktop
+        
+      return {
+        item,
+        startPosition,
+        endPosition,
+        width,
+        offsetY
+      };
+    });
+  }, [filteredItems, minYear, maxYear, windowWidth]);
+
+  // Memoize incomplete items data
+  const incompleteItemsData = useMemo(() => {
+    return incompleteItems.map(item => ({
+      id: item.id,
+      name: item.name,
+      startYear: item.startYear,
+      endYear: item.endYear,
+      color: item.color
+    }));
+  }, [incompleteItems]);
 
   if (!items || items.length === 0 || minYear === 0 || maxYear === 0) {
     return (
@@ -311,92 +408,24 @@ const Timeline = ({
           {/* Year scale */}
           <div className="relative h-8 mb-6">
             {decades.map((decade) => (
-              <div
-                key={decade.year}
-                className="absolute transform -translate-x-1/2"
-                style={{ left: `${decade.position}%` }}
-              >
-                <div className="h-3 border-l border-gray-400"></div>
-                <div
-                  className={`text-xs ${
-                    decade.isTransitionYear
-                      ? "font-bold text-blue-600"
-                      : "text-gray-600"
-                  }`}
-                >
-                  {decade.isTransitionYear
-                    ? "BCE/CE"
-                    : formatYear(decade.year, true, "compact")}
-                </div>
-              </div>
+              <DecadeMarker key={decade.year} decade={decade} />
             ))}
             <div className="absolute top-0 left-0 right-0 h-px bg-gray-300"></div>
           </div>
 
           {/* Timeline items with complete data */}
           <div className="space-y-4">
-            {filteredItems.map((item, index) => {
-              const startPosition = calculateTimelinePosition(
-                item.startYear,
-                minYear,
-                maxYear
-              );
-              const endPosition = calculateTimelinePosition(
-                item.endYear,
-                minYear,
-                maxYear
-              );
-              const width = endPosition - startPosition;
-
-              // Add a small vertical offset for overlapping timelines to make them more visible
-              // Use more pronounced offsets in mobile view to avoid congestion
-              const isMobile = window.innerWidth < 640; // sm breakpoint
-              const offsetY = isMobile
-                ? (index % 3) * 10 // More offset on mobile (0, 10, 20px)
-                : index % 2 === 0
-                ? 0
-                : 12; // Regular offset on desktop
-
-              return (
-                <Link
-                  key={item.id}
-                  to={
-                    type === "dynasty"
-                      ? `/dynasties/${item.id}`
-                      : `/kings/${item.id}`
-                  }
-                  className="block"
-                >
-                  <div className="flex items-center mb-1">
-                    <div className="w-1/4 sm:w-1/5 text-xs sm:text-sm font-medium truncate pr-2">
-                      {item.name}
-                    </div>
-                    <div className="w-3/4 sm:w-4/5 relative h-8">
-                      <div
-                        className="absolute h-6 rounded-md flex items-center px-2 text-white text-xs font-medium hover:opacity-90 transition-opacity"
-                        style={{
-                          left: `${startPosition}%`,
-                          width: `${width}%`,
-                          backgroundColor: item.color || "#4F46E5",
-                          minWidth: "30px",
-                          top: `${offsetY}px`,
-                          zIndex: offsetY > 0 ? 2 : 1,
-                        }}
-                        title={`${item.name}: ${formatYear(
-                          item.startYear
-                        )} - ${formatYear(item.endYear)}`}
-                      >
-                        {width > 8
-                          ? `${formatYear(item.startYear)} - ${formatYear(
-                              item.endYear
-                            )}`
-                          : ""}
-                      </div>
-                    </div>
-                  </div>
-                </Link>
-              );
-            })}
+            {timelineItemsData.map(({ item, startPosition, endPosition, width, offsetY }) => (
+              <TimelineItem
+                key={item.id}
+                item={item}
+                type={type}
+                startPosition={startPosition}
+                endPosition={endPosition}
+                width={width}
+                offsetY={offsetY}
+              />
+            ))}
           </div>
         </div>
       </div>
@@ -410,21 +439,17 @@ const Timeline = ({
       </div>
 
       {/* Incomplete timeline items */}
-      {uiSettings.showIncompleteTimelines && incompleteItems.length > 0 && (
+      {uiSettings.showIncompleteTimelines && incompleteItemsData.length > 0 && (
         <div className="mt-8 pt-6 border-t border-gray-300">
           <h3 className="text-sm font-medium text-gray-500 mb-4">
             Items with incomplete timeline data
           </h3>
 
           <div className="space-y-4">
-            {incompleteItems.map((item) => (
+            {incompleteItemsData.map((item) => (
               <Link
                 key={item.id}
-                to={
-                  type === "dynasty"
-                    ? `/dynasties/${item.id}`
-                    : `/kings/${item.id}`
-                }
+                to={type === "dynasty" ? `/dynasties/${item.id}` : `/kings/${item.id}`}
                 className="block"
               >
                 <div className="flex items-center mb-1">

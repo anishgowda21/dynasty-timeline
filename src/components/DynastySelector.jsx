@@ -1,4 +1,34 @@
+import React, { useCallback, useMemo } from "react";
 import { useDynasty } from "../context/DynastyContext";
+
+// Memoized dynasty checkbox component to prevent unnecessary re-renders
+const DynastyCheckbox = React.memo(({ dynasty, isSelected, onToggle }) => {
+  return (
+    <div className="flex items-center">
+      <input
+        type="checkbox"
+        id={`dynasty-${dynasty.id}`}
+        checked={isSelected}
+        onChange={() => onToggle(dynasty.id)}
+        className="h-4 w-4 text-dynasty-primary border-gray-300 rounded focus:ring-dynasty-primary"
+      />
+      <label
+        htmlFor={`dynasty-${dynasty.id}`}
+        className="ml-2 flex items-center"
+      >
+        <span
+          className="w-3 h-3 rounded-full mr-2"
+          style={{ backgroundColor: dynasty.color }}
+        ></span>
+        <span>{dynasty.name}</span>
+        <span className="text-gray-500 text-xs ml-1">
+          ({dynasty.startYear}
+          {dynasty.endYear ? ` - ${dynasty.endYear}` : ""})
+        </span>
+      </label>
+    </div>
+  );
+});
 
 const DynastySelector = () => {
   const {
@@ -8,26 +38,48 @@ const DynastySelector = () => {
     setSelectedDynasties,
   } = useDynasty();
 
-  const handleToggle = (dynastyId) => {
+  // Memoize the selected dynasties set for faster lookups
+  const selectedDynastiesSet = useMemo(() => {
+    return new Set(uiSettings.selectedDynasties);
+  }, [uiSettings.selectedDynasties]);
+
+  // Use useCallback to memoize event handlers
+  const handleToggle = useCallback((dynastyId) => {
     toggleDynastySelection(dynastyId);
-  };
+  }, [toggleDynastySelection]);
 
-  const handleSelectAll = () => {
+  const handleSelectAll = useCallback(() => {
     setSelectedDynasties(dynasties.map((dynasty) => dynasty.id));
-  };
+  }, [dynasties, setSelectedDynasties]);
 
-  const handleSelectNone = () => {
+  const handleSelectNone = useCallback(() => {
     setSelectedDynasties([]);
-  };
+  }, [setSelectedDynasties]);
 
-  const handleInvert = () => {
-    const currentlySelected = new Set(uiSettings.selectedDynasties);
+  const handleInvert = useCallback(() => {
     const invertedSelection = dynasties
       .map((dynasty) => dynasty.id)
-      .filter((id) => !currentlySelected.has(id));
+      .filter((id) => !selectedDynastiesSet.has(id));
 
     setSelectedDynasties(invertedSelection);
-  };
+  }, [dynasties, selectedDynastiesSet, setSelectedDynasties]);
+
+  // Memoize the dynasty list items
+  const dynastyItems = useMemo(() => {
+    return dynasties.map((dynasty) => (
+      <DynastyCheckbox
+        key={dynasty.id}
+        dynasty={dynasty}
+        isSelected={selectedDynastiesSet.has(dynasty.id)}
+        onToggle={handleToggle}
+      />
+    ));
+  }, [dynasties, selectedDynastiesSet, handleToggle]);
+
+  // Memoize the status text
+  const statusText = useMemo(() => {
+    return `Showing ${uiSettings.selectedDynasties.length} of ${dynasties.length} dynasties`;
+  }, [uiSettings.selectedDynasties.length, dynasties.length]);
 
   return (
     <div className="bg-white dark:bg-gray-800 rounded-lg shadow-md p-4">
@@ -56,38 +108,14 @@ const DynastySelector = () => {
       </div>
 
       <div className="space-y-2 max-h-60 overflow-y-auto pr-2">
-        {dynasties.map((dynasty) => (
-          <div key={dynasty.id} className="flex items-center">
-            <input
-              type="checkbox"
-              id={`dynasty-${dynasty.id}`}
-              checked={uiSettings.selectedDynasties.includes(dynasty.id)}
-              onChange={() => handleToggle(dynasty.id)}
-              className="h-4 w-4 text-dynasty-primary border-gray-300 rounded focus:ring-dynasty-primary"
-            />
-            <label
-              htmlFor={`dynasty-${dynasty.id}`}
-              className="ml-2 flex items-center"
-            >
-              <span
-                className="w-3 h-3 rounded-full mr-2"
-                style={{ backgroundColor: dynasty.color }}
-              ></span>
-              <span>{dynasty.name}</span>
-              <span className="text-gray-500 text-xs ml-1">
-                ({dynasty.startYear}
-                {dynasty.endYear ? ` - ${dynasty.endYear}` : ""})
-              </span>
-            </label>
-          </div>
-        ))}
+        {dynastyItems}
       </div>
 
       <div className="mt-3 text-sm text-gray-500">
-        {`Showing ${uiSettings.selectedDynasties.length} of ${dynasties.length} dynasties`}
+        {statusText}
       </div>
     </div>
   );
 };
 
-export default DynastySelector;
+export default React.memo(DynastySelector);

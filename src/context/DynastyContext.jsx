@@ -1,4 +1,4 @@
-import { createContext, useState, useContext, useEffect } from "react";
+import { createContext, useState, useContext, useEffect, useMemo, useCallback } from "react";
 import { sampleData } from "../data/sampleData";
 import { saveToLocalStorage, getFromLocalStorage } from "../utils/storageUtils";
 import { generateRandomColor, generateSeededColor } from "../utils/colorUtils";
@@ -8,6 +8,14 @@ const DynastyContext = createContext();
 
 export const useDynasty = () => {
   return useContext(DynastyContext);
+};
+
+// Utility function to create indexed maps from arrays for faster lookups
+const createEntityMap = (entities) => {
+  return entities.reduce((map, entity) => {
+    map[entity.id] = entity;
+    return map;
+  }, {});
 };
 
 export const DynastyProvider = ({ children }) => {
@@ -22,6 +30,34 @@ export const DynastyProvider = ({ children }) => {
     validationLevel: "warn", // 'none', 'warn', 'strict'
   });
   const [validationWarnings, setValidationWarnings] = useState([]);
+
+  // Memoized entity maps for faster lookups
+  const dynastyMap = useMemo(() => createEntityMap(dynasties), [dynasties]);
+  const kingMap = useMemo(() => createEntityMap(kings), [kings]);
+  
+  // Memoized kings by dynasty for faster filtering
+  const kingsByDynasty = useMemo(() => {
+    return kings.reduce((map, king) => {
+      if (!map[king.dynastyId]) {
+        map[king.dynastyId] = [];
+      }
+      map[king.dynastyId].push(king);
+      return map;
+    }, {});
+  }, [kings]);
+
+  // Memoized events by king for faster filtering
+  const eventsByKing = useMemo(() => {
+    return events.reduce((map, event) => {
+      event.kingIds.forEach(kingId => {
+        if (!map[kingId]) {
+          map[kingId] = [];
+        }
+        map[kingId].push(event);
+      });
+      return map;
+    }, {});
+  }, [events]);
 
   // Load data from localStorage on initial render
   useEffect(() => {
@@ -66,23 +102,28 @@ export const DynastyProvider = ({ children }) => {
   // Update localStorage whenever data changes
   useEffect(() => {
     if (!loading) {
-      saveToLocalStorage("dynasties", dynasties);
-      saveToLocalStorage("kings", kings);
-      saveToLocalStorage("events", events);
-      saveToLocalStorage("wars", wars);
-      saveToLocalStorage("uiSettings", uiSettings);
+      // Debounce localStorage updates to prevent excessive writes
+      const timeoutId = setTimeout(() => {
+        saveToLocalStorage("dynasties", dynasties);
+        saveToLocalStorage("kings", kings);
+        saveToLocalStorage("events", events);
+        saveToLocalStorage("wars", wars);
+        saveToLocalStorage("uiSettings", uiSettings);
+      }, 300);
+      
+      return () => clearTimeout(timeoutId);
     }
   }, [dynasties, kings, events, wars, uiSettings, loading]);
 
-  // Validate data relationships
-  useEffect(() => {
-    if (loading || uiSettings.validationLevel === "none") return;
+  // Validation function - separated from the effect for better organization
+  const validateData = useCallback(() => {
+    if (loading || uiSettings.validationLevel === "none") return [];
 
     const warnings = [];
 
     // Check kings against their dynasties
     kings.forEach((king) => {
-      const dynasty = dynasties.find((d) => d.id === king.dynastyId);
+      const dynasty = dynastyMap[king.dynastyId];
       if (dynasty) {
         // King rules before dynasty starts
         if (king.startYear < dynasty.startYear) {
@@ -138,7 +179,7 @@ export const DynastyProvider = ({ children }) => {
       }
 
       event.kingIds.forEach((kingId) => {
-        const king = kings.find((k) => k.id === kingId);
+        const king = kingMap[kingId];
         if (king) {
           // Event before king's rule
           if (eventYear < king.startYear) {
@@ -202,7 +243,7 @@ export const DynastyProvider = ({ children }) => {
       // Check participant kings and their reigns
       war.participants.forEach((participant) => {
         if (participant.kingId) {
-          const king = kings.find((k) => k.id === participant.kingId);
+          const king = kingMap[participant.kingId];
           if (!king) {
             // Missing king validation
             warnings.push({
@@ -261,10 +302,17 @@ export const DynastyProvider = ({ children }) => {
       });
     });
 
-    setValidationWarnings(warnings);
-  }, [dynasties, kings, events, wars, loading, uiSettings.validationLevel]);
+    return warnings;
+  }, [dynasties, kings, events, wars, dynastyMap, kingMap, loading, uiSettings.validationLevel]);
 
-  const addDynasty = (dynasty) => {
+  // Run validation when data changes
+  useEffect(() => {
+    const warnings = validateData();
+    setValidationWarnings(warnings);
+  }, [validateData]);
+
+  // Memoized CRUD operations to prevent unnecessary re-renders
+  const addDynasty = useCallback((dynasty) => {
     // Generate random color if none provided
     const dynastyColor = dynasty.color || generateRandomColor();
 
@@ -275,50 +323,77 @@ export const DynastyProvider = ({ children }) => {
       createdAt: new Date().toISOString(),
     };
 
-    const newDynasties = [...dynasties, newDynasty];
-    setDynasties(newDynasties);
-
-    // Update UI settings to include this dynasty in selected dynasties if it's the first one
-    if (dynasties.length === 0) {
-      setUiSettings({
-        ...uiSettings,
-        selectedDynasties: [newDynasty.id],
-      });
-    }
+    setDynasties(prevDynasties => {
+      const newDynasties = [...prevDynasties, newDynasty];
+      
+      // Update UI settings to include this dynasty in selected dynasties if it's the first one
+      if (prevDynasties.length === 0) {
+        setUiSettings(prev => ({
+          ...prev,
+          selectedDynasties: [newDynasty.id],
+        }));
+      }
+      
+      return newDynasties;
+    });
 
     return newDynasty;
-  };
+  }, []);
 
-  const updateDynasty = (id, updatedData) => {
-    setDynasties(
-      dynasties.map((dynasty) =>
+  const updateDynasty = useCallback((id, updatedData) => {
+    setDynasties(prevDynasties => 
+      prevDynasties.map((dynasty) =>
         dynasty.id === id ? { ...dynasty, ...updatedData } : dynasty
       )
     );
-  };
+  }, []);
 
-  const deleteDynasty = (id) => {
+  const deleteDynasty = useCallback((id) => {
+    // Get kings belonging to this dynasty before deleting
+    const dynastyKingIds = kings
+      .filter(king => king.dynastyId === id)
+      .map(king => king.id);
+    
+    // Batch state updates for better performance
     // First, delete all kings belonging to this dynasty
-    const dynastyKings = kings.filter((king) => king.dynastyId === id);
-    dynastyKings.forEach((king) => deleteKing(king.id));
-
+    if (dynastyKingIds.length > 0) {
+      setKings(prevKings => prevKings.filter(king => king.dynastyId !== id));
+      
+      // Remove events referencing these kings
+      setEvents(prevEvents => 
+        prevEvents.filter(event => 
+          !event.kingIds.some(kingId => dynastyKingIds.includes(kingId))
+        )
+      );
+      
+      // Remove wars referencing these kings
+      setWars(prevWars => 
+        prevWars.filter(war => 
+          !war.participants.some(p => dynastyKingIds.includes(p.kingId))
+        )
+      );
+    }
+    
     // Then delete the dynasty
-    setDynasties(dynasties.filter((dynasty) => dynasty.id !== id));
+    setDynasties(prevDynasties => prevDynasties.filter(dynasty => dynasty.id !== id));
 
     // Remove from selected dynasties if present
-    if (uiSettings.selectedDynasties.includes(id)) {
-      setUiSettings({
-        ...uiSettings,
-        selectedDynasties: uiSettings.selectedDynasties.filter(
-          (dynastyId) => dynastyId !== id
-        ),
-      });
-    }
-  };
+    setUiSettings(prev => {
+      if (prev.selectedDynasties.includes(id)) {
+        return {
+          ...prev,
+          selectedDynasties: prev.selectedDynasties.filter(
+            (dynastyId) => dynastyId !== id
+          ),
+        };
+      }
+      return prev;
+    });
+  }, [kings]);
 
-  const addKing = (king) => {
+  const addKing = useCallback((king) => {
     // Find related dynasty to get its color for the king
-    const relatedDynasty = dynasties.find((d) => d.id === king.dynastyId);
+    const relatedDynasty = dynastyMap[king.dynastyId];
     const dynastyColor = relatedDynasty
       ? relatedDynasty.color
       : generateRandomColor();
@@ -330,115 +405,127 @@ export const DynastyProvider = ({ children }) => {
       createdAt: new Date().toISOString(),
     };
 
-    setKings([...kings, newKing]);
+    setKings(prevKings => [...prevKings, newKing]);
     return newKing;
-  };
+  }, [dynastyMap]);
 
-  const updateKing = (id, updatedData) => {
-    setKings(
-      kings.map((king) => (king.id === id ? { ...king, ...updatedData } : king))
+  const updateKing = useCallback((id, updatedData) => {
+    setKings(prevKings => 
+      prevKings.map((king) => (king.id === id ? { ...king, ...updatedData } : king))
     );
-  };
+  }, []);
 
-  const deleteKing = (id) => {
-    // Delete all events related to this king
-    setEvents(events.filter((event) => !event.kingIds.includes(id)));
+  const deleteKing = useCallback((id) => {
+    // Batch updates for better performance
+    setEvents(prevEvents => prevEvents.filter(event => !event.kingIds.includes(id)));
+    setWars(prevWars => prevWars.filter(war => !war.participants.some(p => p.kingId === id)));
+    setKings(prevKings => prevKings.filter(king => king.id !== id));
+  }, []);
 
-    // Delete all wars related to this king
-    setWars(
-      wars.filter((war) => !war.participants.some((p) => p.kingId === id))
-    );
-
-    // Delete the king
-    setKings(kings.filter((king) => king.id !== id));
-  };
-
-  const addEvent = (event) => {
+  const addEvent = useCallback((event) => {
     const newEvent = {
       ...event,
       id: crypto.randomUUID(),
       createdAt: new Date().toISOString(),
     };
 
-    setEvents([...events, newEvent]);
+    setEvents(prevEvents => [...prevEvents, newEvent]);
     return newEvent;
-  };
+  }, []);
 
-  const updateEvent = (id, updatedData) => {
-    const newEvents = events.map((event) =>
-      event.id === id ? { ...event, ...updatedData } : event
-    );
-    setEvents(newEvents);
-    cleanupOrphanedOneTimeKings(newEvents);
-  };
+  const updateEvent = useCallback((id, updatedData) => {
+    setEvents(prevEvents => {
+      const newEvents = prevEvents.map((event) =>
+        event.id === id ? { ...event, ...updatedData } : event
+      );
+      
+      // Schedule cleanup to run after state update
+      setTimeout(() => cleanupOrphanedOneTimeKings(newEvents), 0);
+      
+      return newEvents;
+    });
+  }, []);
 
-  const deleteEvent = (id) => {
-    const newEvents = events.filter((event) => event.id !== id);
-    setEvents(newEvents);
-    cleanupOrphanedOneTimeKings(newEvents);
-  };
+  const deleteEvent = useCallback((id) => {
+    setEvents(prevEvents => {
+      const newEvents = prevEvents.filter((event) => event.id !== id);
+      
+      // Schedule cleanup to run after state update
+      setTimeout(() => cleanupOrphanedOneTimeKings(newEvents), 0);
+      
+      return newEvents;
+    });
+  }, []);
 
   // War management functions
-  const addWar = (war) => {
+  const addWar = useCallback((war) => {
     const newWar = {
       ...war,
       id: crypto.randomUUID(),
       createdAt: new Date().toISOString(),
     };
 
-    setWars([...wars, newWar]);
+    setWars(prevWars => [...prevWars, newWar]);
     return newWar;
-  };
+  }, []);
 
-  const updateWar = (id, updatedData) => {
-    const newWars = wars.map((war) =>
-      war.id === id ? { ...war, ...updatedData } : war
-    );
-    setWars(newWars);
-    cleanupOrphanedOneTimeKings(events, newWars);
-  };
-
-  const deleteWar = (id) => {
-    const newWars = wars.filter((war) => war.id !== id);
-    setWars(newWars);
-    cleanupOrphanedOneTimeKings();
-  };
-
-  // UI Settings Functions
-  const toggleDynastySelection = (dynastyId) => {
-    setUiSettings({
-      ...uiSettings,
-      selectedDynasties: uiSettings.selectedDynasties.includes(dynastyId)
-        ? uiSettings.selectedDynasties.filter((id) => id !== dynastyId)
-        : [...uiSettings.selectedDynasties, dynastyId],
+  const updateWar = useCallback((id, updatedData) => {
+    setWars(prevWars => {
+      const newWars = prevWars.map((war) =>
+        war.id === id ? { ...war, ...updatedData } : war
+      );
+      
+      // Schedule cleanup to run after state update
+      setTimeout(() => cleanupOrphanedOneTimeKings(events, newWars), 0);
+      
+      return newWars;
     });
-  };
+  }, [events]);
 
-  const setSelectedDynasties = (dynastyIds) => {
-    setUiSettings({
-      ...uiSettings,
+  const deleteWar = useCallback((id) => {
+    setWars(prevWars => {
+      const newWars = prevWars.filter((war) => war.id !== id);
+      
+      // Schedule cleanup to run after state update
+      setTimeout(() => cleanupOrphanedOneTimeKings(), 0);
+      
+      return newWars;
+    });
+  }, []);
+
+  // UI Settings Functions - memoized
+  const toggleDynastySelection = useCallback((dynastyId) => {
+    setUiSettings(prev => ({
+      ...prev,
+      selectedDynasties: prev.selectedDynasties.includes(dynastyId)
+        ? prev.selectedDynasties.filter((id) => id !== dynastyId)
+        : [...prev.selectedDynasties, dynastyId],
+    }));
+  }, []);
+
+  const setSelectedDynasties = useCallback((dynastyIds) => {
+    setUiSettings(prev => ({
+      ...prev,
       selectedDynasties: dynastyIds,
-    });
-  };
+    }));
+  }, []);
 
-  const toggleShowIncompleteTimelines = () => {
-    setUiSettings({
-      ...uiSettings,
-      showIncompleteTimelines: !uiSettings.showIncompleteTimelines,
-    });
-  };
+  const toggleShowIncompleteTimelines = useCallback(() => {
+    setUiSettings(prev => ({
+      ...prev,
+      showIncompleteTimelines: !prev.showIncompleteTimelines,
+    }));
+  }, []);
 
-  const setValidationLevel = (level) => {
-    setUiSettings({
-      ...uiSettings,
+  const setValidationLevel = useCallback((level) => {
+    setUiSettings(prev => ({
+      ...prev,
       validationLevel: level,
-    });
-  };
+    }));
+  }, []);
 
-
-
-  // Export data as JSON
-  const exportData = () => {
+  // Export data as JSON - memoized
+  const exportData = useCallback(() => {
     const data = {
       dynasties,
       kings,
@@ -462,10 +549,10 @@ export const DynastyProvider = ({ children }) => {
     linkElement.setAttribute("href", dataUri);
     linkElement.setAttribute("download", exportFileDefaultName);
     linkElement.click();
-  };
+  }, [dynasties, kings, events, wars, uiSettings]);
 
-  // Import data from JSON file
-  const importData = (importedData) => {
+  // Import data from JSON - memoized
+  const importData = useCallback((importedData) => {
     if (
       !importedData.dynasties ||
       !importedData.kings ||
@@ -476,45 +563,43 @@ export const DynastyProvider = ({ children }) => {
       throw new Error("Invalid data format");
     }
 
+    // Batch state updates
     setDynasties(importedData.dynasties);
     setKings(importedData.kings);
     setEvents(importedData.events);
     setWars(importedData.wars);
-
     setUiSettings(importedData.uiSettings);
-  };
+  }, []);
 
-  // Reset to sample data
-  const resetToSampleData = () => {
+  // Reset to sample data - memoized
+  const resetToSampleData = useCallback(() => {
+    // Batch state updates
     setDynasties(sampleData.dynasties);
     setKings(sampleData.kings);
     setEvents(sampleData.events);
     setWars(sampleData.wars || []);
-
-    // Reset UI settings as well
     setUiSettings({
       selectedDynasties: sampleData.dynasties.map((d) => d.id),
       showIncompleteTimelines: true,
       validationLevel: "warn",
     });
-  };
+  }, []);
 
-  // Clear all data
-  const clearAllData = () => {
+  // Clear all data - memoized
+  const clearAllData = useCallback(() => {
+    // Batch state updates
     setDynasties([]);
     setKings([]);
     setEvents([]);
     setWars([]);
-
-    // Reset selected dynasties to empty
-    setUiSettings({
-      ...uiSettings,
+    setUiSettings(prev => ({
+      ...prev,
       selectedDynasties: [],
-    });
-  };
+    }));
+  }, []);
 
-  // Add a one-time king and war
-  const addOneTimeKing = (kingData) => {
+  // Add a one-time king - memoized
+  const addOneTimeKing = useCallback((kingData) => {
     // Generate a unique ID for this one-time king
     const kingId = crypto.randomUUID();
 
@@ -530,41 +615,55 @@ export const DynastyProvider = ({ children }) => {
       createdAt: new Date().toISOString(),
     };
 
-    setKings([...kings, newKing]);
+    setKings(prevKings => [...prevKings, newKing]);
     return newKing;
-  };
+  }, []);
 
-  const cleanupOrphanedOneTimeKings = (
+  // Optimized cleanup function
+  const cleanupOrphanedOneTimeKings = useCallback((
     latestEvents = events,
     latestWars = wars
   ) => {
     // Find all one-time kings
     const oneTimeKings = kings.filter((king) => king.isOneTime === true);
+    if (oneTimeKings.length === 0) return; // Early return if no one-time kings
+
+    // Create a set of referenced king IDs for faster lookups
+    const referencedKingIds = new Set();
+    
+    // Check events
+    for (const event of latestEvents) {
+      if (event.kingIds) {
+        for (const kingId of event.kingIds) {
+          referencedKingIds.add(kingId);
+        }
+      }
+    }
+    
+    // Check wars
+    for (const war of latestWars) {
+      if (war.participants) {
+        for (const participant of war.participants) {
+          if (participant.kingId) {
+            referencedKingIds.add(participant.kingId);
+          }
+        }
+      }
+    }
 
     // Identify kings that are no longer referenced
     const kingsToDelete = oneTimeKings
-      .filter((king) => {
-        const isReferencedInEvents = latestEvents.some(
-          (event) => event.kingIds && event.kingIds.includes(king.id)
-        );
-        const isReferencedInWars = latestWars.some(
-          (war) =>
-            war.participants &&
-            war.participants.some((p) => p.kingId === king.id)
-        );
-        return !isReferencedInEvents && !isReferencedInWars;
-      })
-      .map((king) => king.id);
+      .filter(king => !referencedKingIds.has(king.id))
+      .map(king => king.id);
 
     // Remove unreferenced kings from state
     if (kingsToDelete.length > 0) {
-      setKings((prevKings) =>
-        prevKings.filter((king) => !kingsToDelete.includes(king.id))
-      );
+      setKings(prevKings => prevKings.filter(king => !kingsToDelete.includes(king.id)));
     }
-  };
+  }, [kings, events, wars]);
 
-  const value = {
+  // Memoize the context value to prevent unnecessary re-renders
+  const value = useMemo(() => ({
     dynasties,
     kings,
     events,
@@ -572,6 +671,12 @@ export const DynastyProvider = ({ children }) => {
     loading,
     uiSettings,
     validationWarnings,
+    // Maps for faster lookups
+    dynastyMap,
+    kingMap,
+    kingsByDynasty,
+    eventsByKing,
+    // CRUD operations
     addDynasty,
     updateDynasty,
     deleteDynasty,
@@ -584,16 +689,28 @@ export const DynastyProvider = ({ children }) => {
     addWar,
     updateWar,
     deleteWar,
+    // UI settings
+    toggleDynastySelection,
+    setSelectedDynasties,
+    toggleShowIncompleteTimelines,
+    setValidationLevel,
+    // Data management
     exportData,
     importData,
     resetToSampleData,
     clearAllData,
     addOneTimeKing,
-    toggleDynastySelection,
-    setSelectedDynasties,
-    toggleShowIncompleteTimelines,
-    setValidationLevel,
-  };
+  }), [
+    dynasties, kings, events, wars, loading, uiSettings, validationWarnings,
+    dynastyMap, kingMap, kingsByDynasty, eventsByKing,
+    addDynasty, updateDynasty, deleteDynasty,
+    addKing, updateKing, deleteKing,
+    addEvent, updateEvent, deleteEvent,
+    addWar, updateWar, deleteWar,
+    toggleDynastySelection, setSelectedDynasties,
+    toggleShowIncompleteTimelines, setValidationLevel,
+    exportData, importData, resetToSampleData, clearAllData, addOneTimeKing
+  ]);
 
   return (
     <DynastyContext.Provider value={value}>{children}</DynastyContext.Provider>

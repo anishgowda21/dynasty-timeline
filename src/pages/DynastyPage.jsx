@@ -7,6 +7,7 @@ import Modal from "../components/Modal";
 import AddKingForm from "../components/AddKingForm";
 import AddDynastyForm from "../components/AddDynastyForm";
 import ConfirmationDialog from "../components/ConfirmationDialog";
+import BackButton from "../components/BackButton";
 import { getTimeSpan, getYearRange } from "../utils/dateUtils";
 import { Pencil, Plus, Trash } from "lucide-react";
 
@@ -54,12 +55,7 @@ const DynastyPage = () => {
 
   const handleConfirmDelete = () => {
     deleteDynasty(id);
-    setShowDeleteConfirm(false);
     navigate("/");
-  };
-
-  const handleCancelDelete = () => {
-    setShowDeleteConfirm(false);
   };
 
   if (loading || !dynasty) {
@@ -70,178 +66,142 @@ const DynastyPage = () => {
     );
   }
 
-  // Handle BCE years for editing
-  const displayDynasty = { ...dynasty };
-  const startYearBce = dynasty.startYear < 0;
-  const endYearBce = dynasty.endYear < 0;
-
-  if (startYearBce) {
-    displayDynasty.startYear = Math.abs(dynasty.startYear - 1);
-  }
-
-  if (endYearBce && dynasty.endYear) {
-    displayDynasty.endYear = Math.abs(dynasty.endYear - 1);
-  }
-
   return (
     <div>
-      <div className="mb-8">
-        <div className="flex justify-between items-start mb-4">
-          <h1 className="text-3xl font-bold dark:text-white">
-            {dynasty.name} Dynasty
-          </h1>
-          <div className="flex space-x-2">
+      <BackButton />
+      
+      <div className="mb-6">
+        <div className="flex flex-wrap justify-between items-start">
+          <div>
+            <h1
+              className="text-3xl font-bold mb-2 text-dynasty-text dark:text-white"
+              style={{ color: dynasty.color }}
+            >
+              {dynasty.name} Dynasty
+            </h1>
+            <p className="text-lg text-gray-600 dark:text-gray-300">
+              {dynasty.startYear
+                ? `${getTimeSpan(dynasty.startYear, dynasty.endYear)} • ${
+                    dynastyKings.length
+                  } Ruler${dynastyKings.length !== 1 ? "s" : ""}`
+                : `${dynastyKings.length} Ruler${
+                    dynastyKings.length !== 1 ? "s" : ""
+                  }`}
+            </p>
+          </div>
+
+          <div className="flex mt-2 md:mt-0">
             <button
               onClick={() => setIsEditing(true)}
-              className="btn btn-secondary flex items-center"
+              className="flex items-center mr-3 px-3 py-1 bg-blue-600 text-white rounded-md hover:bg-blue-700"
             >
-              <Pencil className="mr-2" />
+              <Pencil className="w-4 h-4 mr-1" />
               Edit
             </button>
             <button
               onClick={handleDeleteClick}
-              className="btn btn-danger flex items-center"
+              className="flex items-center px-3 py-1 bg-red-600 text-white rounded-md hover:bg-red-700"
             >
-              <Trash className="mr-2" />
+              <Trash className="w-4 h-4 mr-1" />
               Delete
             </button>
           </div>
         </div>
 
-        <div className="flex flex-col md:flex-row md:items-center gap-4 mb-4">
-          <div className="bg-white dark:bg-gray-800 rounded-lg p-4 shadow-md flex-1">
-            <h2 className="text-lg font-semibold mb-2 dark:text-white">
-              Dynasty Info
-            </h2>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div>
-                <p className="text-gray-600 dark:text-gray-300">
-                  <span className="font-medium text-gray-700 dark:text-gray-200">
-                    Time Period:
-                  </span>{" "}
-                  {getTimeSpan(dynasty.startYear, dynasty.endYear)}
-                </p>
-                <p className="text-gray-600 dark:text-gray-300 mt-1">
-                  <span className="font-medium text-gray-700 dark:text-gray-200">
-                    Kings/Rulers:
-                  </span>{" "}
-                  {dynastyKings.length}
-                </p>
-              </div>
-              <div
-                className="h-8 rounded-md"
-                style={{ backgroundColor: dynasty.color || "#4F46E5" }}
-              ></div>
-            </div>
+        {dynasty.description && (
+          <div className="mt-4 prose dark:prose-invert max-w-none">
+            <p>{dynasty.description}</p>
           </div>
-
-          <div className="bg-white dark:bg-gray-800 rounded-lg p-4 shadow-md flex-1">
-            <h2 className="text-lg font-semibold mb-2 dark:text-white">
-              Description
-            </h2>
-            <p className="text-gray-700 dark:text-gray-300">
-              {dynasty.description || "No description available."}
-            </p>
-          </div>
-        </div>
+        )}
       </div>
 
-      <div className="bg-white dark:bg-gray-800 rounded-lg shadow-md p-6 mb-6">
-        <h3 className="text-lg font-semibold mb-4 dark:text-white">
-          Dynasty Timeline
-        </h3>
+      {/* Timeline showing all kings in this dynasty */}
+      <div className="mb-6">
         <Timeline
           items={dynastyKings}
-          type="king"
-          dynastyColor={dynasty.color}
+          dynasties={[dynasty]}
+          showDynastyColors={false}
+          minYear={getYearRange(dynastyKings)[0]}
+          maxYear={getYearRange(dynastyKings)[1]}
         />
       </div>
 
-      <div className="flex justify-between items-center mb-4">
-        <h2 className="text-2xl font-bold dark:text-white">Kings & Rulers</h2>
-        <button
-          onClick={() => setShowAddModal(true)}
-          className="btn btn-primary flex items-center"
-        >
-          <Plus className="mr-2" />
-          Add King/Ruler
-        </button>
-      </div>
-
-      {dynastyKings.length === 0 ? (
-        <div className="bg-white dark:bg-gray-800 rounded-lg shadow-md p-8 text-center">
-          <p className="text-xl text-gray-500 dark:text-gray-400 mb-4">
-            No kings or rulers added for this dynasty yet.
-          </p>
+      {/* Kings listing */}
+      <div className="mb-6">
+        <div className="flex justify-between items-center mb-4">
+          <h2 className="text-xl font-bold dark:text-white">Rulers</h2>
           <button
             onClick={() => setShowAddModal(true)}
-            className="btn btn-primary"
+            className="flex items-center px-3 py-1 bg-blue-600 text-white rounded-md hover:bg-blue-700"
           >
-            Add First King/Ruler
+            <Plus className="w-4 h-4 mr-1" />
+            Add Ruler
           </button>
         </div>
-      ) : (
-        <>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-            {dynastyKings.map((king) => (
-              <KingCard
-                key={king.id}
-                king={king}
-                dynastyColor={dynasty.color}
-                eventsCount={getEventsCount(king.id)}
-              />
-            ))}
+
+        {dynastyKings.length === 0 ? (
+          <div className="p-4 bg-gray-50 dark:bg-gray-800 rounded-lg text-gray-500 dark:text-gray-400 text-center">
+            No rulers added to this dynasty yet.
           </div>
-        </>
-      )}
+        ) : (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            {dynastyKings
+              .sort((a, b) => {
+                if (!a.startYear) return 1;
+                if (!b.startYear) return -1;
+                return a.startYear - b.startYear;
+              })
+              .map((king) => (
+                <KingCard
+                  key={king.id}
+                  king={king}
+                  dynastyColor={dynasty.color}
+                  eventsCount={getEventsCount(king.id)}
+                />
+              ))}
+          </div>
+        )}
+      </div>
 
       {/* Add King Modal */}
-      <Modal isOpen={showAddModal} onClose={() => setShowAddModal(false)}>
+      <Modal
+        isOpen={showAddModal}
+        onClose={() => setShowAddModal(false)}
+        title="Add New Ruler"
+      >
         <AddKingForm
-          onClose={() => setShowAddModal(false)}
+          onSave={(king) => {
+            setShowAddModal(false);
+          }}
+          onCancel={() => setShowAddModal(false)}
           preselectedDynastyId={id}
         />
       </Modal>
 
-      {/* Edit Dynasty Modal - Using the existing AddDynastyForm component */}
-      <Modal isOpen={isEditing} onClose={() => setIsEditing(false)}>
-        <div className="p-1">
-          <div className="text-xl font-bold mb-4 dark:text-white">
-            Edit {dynasty.name} Dynasty
-          </div>
-          <AddDynastyForm
-            onClose={() => setIsEditing(false)}
-            initialData={{
-              name: dynasty.name,
-              startYear: startYearBce
-                ? Math.abs(dynasty.startYear - 1)
-                : dynasty.startYear,
-              endYear: dynasty.endYear
-                ? endYearBce
-                  ? Math.abs(dynasty.endYear - 1)
-                  : dynasty.endYear
-                : "",
-              color: dynasty.color,
-              description: dynasty.description || "",
-            }}
-            initialBCE={{
-              startYearBce: startYearBce,
-              endYearBce: endYearBce,
-            }}
-            isEditing={true}
-            onSave={handleEditDynasty}
-          />
-        </div>
+      {/* Edit Dynasty Modal */}
+      <Modal
+        isOpen={isEditing}
+        onClose={() => setIsEditing(false)}
+        title="Edit Dynasty"
+      >
+        <AddDynastyForm
+          dynasty={dynasty}
+          onSave={handleEditDynasty}
+          onCancel={() => setIsEditing(false)}
+          isEditing={true}
+        />
       </Modal>
+
+      {/* Delete Confirmation Dialog */}
       <ConfirmationDialog
         isOpen={showDeleteConfirm}
+        onClose={() => setShowDeleteConfirm(false)}
+        onConfirm={handleConfirmDelete}
         title="Delete Dynasty"
-        message={`Are you sure you want to delete the ${dynasty?.name} dynasty? This will also delete all rulers and associated events.`}
+        message={`Are you sure you want to delete ${dynasty.name} Dynasty? This will remove all dynasty data but will not remove the kings associated with it.`}
         confirmText="Delete"
         cancelText="Cancel"
-        confirmButtonClass="bg-red-600 hover:bg-red-700"
-        onConfirm={handleConfirmDelete}
-        onCancel={handleCancelDelete}
+        isDestructive={true}
       />
     </div>
   );

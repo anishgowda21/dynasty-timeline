@@ -3,6 +3,7 @@ import { useDynasty } from "../context/DynastyContext";
 import EventCard from "../components/EventCard";
 import Modal from "../components/Modal";
 import AddEventForm from "../components/AddEventForm";
+import BackButton from "../components/BackButton";
 import { Plus, X, Search } from "lucide-react";
 
 const EventsPage = () => {
@@ -139,12 +140,12 @@ const EventsPage = () => {
   return (
     <div>
       <div className="flex justify-between items-center mb-6">
-        <h1 className="text-3xl font-bold dark:text-white">
+        <h1 className="text-3xl font-bold text-dynasty-text dark:text-white">
           Historical Events
         </h1>
         <button
           onClick={() => setShowAddModal(true)}
-          className="btn btn-primary flex items-center"
+          className="flex items-center px-3 py-1 bg-blue-600 text-white rounded-md hover:bg-blue-700"
         >
           <Plus className="h-5 w-5 mr-1" />
           Add Event

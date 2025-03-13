@@ -5,6 +5,7 @@ import { formatDate, formatYear } from "../utils/dateUtils";
 import Modal from "../components/Modal";
 import AddEventForm from "../components/AddEventForm";
 import ConfirmationDialog from "../components/ConfirmationDialog";
+import BackButton from "../components/BackButton";
 import { Pencil, Trash } from "lucide-react";
 
 const EventPage = () => {
@@ -175,144 +176,148 @@ const EventPage = () => {
   }
 
   return (
-    <div className="max-w-4xl mx-auto">
-      {event && (
-        <div className="bg-white dark:bg-gray-800 rounded-lg shadow-md p-6 mb-6">
-          <div className="flex justify-between items-start mb-6">
-            <div>
-              <h1 className="text-3xl font-bold text-gray-900 dark:text-white mb-2">
-                {event.name}
-              </h1>
-              <p className="text-gray-600 dark:text-gray-300">
-                {getDisplayDate()}
-              </p>
-            </div>
-            <div className="flex space-x-2">
-              <button
-                onClick={() => setIsEditing(true)}
-                className="btn btn-secondary flex items-center"
-              >
-                <Pencil className="h-5 w-5 mr-2" />
-                Edit
-              </button>
-              <button
-                onClick={handleDeleteClick}
-                className="btn btn-danger flex items-center"
-              >
-                <Trash className="h-5 w-5 mr-2" />
-                Delete
-              </button>
-            </div>
-          </div>
+    <div>
+      <BackButton />
 
-          <div className="flex flex-wrap gap-2 mb-6">
-            {event.type && (
-              <span
-                className={`px-3 py-1 rounded-full text-sm font-medium ${getTypeClass()}`}
-              >
-                {event.type}
-              </span>
-            )}
-            <span
-              className={`px-3 py-1 rounded-full text-sm font-medium ${getImportanceClass()}`}
-            >
-              {event.importance.charAt(0).toUpperCase() +
-                event.importance.slice(1)}{" "}
-              Importance
-            </span>
-          </div>
-
-          <div className="prose max-w-none dark:prose-invert mb-6">
-            <p className="text-gray-700 dark:text-gray-300">
-              {event.description}
-            </p>
-          </div>
-
-          {relatedKings.length > 0 && (
-            <div className="mt-8">
-              <h2 className="text-xl font-bold mb-4 dark:text-white">
-                Related Rulers
-              </h2>
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-                {relatedKings.map((king) =>
-                  king.isOneTime ? (
-                    <div
-                      key={king.id}
-                      className="bg-gray-50 dark:bg-gray-700 p-4 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-600 transition-colors"
-                    >
-                      <div className="flex items-center">
-                        <div
-                          className="w-3 h-3 rounded-full mr-2"
-                          style={{ backgroundColor: king.color }}
-                        ></div>
-                        <h3 className="font-bold dark:text-white">
-                          {king.name}
-                        </h3>
-                      </div>
-                      {king.dynastyName && (
-                        <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">
-                          {king.dynastyName} Dynasty
-                        </p>
-                      )}
-                    </div>
-                  ) : (
-                    <Link
-                      key={king.id}
-                      to={`/kings/${king.id}`}
-                      state={{ from: location.pathname }}
-                      className="bg-gray-50 dark:bg-gray-700 p-4 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-600 transition-colors"
-                    >
-                      <div className="flex items-center">
-                        {king.dynasty && (
-                          <div
-                            className="w-3 h-3 rounded-full mr-2"
-                            style={{ backgroundColor: king.dynasty.color }}
-                          ></div>
-                        )}
-                        <h3 className="font-bold dark:text-white">
-                          {king.name}
-                        </h3>
-                      </div>
-                      {king.dynasty && (
-                        <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">
-                          {king.dynasty.name} Dynasty
-                        </p>
-                      )}
-                    </Link>
-                  )
-                )}
+      <div className="max-w-4xl mx-auto">
+        {event && (
+          <div className="bg-white dark:bg-gray-800 rounded-lg shadow-md p-6 mb-6">
+            <div className="flex justify-between items-start mb-6">
+              <div>
+                <h1 className="text-3xl font-bold text-gray-900 dark:text-white mb-2">
+                  {event.name}
+                </h1>
+                <p className="text-gray-600 dark:text-gray-300">
+                  {getDisplayDate()}
+                </p>
+              </div>
+              <div className="flex space-x-2">
+                <button
+                  onClick={() => setIsEditing(true)}
+                  className="btn btn-secondary flex items-center"
+                >
+                  <Pencil className="h-5 w-5 mr-2" />
+                  Edit
+                </button>
+                <button
+                  onClick={handleDeleteClick}
+                  className="btn btn-danger flex items-center"
+                >
+                  <Trash className="h-5 w-5 mr-2" />
+                  Delete
+                </button>
               </div>
             </div>
-          )}
-        </div>
-      )}
 
-      {/* Edit Modal - Using AddEventForm */}
-      <Modal isOpen={isEditing} onClose={() => setIsEditing(false)}>
-        <div className="p-1">
-          <div className="text-xl font-bold mb-4 dark:text-white">
-            Edit Event
+            <div className="flex flex-wrap gap-2 mb-6">
+              {event.type && (
+                <span
+                  className={`px-3 py-1 rounded-full text-sm font-medium ${getTypeClass()}`}
+                >
+                  {event.type}
+                </span>
+              )}
+              <span
+                className={`px-3 py-1 rounded-full text-sm font-medium ${getImportanceClass()}`}
+              >
+                {event.importance.charAt(0).toUpperCase() +
+                  event.importance.slice(1)}{" "}
+                Importance
+              </span>
+            </div>
+
+            <div className="prose max-w-none dark:prose-invert mb-6">
+              <p className="text-gray-700 dark:text-gray-300">
+                {event.description}
+              </p>
+            </div>
+
+            {relatedKings.length > 0 && (
+              <div className="mt-8">
+                <h2 className="text-xl font-bold mb-4 dark:text-white">
+                  Related Rulers
+                </h2>
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                  {relatedKings.map((king) =>
+                    king.isOneTime ? (
+                      <div
+                        key={king.id}
+                        className="bg-gray-50 dark:bg-gray-700 p-4 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-600 transition-colors"
+                      >
+                        <div className="flex items-center">
+                          <div
+                            className="w-3 h-3 rounded-full mr-2"
+                            style={{ backgroundColor: king.color }}
+                          ></div>
+                          <h3 className="font-bold dark:text-white">
+                            {king.name}
+                          </h3>
+                        </div>
+                        {king.dynastyName && (
+                          <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">
+                            {king.dynastyName} Dynasty
+                          </p>
+                        )}
+                      </div>
+                    ) : (
+                      <Link
+                        key={king.id}
+                        to={`/kings/${king.id}`}
+                        state={{ from: location.pathname }}
+                        className="bg-gray-50 dark:bg-gray-700 p-4 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-600 transition-colors"
+                      >
+                        <div className="flex items-center">
+                          {king.dynasty && (
+                            <div
+                              className="w-3 h-3 rounded-full mr-2"
+                              style={{ backgroundColor: king.dynasty.color }}
+                            ></div>
+                          )}
+                          <h3 className="font-bold dark:text-white">
+                            {king.name}
+                          </h3>
+                        </div>
+                        {king.dynasty && (
+                          <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">
+                            {king.dynasty.name} Dynasty
+                          </p>
+                        )}
+                      </Link>
+                    )
+                  )}
+                </div>
+              </div>
+            )}
           </div>
-          <AddEventForm
-            onClose={() => setIsEditing(false)}
-            initialData={prepareInitialData()}
-            initialBCE={{ dateBce: isDateBCE() }}
-            isEditing={true}
-            onSave={handleUpdateEvent}
-          />
-        </div>
-      </Modal>
+        )}
 
-      {/* Delete Confirmation Dialog */}
-      <ConfirmationDialog
-        isOpen={showDeleteConfirm}
-        title="Delete Event"
-        message={`Are you sure you want to delete "${event?.name}"? This action cannot be undone.`}
-        confirmText="Delete"
-        confirmButtonClass="bg-red-600 hover:bg-red-700"
-        onConfirm={handleConfirmDelete}
-        onCancel={handleCancelDelete}
-      />
+        {/* Edit Modal - Using AddEventForm */}
+        <Modal isOpen={isEditing} onClose={() => setIsEditing(false)}>
+          <div className="p-1">
+            <div className="text-xl font-bold mb-4 dark:text-white">
+              Edit Event
+            </div>
+            <AddEventForm
+              onClose={() => setIsEditing(false)}
+              initialData={prepareInitialData()}
+              initialBCE={{ dateBce: isDateBCE() }}
+              isEditing={true}
+              onSave={handleUpdateEvent}
+            />
+          </div>
+        </Modal>
+
+        {/* Delete Confirmation Dialog */}
+        <ConfirmationDialog
+          isOpen={showDeleteConfirm}
+          title="Delete Event"
+          message={`Are you sure you want to delete "${event?.name}"? This action cannot be undone.`}
+          confirmText="Delete"
+          confirmButtonClass="bg-red-600 hover:bg-red-700"
+          onConfirm={handleConfirmDelete}
+          onCancel={handleCancelDelete}
+        />
+      </div>
     </div>
   );
 };

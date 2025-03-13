@@ -2,6 +2,7 @@ import { useState, useRef } from "react";
 import { useDynasty } from "../context/DynastyContext";
 import { useDarkMode } from "../context/DarkModeContext";
 import ConfirmationDialog from "../components/ConfirmationDialog";
+import BackButton from "../components/BackButton";
 import { Download, Info, RefreshCcw, Trash, Upload } from "lucide-react";
 import toast from "react-hot-toast";
 
@@ -91,6 +92,7 @@ const SettingsPage = () => {
 
   return (
     <div className="settings-page max-w-2xl mx-auto">
+      <BackButton />
       <h1 className="text-3xl font-bold mb-8 dark:text-white">Settings</h1>
 
       <div className="space-y-6">

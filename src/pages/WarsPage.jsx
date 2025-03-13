@@ -3,6 +3,7 @@ import { useDynasty } from "../context/DynastyContext";
 import WarCard from "../components/WarCard";
 import Modal from "../components/Modal";
 import AddWarForm from "../components/AddWarForm";
+import BackButton from "../components/BackButton";
 import { Plus, X, Search } from "lucide-react";
 
 const WarsPage = () => {
@@ -152,10 +153,12 @@ const WarsPage = () => {
   return (
     <div>
       <div className="flex justify-between items-center mb-6">
-        <h1 className="text-3xl font-bold dark:text-white">Wars & Conflicts</h1>
+        <h1 className="text-3xl font-bold dark:text-white">
+          Wars & Conflicts
+        </h1>
         <button
           onClick={() => setShowAddModal(true)}
-          className="btn btn-primary flex items-center"
+          className="flex items-center px-3 py-1 bg-blue-600 text-white rounded-md hover:bg-blue-700"
         >
           <Plus className="h-5 w-5 mr-1" />
           Add War/Conflict

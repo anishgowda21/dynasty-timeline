@@ -4,7 +4,7 @@ A React application for visualizing royal dynasties, rulers, and historical even
 
 **Live Demo:** [https://anishgowda21.github.io/dynasty-timeline/](https://anishgowda21.github.io/dynasty-timeline/)
 
-**Repository:** [https://github.com/anishgowda21/dynasty-timeline](https://github.com/anishgowda21/dynasty-timeline)
+
 
 ## Features
 
@@ -16,7 +16,6 @@ A React application for visualizing royal dynasties, rulers, and historical even
 - Color-coded timelines for easy identification
 - Detailed view pages for dynasties, rulers, events, and wars
 - BCE/CE date handling for ancient history support
-- Data validation to ensure historical consistency
 - Dark mode support for comfortable viewing
 
 ## Who Is This For?
@@ -88,9 +87,6 @@ If you want to deploy the app manually, you can use the following commands:
 
 2. The built files will be in the `dist` directory, which you can then deploy to any static hosting service.
 
-## GitHub Pages
-
-The application uses HashRouter instead of BrowserRouter to ensure proper routing when deployed to GitHub Pages. This allows the app to handle client-side routing without requiring server configuration.
 
 ## Key Concepts
 

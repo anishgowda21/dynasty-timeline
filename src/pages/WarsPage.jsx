@@ -3,8 +3,8 @@ import { useDynasty } from "../context/DynastyContext";
 import WarCard from "../components/WarCard";
 import Modal from "../components/Modal";
 import AddWarForm from "../components/AddWarForm";
-import BackButton from "../components/BackButton";
 import { Plus, X, Search } from "lucide-react";
+import { setPageTitle } from "../utils/titleUtils";
 
 const WarsPage = () => {
   const { wars, kings, dynasties, loading } = useDynasty();
@@ -18,6 +18,11 @@ const WarsPage = () => {
     search: "",
     participant: "",
   });
+
+  // Set page title when component mounts
+  useEffect(() => {
+    setPageTitle("Wars & Conflicts");
+  }, []);
 
   useEffect(() => {
     let filtered = [...wars];

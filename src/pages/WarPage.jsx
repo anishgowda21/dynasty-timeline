@@ -1,12 +1,12 @@
 import { useState, useEffect } from "react";
 import { useParams, Link, useNavigate, useLocation } from "react-router-dom";
 import { useDynasty } from "../context/DynastyContext";
-import { formatYear } from "../utils/dateUtils";
 import { getWarTypeClass, getImportanceClass, getParticipantRoleClass } from "../utils/styleUtils";
 import Modal from "../components/Modal";
 import AddWarForm from "../components/AddWarForm";
 import ConfirmationDialog from "../components/ConfirmationDialog";
 import BackButton from "../components/BackButton";
+import { setPageTitle, formatEntityTitle } from "../utils/titleUtils";
 import { Pencil, Trash } from "lucide-react";
 
 const WarPage = () => {
@@ -26,6 +26,9 @@ const WarPage = () => {
       const foundWar = wars.find((w) => w.id === id);
       if (foundWar) {
         setWar(foundWar);
+
+        // Set page title with war name
+        setPageTitle(formatEntityTitle("War", foundWar.name));
 
         // Get detailed information about participants
         const participantDetails = foundWar.participants.map((participant) => {

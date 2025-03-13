@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none">
+  <!-- Background circle -->
+  <circle cx="12" cy="12" r="12" fill="#4F46E5"/>
+  
+  <!-- Timeline vertical line -->
+  <line x1="12" y1="3" x2="12" y2="21" stroke="white" strokeWidth="1.5" strokeLinecap="round"/>
+  
+  <!-- Crown on top -->
+  <path d="M8 6L12 2L16 6" stroke="white" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+  <path d="M8 6C8 6 9 9 12 9C15 9 16 6 16 6" stroke="white" strokeWidth="1.5" strokeLinecap="round"/>
+  
+  <!-- Time markers -->
+  <line x1="8" y1="12" x2="16" y2="12" stroke="white" strokeWidth="1.5" strokeLinecap="round"/>
+  <circle cx="8" cy="12" r="1" fill="white"/>
+  <circle cx="16" cy="12" r="1" fill="white"/>
+  
+  <!-- Dynasty marker -->
+  <rect x="10" y="15" width="4" height="4" rx="1" stroke="white" strokeWidth="1.5"/>
+  <circle cx="12" cy="17" r="0.5" fill="white"/>
+</svg>

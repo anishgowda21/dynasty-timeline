@@ -1,9 +1,10 @@
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
 import { useDynasty } from "../context/DynastyContext";
 import { useDarkMode } from "../context/DarkModeContext";
 import ConfirmationDialog from "../components/ConfirmationDialog";
 import BackButton from "../components/BackButton";
 import { Download, Info, RefreshCcw, Trash, Upload } from "lucide-react";
+import { setPageTitle } from "../utils/titleUtils";
 import toast from "react-hot-toast";
 
 // Tooltip component
@@ -43,6 +44,9 @@ const SettingsPage = () => {
   } = useDynasty();
 
   const { darkMode, toggleDarkMode: toggleDarkModeContext } = useDarkMode();
+  useEffect(() => {
+    setPageTitle("Settings");
+  },[]);
 
   const handleExport = () => {
     exportData();

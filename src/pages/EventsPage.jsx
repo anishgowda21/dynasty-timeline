@@ -3,8 +3,8 @@ import { useDynasty } from "../context/DynastyContext";
 import EventCard from "../components/EventCard";
 import Modal from "../components/Modal";
 import AddEventForm from "../components/AddEventForm";
-import BackButton from "../components/BackButton";
 import { Plus, X, Search } from "lucide-react";
+import { setPageTitle } from "../utils/titleUtils";
 
 const EventsPage = () => {
   const { events, kings, loading, deleteEvent } = useDynasty();
@@ -17,6 +17,11 @@ const EventsPage = () => {
     endYear: "",
     search: "",
   });
+
+  // Set page title when component mounts
+  useEffect(() => {
+    setPageTitle("Historical Events");
+  }, []);
 
   useEffect(() => {
     // Filter out war events and apply filters

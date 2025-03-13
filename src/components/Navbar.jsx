@@ -1,7 +1,8 @@
 import { useState } from "react";
 import { Link, useLocation } from "react-router-dom";
 import { useDarkMode } from "../context/DarkModeContext";
-import { Menu, Moon, Sparkles, Sun, X } from "lucide-react";
+import { Menu, Moon, Sun, X } from "lucide-react";
+import Logo from "./Logo";
 
 const Navbar = () => {
   const location = useLocation();
@@ -21,7 +22,7 @@ const Navbar = () => {
           {/* Logo and Site Title */}
           <div className="flex items-center">
             <Link to="/" className="flex items-center">
-              <Sparkles className="h-8 w-8 text-white" />
+              <Logo className="text-white h-8 w-8" />
               <span className="ml-2 text-white font-bold text-xl">
                 Dynasty Timeline
               </span>

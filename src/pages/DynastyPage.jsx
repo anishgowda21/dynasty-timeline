@@ -9,6 +9,7 @@ import AddDynastyForm from "../components/AddDynastyForm";
 import ConfirmationDialog from "../components/ConfirmationDialog";
 import BackButton from "../components/BackButton";
 import { getTimeSpan, getYearRange } from "../utils/dateUtils";
+import { setPageTitle, formatEntityTitle } from "../utils/titleUtils";
 import { Pencil, Plus, Trash } from "lucide-react";
 
 const DynastyPage = () => {
@@ -28,7 +29,7 @@ const DynastyPage = () => {
       const foundDynasty = dynasties.find((d) => d.id === id);
       if (foundDynasty) {
         setDynasty(foundDynasty);
-
+        setPageTitle(formatEntityTitle("Dynasty", foundDynasty.name));
         // Get kings belonging to this dynasty
         const filteredKings = kings.filter((king) => king.dynastyId === id);
         setDynastyKings(filteredKings);

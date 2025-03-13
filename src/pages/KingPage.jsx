@@ -10,6 +10,7 @@ import AddKingForm from "../components/AddKingForm";
 import ConfirmationDialog from "../components/ConfirmationDialog";
 import BackButton from "../components/BackButton";
 import { getTimeSpan } from "../utils/dateUtils";
+import { setPageTitle, formatEntityTitle } from "../utils/titleUtils";
 import { Pencil, Trash, Plus } from "lucide-react";
 
 const KingPage = () => {
@@ -33,6 +34,9 @@ const KingPage = () => {
       const foundKing = kings.find((k) => k.id === id);
       if (foundKing) {
         setKing(foundKing);
+
+        // Set page title with king's name
+        setPageTitle(formatEntityTitle("Ruler", foundKing.name));
 
         // Find the dynasty this king belongs to
         const kingDynasty = dynasties.find((d) => d.id === foundKing.dynastyId);

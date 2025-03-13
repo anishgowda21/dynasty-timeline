@@ -7,6 +7,7 @@ import Modal from "../components/Modal";
 import AddEventForm from "../components/AddEventForm";
 import ConfirmationDialog from "../components/ConfirmationDialog";
 import BackButton from "../components/BackButton";
+import { setPageTitle, formatEntityTitle } from "../utils/titleUtils";
 import { Pencil, Trash } from "lucide-react";
 
 const EventPage = () => {
@@ -26,7 +27,7 @@ const EventPage = () => {
       const foundEvent = events.find((e) => e.id === id);
       if (foundEvent) {
         setEvent(foundEvent);
-
+        setPageTitle(formatEntityTitle("Event", foundEvent.name));
         // Get detailed information about related kings
         const kingsInfo = foundEvent.kingIds
           .map((kingId) => {

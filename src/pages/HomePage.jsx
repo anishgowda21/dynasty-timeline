@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useDynasty } from "../context/DynastyContext";
 import Timeline from "../components/Timeline";
 import DynastyCard from "../components/DynastyCard";
@@ -7,6 +7,7 @@ import Modal from "../components/Modal";
 import AddDynastyForm from "../components/AddDynastyForm";
 import ValidationWarnings from "../components/ValidationWarnings";
 import { Plus, TriangleAlert } from "lucide-react";
+import { setPageTitle } from "../utils/titleUtils";
 
 const HomePage = () => {
   const {
@@ -20,6 +21,11 @@ const HomePage = () => {
 
   const [showAddDynastyModal, setShowAddDynastyModal] = useState(false);
   const [showValidationWarnings, setShowValidationWarnings] = useState(false);
+
+  // Set page title when component mounts
+  useEffect(() => {
+    setPageTitle("Home", false);
+  }, []);
 
   if (loading) {
     return (
